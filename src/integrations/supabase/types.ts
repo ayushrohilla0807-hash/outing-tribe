@@ -45,7 +45,9 @@ export type Database = {
           city: string | null
           created_at: string
           description: string | null
-          host_id: string
+          host_avatar_url: string | null
+          host_id: string | null
+          host_name: string | null
           id: string
           image_url: string | null
           location: string
@@ -59,7 +61,9 @@ export type Database = {
           city?: string | null
           created_at?: string
           description?: string | null
-          host_id: string
+          host_avatar_url?: string | null
+          host_id?: string | null
+          host_name?: string | null
           id?: string
           image_url?: string | null
           location: string
@@ -73,7 +77,9 @@ export type Database = {
           city?: string | null
           created_at?: string
           description?: string | null
-          host_id?: string
+          host_avatar_url?: string | null
+          host_id?: string | null
+          host_name?: string | null
           id?: string
           image_url?: string | null
           location?: string
