@@ -669,9 +669,9 @@ function CTA() {
   const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
   const [errorMsg, setErrorMsg] = useState("");
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const trimmed = email.trim();
+    const trimmed = email.trim().toLowerCase();
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmed)) {
       setStatus("error");
       setErrorMsg("Please enter a valid email address.");
@@ -679,11 +679,24 @@ function CTA() {
     }
     setStatus("loading");
     setErrorMsg("");
-    // Simulate async signup
-    setTimeout(() => {
+    try {
+      const { supabase } = await import("@/integrations/supabase/client");
+      const { error } = await supabase.from("leads").insert({
+        email: trimmed,
+        source: "landing_cta",
+        user_agent: typeof navigator !== "undefined" ? navigator.userAgent : null,
+      });
+      if (error && error.code !== "23505") {
+        throw error;
+      }
       setStatus("success");
-    }, 800);
+    } catch (err) {
+      console.error("Lead signup failed", err);
+      setStatus("error");
+      setErrorMsg("Something went wrong. Please try again.");
+    }
   };
+
 
   return (
     <section id="cta" className="relative mx-auto max-w-7xl px-6 py-24">
