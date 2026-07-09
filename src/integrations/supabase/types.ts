@@ -38,6 +38,87 @@ export type Database = {
         }
         Relationships: []
       }
+      outings: {
+        Row: {
+          capacity: number
+          category: string
+          city: string | null
+          created_at: string
+          description: string | null
+          host_avatar_url: string | null
+          host_id: string | null
+          host_name: string | null
+          id: string
+          image_url: string | null
+          location: string
+          starts_at: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          capacity?: number
+          category: string
+          city?: string | null
+          created_at?: string
+          description?: string | null
+          host_avatar_url?: string | null
+          host_id?: string | null
+          host_name?: string | null
+          id?: string
+          image_url?: string | null
+          location: string
+          starts_at: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          capacity?: number
+          category?: string
+          city?: string | null
+          created_at?: string
+          description?: string | null
+          host_avatar_url?: string | null
+          host_id?: string | null
+          host_name?: string | null
+          id?: string
+          image_url?: string | null
+          location?: string
+          starts_at?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          avatar_url: string | null
+          bio: string | null
+          city: string | null
+          created_at: string
+          display_name: string | null
+          id: string
+          updated_at: string
+        }
+        Insert: {
+          avatar_url?: string | null
+          bio?: string | null
+          city?: string | null
+          created_at?: string
+          display_name?: string | null
+          id: string
+          updated_at?: string
+        }
+        Update: {
+          avatar_url?: string | null
+          bio?: string | null
+          city?: string | null
+          created_at?: string
+          display_name?: string | null
+          id?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
