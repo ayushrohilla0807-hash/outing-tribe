@@ -18,7 +18,6 @@ import {
   BadgeCheck,
   Lock,
   Film,
-  Coffee,
   Trophy,
   Calendar,
   Sparkle,
@@ -39,6 +38,7 @@ import {
   MockChat,
   MockExplore,
 } from "@/components/landing/mockups";
+
 
 export const Route = createFileRoute("/")({
   component: Landing,
