@@ -94,6 +94,7 @@ function Section({
 
 function Nav() {
   const { theme, toggle } = useTheme();
+  const { user, loading } = useSession();
   const [open, setOpen] = useState(false);
   const links = [
     { href: "#how", label: "How it works" },
@@ -129,12 +130,21 @@ function Nav() {
           >
             {theme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
           </button>
-          <a
-            href="#cta"
-            className="hidden rounded-full bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground shadow-glow transition-transform hover:-translate-y-0.5 sm:inline-block"
-          >
-            Get the app
-          </a>
+          {!loading && (user ? (
+            <Link
+              to="/explore"
+              className="hidden rounded-full bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground shadow-glow transition-transform hover:-translate-y-0.5 sm:inline-block"
+            >
+              Explore outings
+            </Link>
+          ) : (
+            <Link
+              to="/auth"
+              className="hidden rounded-full bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground shadow-glow transition-transform hover:-translate-y-0.5 sm:inline-block"
+            >
+              Sign in
+            </Link>
+          ))}
           <button
             onClick={() => setOpen((v) => !v)}
             className="grid h-9 w-9 place-items-center rounded-full border border-white/10 md:hidden"
@@ -144,6 +154,7 @@ function Nav() {
           </button>
         </div>
       </div>
+
       {open && (
         <div className="border-t border-white/5 bg-background/95 px-6 py-4 md:hidden">
           <nav className="flex flex-col gap-3">
