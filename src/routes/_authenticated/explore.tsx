@@ -416,9 +416,28 @@ function OutingCard({
               Hosted by {outing.host_name ?? "Outsy Host"}
             </span>
           </div>
-          <button className="rounded-full bg-white/10 px-3 py-1.5 text-xs font-semibold transition-colors hover:bg-white/20">
-            RSVP
-          </button>
+          <div className="flex items-center gap-3">
+            <motion.span
+              key={count}
+              initial={{ scale: 0.85, opacity: 0.6 }}
+              animate={{ scale: 1, opacity: 1 }}
+              className="text-xs font-semibold text-muted-foreground"
+            >
+              {count} going
+            </motion.span>
+            <button
+              onClick={onToggle}
+              disabled={!canRsvp}
+              className={`rounded-full px-3 py-1.5 text-xs font-semibold transition-colors disabled:opacity-50 ${
+                going
+                  ? "bg-primary text-primary-foreground shadow-glow"
+                  : "bg-white/10 hover:bg-white/20"
+              }`}
+            >
+              {going ? "Going ✓" : "RSVP"}
+            </button>
+          </div>
+
         </div>
       </div>
     </motion.article>
