@@ -312,7 +312,15 @@ function ExplorePage() {
         ) : (
           <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {filtered.map((o, i) => (
-              <OutingCard key={o.id} outing={o} index={i} />
+              <OutingCard
+                key={o.id}
+                outing={o}
+                index={i}
+                count={rsvpCounts[o.id] ?? 0}
+                going={myRsvps.has(o.id)}
+                canRsvp={!!userId}
+                onToggle={() => toggleRsvp(o.id)}
+              />
             ))}
           </div>
         )}
@@ -321,14 +329,12 @@ function ExplorePage() {
       {createOpen && (
         <CreateOutingModal
           onClose={() => setCreateOpen(false)}
-          onCreated={() => {
-            setCreateOpen(false);
-            load();
-          }}
+          onCreated={() => setCreateOpen(false)}
           defaultHostName={me?.name ?? null}
           defaultAvatar={me?.avatar ?? null}
         />
       )}
+
     </div>
   );
 }
