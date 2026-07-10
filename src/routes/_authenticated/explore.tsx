@@ -339,7 +339,22 @@ function ExplorePage() {
   );
 }
 
-function OutingCard({ outing, index }: { outing: Outing; index: number }) {
+function OutingCard({
+  outing,
+  index,
+  count,
+  going,
+  canRsvp,
+  onToggle,
+}: {
+  outing: Outing;
+  index: number;
+  count: number;
+  going: boolean;
+  canRsvp: boolean;
+  onToggle: () => void;
+}) {
+
   const date = new Date(outing.starts_at);
   const dateStr = date.toLocaleDateString(undefined, {
     weekday: "short",
