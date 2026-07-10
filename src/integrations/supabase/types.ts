@@ -119,6 +119,35 @@ export type Database = {
         }
         Relationships: []
       }
+      rsvps: {
+        Row: {
+          created_at: string
+          id: string
+          outing_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          outing_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          outing_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "rsvps_outing_id_fkey"
+            columns: ["outing_id"]
+            isOneToOne: false
+            referencedRelation: "outings"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never

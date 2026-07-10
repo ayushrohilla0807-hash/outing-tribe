@@ -55,39 +55,129 @@ const CATEGORIES = [
 function ExplorePage() {
   const navigate = useNavigate();
   const [outings, setOutings] = useState<Outing[]>([]);
+  const [rsvpCounts, setRsvpCounts] = useState<Record<string, number>>({});
+  const [myRsvps, setMyRsvps] = useState<Set<string>>(new Set());
+  const [userId, setUserId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [category, setCategory] = useState("All");
   const [query, setQuery] = useState("");
   const [createOpen, setCreateOpen] = useState(false);
   const [me, setMe] = useState<{ name: string | null; avatar: string | null } | null>(null);
+  const [live, setLive] = useState(false);
 
-  const load = async () => {
-    setLoading(true);
-    const { data, error } = await supabase
-      .from("outings")
-      .select("*")
-      .order("starts_at", { ascending: true });
-    if (error) setError(error.message);
-    else setOutings(data as Outing[]);
+  const loadAll = async (uid: string | null) => {
+    const [outingsRes, rsvpsRes] = await Promise.all([
+      supabase.from("outings").select("*").order("starts_at", { ascending: true }),
+      supabase.from("rsvps").select("outing_id, user_id"),
+    ]);
+    if (outingsRes.error) setError(outingsRes.error.message);
+    else setOutings(outingsRes.data as Outing[]);
+    if (!rsvpsRes.error && rsvpsRes.data) {
+      const counts: Record<string, number> = {};
+      const mine = new Set<string>();
+      for (const r of rsvpsRes.data as { outing_id: string; user_id: string }[]) {
+        counts[r.outing_id] = (counts[r.outing_id] ?? 0) + 1;
+        if (uid && r.user_id === uid) mine.add(r.outing_id);
+      }
+      setRsvpCounts(counts);
+      setMyRsvps(mine);
+    }
     setLoading(false);
   };
 
   useEffect(() => {
-    load();
-    supabase.auth.getUser().then(async ({ data }) => {
-      if (!data.user) return;
-      const { data: p } = await supabase
-        .from("profiles")
-        .select("display_name, avatar_url")
-        .eq("id", data.user.id)
-        .maybeSingle();
-      setMe({
-        name: p?.display_name ?? data.user.email?.split("@")[0] ?? "You",
-        avatar: p?.avatar_url ?? null,
+    let uid: string | null = null;
+    (async () => {
+      const { data } = await supabase.auth.getUser();
+      uid = data.user?.id ?? null;
+      setUserId(uid);
+      if (data.user) {
+        const { data: p } = await supabase
+          .from("profiles")
+          .select("display_name, avatar_url")
+          .eq("id", data.user.id)
+          .maybeSingle();
+        setMe({
+          name: p?.display_name ?? data.user.email?.split("@")[0] ?? "You",
+          avatar: p?.avatar_url ?? null,
+        });
+      }
+      await loadAll(uid);
+    })();
+
+    const channel = supabase
+      .channel("explore-live")
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "outings" },
+        (payload) => {
+          setOutings((prev) => {
+            if (payload.eventType === "INSERT") {
+              const row = payload.new as Outing;
+              if (prev.some((o) => o.id === row.id)) return prev;
+              return [...prev, row].sort(
+                (a, b) => +new Date(a.starts_at) - +new Date(b.starts_at),
+              );
+            }
+            if (payload.eventType === "UPDATE") {
+              const row = payload.new as Outing;
+              return prev
+                .map((o) => (o.id === row.id ? row : o))
+                .sort((a, b) => +new Date(a.starts_at) - +new Date(b.starts_at));
+            }
+            if (payload.eventType === "DELETE") {
+              const row = payload.old as Partial<Outing>;
+              return prev.filter((o) => o.id !== row.id);
+            }
+            return prev;
+          });
+        },
+      )
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "rsvps" },
+        (payload) => {
+          const row = (payload.new ?? payload.old) as {
+            outing_id: string;
+            user_id: string;
+          };
+          if (!row?.outing_id) return;
+          const delta =
+            payload.eventType === "INSERT" ? 1 : payload.eventType === "DELETE" ? -1 : 0;
+          if (delta !== 0) {
+            setRsvpCounts((prev) => ({
+              ...prev,
+              [row.outing_id]: Math.max(0, (prev[row.outing_id] ?? 0) + delta),
+            }));
+          }
+          setMyRsvps((prev) => {
+            if (!uid || row.user_id !== uid) return prev;
+            const next = new Set(prev);
+            if (payload.eventType === "INSERT") next.add(row.outing_id);
+            if (payload.eventType === "DELETE") next.delete(row.outing_id);
+            return next;
+          });
+        },
+      )
+      .subscribe((status) => {
+        setLive(status === "SUBSCRIBED");
       });
-    });
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, []);
+
+  const toggleRsvp = async (outingId: string) => {
+    if (!userId) return;
+    const going = myRsvps.has(outingId);
+    if (going) {
+      await supabase.from("rsvps").delete().eq("outing_id", outingId).eq("user_id", userId);
+    } else {
+      await supabase.from("rsvps").insert({ outing_id: outingId, user_id: userId });
+    }
+  };
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -119,12 +209,29 @@ function ExplorePage() {
             <span className="font-display text-lg font-bold tracking-tight">Outsy</span>
           </Link>
           <div className="flex items-center gap-2">
+
+            <span
+              className={`hidden items-center gap-1.5 rounded-full border px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wide sm:inline-flex ${
+                live
+                  ? "border-emerald-400/30 bg-emerald-400/10 text-emerald-300"
+                  : "border-white/10 bg-white/5 text-muted-foreground"
+              }`}
+              aria-live="polite"
+            >
+              <span
+                className={`h-1.5 w-1.5 rounded-full ${
+                  live ? "bg-emerald-400 animate-pulse" : "bg-muted-foreground"
+                }`}
+              />
+              {live ? "Live" : "Offline"}
+            </span>
             <button
               onClick={() => setCreateOpen(true)}
               className="inline-flex items-center gap-1.5 rounded-full bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground shadow-glow transition-transform hover:-translate-y-0.5"
             >
               <Plus className="h-4 w-4" /> Create outing
             </button>
+
             <div className="hidden items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1.5 sm:flex">
               {me?.avatar ? (
                 <img src={me.avatar} alt="" className="h-6 w-6 rounded-full object-cover" />
@@ -205,7 +312,15 @@ function ExplorePage() {
         ) : (
           <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {filtered.map((o, i) => (
-              <OutingCard key={o.id} outing={o} index={i} />
+              <OutingCard
+                key={o.id}
+                outing={o}
+                index={i}
+                count={rsvpCounts[o.id] ?? 0}
+                going={myRsvps.has(o.id)}
+                canRsvp={!!userId}
+                onToggle={() => toggleRsvp(o.id)}
+              />
             ))}
           </div>
         )}
@@ -214,19 +329,32 @@ function ExplorePage() {
       {createOpen && (
         <CreateOutingModal
           onClose={() => setCreateOpen(false)}
-          onCreated={() => {
-            setCreateOpen(false);
-            load();
-          }}
+          onCreated={() => setCreateOpen(false)}
           defaultHostName={me?.name ?? null}
           defaultAvatar={me?.avatar ?? null}
         />
       )}
+
     </div>
   );
 }
 
-function OutingCard({ outing, index }: { outing: Outing; index: number }) {
+function OutingCard({
+  outing,
+  index,
+  count,
+  going,
+  canRsvp,
+  onToggle,
+}: {
+  outing: Outing;
+  index: number;
+  count: number;
+  going: boolean;
+  canRsvp: boolean;
+  onToggle: () => void;
+}) {
+
   const date = new Date(outing.starts_at);
   const dateStr = date.toLocaleDateString(undefined, {
     weekday: "short",
@@ -288,9 +416,28 @@ function OutingCard({ outing, index }: { outing: Outing; index: number }) {
               Hosted by {outing.host_name ?? "Outsy Host"}
             </span>
           </div>
-          <button className="rounded-full bg-white/10 px-3 py-1.5 text-xs font-semibold transition-colors hover:bg-white/20">
-            RSVP
-          </button>
+          <div className="flex items-center gap-3">
+            <motion.span
+              key={count}
+              initial={{ scale: 0.85, opacity: 0.6 }}
+              animate={{ scale: 1, opacity: 1 }}
+              className="text-xs font-semibold text-muted-foreground"
+            >
+              {count} going
+            </motion.span>
+            <button
+              onClick={onToggle}
+              disabled={!canRsvp}
+              className={`rounded-full px-3 py-1.5 text-xs font-semibold transition-colors disabled:opacity-50 ${
+                going
+                  ? "bg-primary text-primary-foreground shadow-glow"
+                  : "bg-white/10 hover:bg-white/20"
+              }`}
+            >
+              {going ? "Going ✓" : "RSVP"}
+            </button>
+          </div>
+
         </div>
       </div>
     </motion.article>
