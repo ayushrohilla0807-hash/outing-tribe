@@ -55,39 +55,129 @@ const CATEGORIES = [
 function ExplorePage() {
   const navigate = useNavigate();
   const [outings, setOutings] = useState<Outing[]>([]);
+  const [rsvpCounts, setRsvpCounts] = useState<Record<string, number>>({});
+  const [myRsvps, setMyRsvps] = useState<Set<string>>(new Set());
+  const [userId, setUserId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [category, setCategory] = useState("All");
   const [query, setQuery] = useState("");
   const [createOpen, setCreateOpen] = useState(false);
   const [me, setMe] = useState<{ name: string | null; avatar: string | null } | null>(null);
+  const [live, setLive] = useState(false);
 
-  const load = async () => {
-    setLoading(true);
-    const { data, error } = await supabase
-      .from("outings")
-      .select("*")
-      .order("starts_at", { ascending: true });
-    if (error) setError(error.message);
-    else setOutings(data as Outing[]);
+  const loadAll = async (uid: string | null) => {
+    const [outingsRes, rsvpsRes] = await Promise.all([
+      supabase.from("outings").select("*").order("starts_at", { ascending: true }),
+      supabase.from("rsvps").select("outing_id, user_id"),
+    ]);
+    if (outingsRes.error) setError(outingsRes.error.message);
+    else setOutings(outingsRes.data as Outing[]);
+    if (!rsvpsRes.error && rsvpsRes.data) {
+      const counts: Record<string, number> = {};
+      const mine = new Set<string>();
+      for (const r of rsvpsRes.data as { outing_id: string; user_id: string }[]) {
+        counts[r.outing_id] = (counts[r.outing_id] ?? 0) + 1;
+        if (uid && r.user_id === uid) mine.add(r.outing_id);
+      }
+      setRsvpCounts(counts);
+      setMyRsvps(mine);
+    }
     setLoading(false);
   };
 
   useEffect(() => {
-    load();
-    supabase.auth.getUser().then(async ({ data }) => {
-      if (!data.user) return;
-      const { data: p } = await supabase
-        .from("profiles")
-        .select("display_name, avatar_url")
-        .eq("id", data.user.id)
-        .maybeSingle();
-      setMe({
-        name: p?.display_name ?? data.user.email?.split("@")[0] ?? "You",
-        avatar: p?.avatar_url ?? null,
+    let uid: string | null = null;
+    (async () => {
+      const { data } = await supabase.auth.getUser();
+      uid = data.user?.id ?? null;
+      setUserId(uid);
+      if (data.user) {
+        const { data: p } = await supabase
+          .from("profiles")
+          .select("display_name, avatar_url")
+          .eq("id", data.user.id)
+          .maybeSingle();
+        setMe({
+          name: p?.display_name ?? data.user.email?.split("@")[0] ?? "You",
+          avatar: p?.avatar_url ?? null,
+        });
+      }
+      await loadAll(uid);
+    })();
+
+    const channel = supabase
+      .channel("explore-live")
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "outings" },
+        (payload) => {
+          setOutings((prev) => {
+            if (payload.eventType === "INSERT") {
+              const row = payload.new as Outing;
+              if (prev.some((o) => o.id === row.id)) return prev;
+              return [...prev, row].sort(
+                (a, b) => +new Date(a.starts_at) - +new Date(b.starts_at),
+              );
+            }
+            if (payload.eventType === "UPDATE") {
+              const row = payload.new as Outing;
+              return prev
+                .map((o) => (o.id === row.id ? row : o))
+                .sort((a, b) => +new Date(a.starts_at) - +new Date(b.starts_at));
+            }
+            if (payload.eventType === "DELETE") {
+              const row = payload.old as Partial<Outing>;
+              return prev.filter((o) => o.id !== row.id);
+            }
+            return prev;
+          });
+        },
+      )
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "rsvps" },
+        (payload) => {
+          const row = (payload.new ?? payload.old) as {
+            outing_id: string;
+            user_id: string;
+          };
+          if (!row?.outing_id) return;
+          const delta =
+            payload.eventType === "INSERT" ? 1 : payload.eventType === "DELETE" ? -1 : 0;
+          if (delta !== 0) {
+            setRsvpCounts((prev) => ({
+              ...prev,
+              [row.outing_id]: Math.max(0, (prev[row.outing_id] ?? 0) + delta),
+            }));
+          }
+          setMyRsvps((prev) => {
+            if (!uid || row.user_id !== uid) return prev;
+            const next = new Set(prev);
+            if (payload.eventType === "INSERT") next.add(row.outing_id);
+            if (payload.eventType === "DELETE") next.delete(row.outing_id);
+            return next;
+          });
+        },
+      )
+      .subscribe((status) => {
+        setLive(status === "SUBSCRIBED");
       });
-    });
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, []);
+
+  const toggleRsvp = async (outingId: string) => {
+    if (!userId) return;
+    const going = myRsvps.has(outingId);
+    if (going) {
+      await supabase.from("rsvps").delete().eq("outing_id", outingId).eq("user_id", userId);
+    } else {
+      await supabase.from("rsvps").insert({ outing_id: outingId, user_id: userId });
+    }
+  };
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
