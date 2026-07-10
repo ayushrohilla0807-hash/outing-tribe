@@ -209,7 +209,7 @@ function ExplorePage() {
             <span className="font-display text-lg font-bold tracking-tight">Outsy</span>
           </Link>
           <div className="flex items-center gap-2">
-          <div className="flex items-center gap-2">
+
             <span
               className={`hidden items-center gap-1.5 rounded-full border px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wide sm:inline-flex ${
                 live
