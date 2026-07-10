@@ -209,12 +209,29 @@ function ExplorePage() {
             <span className="font-display text-lg font-bold tracking-tight">Outsy</span>
           </Link>
           <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2">
+            <span
+              className={`hidden items-center gap-1.5 rounded-full border px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wide sm:inline-flex ${
+                live
+                  ? "border-emerald-400/30 bg-emerald-400/10 text-emerald-300"
+                  : "border-white/10 bg-white/5 text-muted-foreground"
+              }`}
+              aria-live="polite"
+            >
+              <span
+                className={`h-1.5 w-1.5 rounded-full ${
+                  live ? "bg-emerald-400 animate-pulse" : "bg-muted-foreground"
+                }`}
+              />
+              {live ? "Live" : "Offline"}
+            </span>
             <button
               onClick={() => setCreateOpen(true)}
               className="inline-flex items-center gap-1.5 rounded-full bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground shadow-glow transition-transform hover:-translate-y-0.5"
             >
               <Plus className="h-4 w-4" /> Create outing
             </button>
+
             <div className="hidden items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1.5 sm:flex">
               {me?.avatar ? (
                 <img src={me.avatar} alt="" className="h-6 w-6 rounded-full object-cover" />
