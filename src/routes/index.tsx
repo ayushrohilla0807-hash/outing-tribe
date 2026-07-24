@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useSession } from "@/hooks/use-session";
-
+import { useNavigate } from "@tanstack/react-router";
 import { motion } from "motion/react";
 import {
   ArrowRight,
@@ -195,13 +195,12 @@ function Hero() {
             cricket, trips — real plans with real people.
           </p>
           <div className="mt-8 flex flex-wrap items-center gap-3">
-            <a
-              href="#cta"
-              className="group inline-flex items-center gap-2 rounded-full bg-primary px-6 py-3 text-sm font-semibold text-primary-foreground shadow-glow transition-transform hover:-translate-y-0.5"
-            >
-              Get Started
-              <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
-            </a>
+          <Link to="/auth"
+                className="group inline-flex items-center gap-2 rounded-full bg-primary px-6 py-3 text-sm font-semibold text-primary-foreground shadow-glow transition-transform hover:-translate-y-0.5"
+              >
+                Get Started
+                <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
+              </Link>
             <a
               href="#how"
               className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/5 px-6 py-3 text-sm font-semibold transition-colors hover:bg-white/10"
@@ -681,6 +680,7 @@ function CTA() {
   const [email, setEmail] = useState("");
   const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
   const [errorMsg, setErrorMsg] = useState("");
+  const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -712,6 +712,7 @@ function CTA() {
 
 
   return (
+    
     <section id="cta" className="relative mx-auto max-w-7xl px-6 py-24">
       <motion.div
         initial="hidden"
@@ -762,32 +763,24 @@ function CTA() {
             <form
               onSubmit={handleSubmit}
               noValidate
-              className="mx-auto mt-8 flex max-w-md flex-col items-stretch gap-2 sm:flex-row"
+              className="mt-8 flex justify-center"
             >
               <label htmlFor="cta-email" className="sr-only">
                 Email address
               </label>
-              <input
-                id="cta-email"
-                type="email"
-                required
-                value={email}
-                onChange={(e) => {
-                  setEmail(e.target.value);
-                  if (status === "error") setStatus("idle");
-                }}
-                placeholder="you@example.com"
-                aria-invalid={status === "error"}
-                disabled={status === "loading"}
-                className="flex-1 rounded-full border border-white/20 bg-white/15 px-5 py-3 text-sm text-white placeholder:text-white/70 backdrop-blur focus:outline-none focus:ring-2 focus:ring-white/40 disabled:opacity-60"
-              />
+              
               <button
-                type="submit"
-                disabled={status === "loading"}
-                className="inline-flex items-center justify-center gap-2 rounded-full bg-white px-6 py-3 text-sm font-semibold text-primary shadow-card transition-transform hover:-translate-y-0.5 disabled:opacity-70"
-              >
-                {status === "loading" ? "Joining..." : (<>Join Outsy <ArrowRight className="h-4 w-4" /></>)}
-              </button>
+                    type="button"
+                    onClick={() =>
+                      navigate({
+                        to: "/auth",
+                      })
+                    }
+                    className="inline-flex items-center justify-center gap-5 rounded-full bg-white px-6 py-3 text-sm font-semibold text-primary shadow-card transition-transform hover:-translate-y-0.5"
+                  >
+                    Join Outsy
+                    <ArrowRight className="h-5 w-5" />
+                  </button>
             </form>
             {status === "error" ? (
               <p role="alert" className="mt-3 text-xs font-medium text-white">
@@ -800,6 +793,7 @@ function CTA() {
         )}
       </motion.div>
     </section>
+    
   );
 }
 

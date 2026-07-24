@@ -12,141 +12,74 @@ export type Database = {
   __InternalSupabase: {
     PostgrestVersion: "14.5"
   }
+  graphql_public: {
+    Tables: {
+      [_ in never]: never
+    }
+    Views: {
+      [_ in never]: never
+    }
+    Functions: {
+      graphql: {
+        Args: {
+          extensions?: Json
+          operationName?: string
+          query?: string
+          variables?: Json
+        }
+        Returns: Json
+      }
+    }
+    Enums: {
+      [_ in never]: never
+    }
+    CompositeTypes: {
+      [_ in never]: never
+    }
+  }
   public: {
     Tables: {
-      leads: {
-        Row: {
-          created_at: string
-          email: string
-          id: string
-          source: string | null
-          user_agent: string | null
-        }
-        Insert: {
-          created_at?: string
-          email: string
-          id?: string
-          source?: string | null
-          user_agent?: string | null
-        }
-        Update: {
-          created_at?: string
-          email?: string
-          id?: string
-          source?: string | null
-          user_agent?: string | null
-        }
-        Relationships: []
-      }
-      outings: {
-        Row: {
-          capacity: number
-          category: string
-          city: string | null
-          created_at: string
-          description: string | null
-          host_avatar_url: string | null
-          host_id: string | null
-          host_name: string | null
-          id: string
-          image_url: string | null
-          location: string
-          starts_at: string
-          title: string
-          updated_at: string
-        }
-        Insert: {
-          capacity?: number
-          category: string
-          city?: string | null
-          created_at?: string
-          description?: string | null
-          host_avatar_url?: string | null
-          host_id?: string | null
-          host_name?: string | null
-          id?: string
-          image_url?: string | null
-          location: string
-          starts_at: string
-          title: string
-          updated_at?: string
-        }
-        Update: {
-          capacity?: number
-          category?: string
-          city?: string | null
-          created_at?: string
-          description?: string | null
-          host_avatar_url?: string | null
-          host_id?: string | null
-          host_name?: string | null
-          id?: string
-          image_url?: string | null
-          location?: string
-          starts_at?: string
-          title?: string
-          updated_at?: string
-        }
-        Relationships: []
-      }
       profiles: {
         Row: {
           avatar_url: string | null
           bio: string | null
           city: string | null
+          college: string | null
           created_at: string
-          display_name: string | null
+          date_of_birth: string | null
+          full_name: string | null
+          gender: string | null
           id: string
           updated_at: string
+          username: string | null
         }
         Insert: {
           avatar_url?: string | null
           bio?: string | null
           city?: string | null
+          college?: string | null
           created_at?: string
-          display_name?: string | null
+          date_of_birth?: string | null
+          full_name?: string | null
+          gender?: string | null
           id: string
           updated_at?: string
+          username?: string | null
         }
         Update: {
           avatar_url?: string | null
           bio?: string | null
           city?: string | null
+          college?: string | null
           created_at?: string
-          display_name?: string | null
+          date_of_birth?: string | null
+          full_name?: string | null
+          gender?: string | null
           id?: string
           updated_at?: string
+          username?: string | null
         }
         Relationships: []
-      }
-      rsvps: {
-        Row: {
-          created_at: string
-          id: string
-          outing_id: string
-          user_id: string
-        }
-        Insert: {
-          created_at?: string
-          id?: string
-          outing_id: string
-          user_id: string
-        }
-        Update: {
-          created_at?: string
-          id?: string
-          outing_id?: string
-          user_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "rsvps_outing_id_fkey"
-            columns: ["outing_id"]
-            isOneToOne: false
-            referencedRelation: "outings"
-            referencedColumns: ["id"]
-          },
-        ]
       }
     }
     Views: {
@@ -282,6 +215,9 @@ export type CompositeTypes<
     : never
 
 export const Constants = {
+  graphql_public: {
+    Enums: {},
+  },
   public: {
     Enums: {},
   },
