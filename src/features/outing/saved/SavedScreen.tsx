@@ -6,15 +6,11 @@ export default function SavedScreen() {
 
   return (
     <main className="mx-auto max-w-xl px-5 py-6 pb-28">
-      <h1 className="mb-6 text-3xl font-bold">
-        ❤️ Saved Outings
-      </h1>
+      <h1 className="mb-6 text-3xl font-bold">❤️ Saved Outings</h1>
 
       {savedOutings.length === 0 ? (
         <div className="rounded-2xl border border-dashed p-10 text-center">
-          <p className="text-lg font-semibold">
-            No Saved Outings
-          </p>
+          <p className="text-lg font-semibold">No Saved Outings</p>
 
           <p className="mt-2 text-muted-foreground">
             Save your favourite outings and they'll appear here.
@@ -23,10 +19,7 @@ export default function SavedScreen() {
       ) : (
         <div className="space-y-6">
           {savedOutings.map((outing) => (
-            <SavedOutingCard
-              key={outing.id}
-              outing={outing}
-            />
+            <SavedOutingCard key={outing.id} outing={outing} />
           ))}
         </div>
       )}

@@ -1,38 +1,31 @@
-import type { Message } from "../models/chat";
+import type { Message } from "../models/message";
 
 type Props = {
   message: Message;
 };
 
-export default function MessageBubble({
-  message,
-}: Props) {
+export default function MessageBubble({ message }: Props) {
   return (
-    <div
-      className={`flex ${
-        message.isMine
-          ? "justify-end"
-          : "justify-start"
-      }`}
-    >
+    <div className={`mb-4 flex ${message.isMine ? "justify-end" : "justify-start"}`}>
       <div
-        className={`max-w-[75%] rounded-2xl px-4 py-3 ${
+        className={`max-w-[75%] rounded-2xl px-4 py-3 shadow-sm ${
           message.isMine
-            ? "bg-primary text-primary-foreground"
-            : "bg-accent"
+            ? "rounded-br-md bg-primary text-primary-foreground"
+            : "rounded-bl-md border bg-card"
         }`}
       >
-        {!message.isMine && (
-          <p className="mb-1 text-xs font-semibold">
-            {message.senderName}
-          </p>
-        )}
+        <p className="break-words text-sm leading-6">{message.message}</p>
 
-        <p>{message.text}</p>
-
-        <p className="mt-2 text-right text-[10px] opacity-70">
-          {message.sentAt}
-        </p>
+        <div
+          className={`mt-2 text-right text-[11px] ${
+            message.isMine ? "text-primary-foreground/70" : "text-muted-foreground"
+          }`}
+        >
+          {new Date(message.createdAt).toLocaleTimeString([], {
+            hour: "2-digit",
+            minute: "2-digit",
+          })}
+        </div>
       </div>
     </div>
   );

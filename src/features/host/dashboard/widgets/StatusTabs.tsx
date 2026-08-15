@@ -23,10 +23,7 @@ const tabs: {
   },
 ];
 
-export default function StatusTabs({
-  selected,
-  onChange,
-}: StatusTabsProps) {
+export default function StatusTabs({ selected, onChange }: StatusTabsProps) {
   return (
     <div className="mb-6 flex gap-3 overflow-x-auto">
       {tabs.map((tab) => {

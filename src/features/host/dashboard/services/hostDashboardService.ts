@@ -1,79 +1,84 @@
+import { supabase } from "@/integrations/supabase/client";
 import type { HostedOuting } from "../models/hostedOuting";
 
-const outings: HostedOuting[] = [
-  {
-    id: "1",
-    title: "Weekend Trek",
-    category: "Adventure",
-    image:
-      "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=1200",
+export async function getHostedOutings(): Promise<HostedOuting[]> {
+  const {
+    data: { user },
+    error: authError,
+  } = await supabase.auth.getUser();
 
-    location: "Delhi Ridge",
+  if (authError) throw authError;
+  if (!user) return [];
 
-    date: "26 July 2026",
-    time: "8:00 AM",
+  const { data, error } = await supabase
+    .from("outings")
+    .select(
+      `
+      *,
+      participants (
+        id,
+        status
+      )
+    `,
+    )
+    .eq("host_id", user.id)
+    .order("created_at", {
+      ascending: false,
+    });
 
-    joined: 18,
-    capacity: 25,
+  if (error) throw error;
 
-    status: "upcoming",
-  },
+  return (
+    data?.map((item: any) => {
+      const participants = (item.participants as any[]) || [];
+      const joinedCount = participants.filter((p) => p.status === "joined").length;
+      const pendingCount = participants.filter((p) => p.status === "pending").length;
 
-  {
-    id: "2",
-    title: "Cafe Hopping",
-    category: "Food",
-    image:
-      "https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?w=1200",
+      return {
+        id: item.id,
+        title: item.title,
+        category: item.category,
+        image: item.cover_image ?? "",
+        location: item.location,
+        date: item.outing_date,
+        time: item.start_time,
+        joined: joinedCount,
+        pending: pendingCount,
+        capacity: item.max_participants,
+        status: item.status,
+      };
+    }) ?? []
+  );
+}
 
-    location: "Connaught Place",
+export async function markCompleted(id: string, hostId: string) {
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
 
-    date: "28 July 2026",
-    time: "5:00 PM",
+  if (!user || user.id !== hostId) throw new Error("Unauthorized");
 
-    joined: 12,
-    capacity: 15,
+  const { error } = await supabase
+    .from("outings")
+    .update({ status: "completed" })
+    .eq("id", id)
+    .eq("host_id", user.id);
 
-    status: "upcoming",
-  },
+  if (error) throw error;
+}
 
-  {
-    id: "3",
-    title: "Morning Cycling",
-    category: "Fitness",
-    image:
-      "https://images.unsplash.com/photo-1507035895480-2b3156c31fc8?w=1200",
+export async function cancelOuting(id: string, hostId: string) {
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
 
-    location: "India Gate",
+  if (!user || user.id !== hostId) throw new Error("Unauthorized");
 
-    date: "18 July 2026",
-    time: "6:30 AM",
+  const { error } = await supabase
+    .from("outings")
+    .update({ status: "cancelled" })
+    .eq("id", id)
+    .eq("host_id", user.id);
 
-    joined: 20,
-    capacity: 20,
-
-    status: "completed",
-  },
-
-  {
-    id: "4",
-    title: "Movie Night",
-    category: "Entertainment",
-    image:
-      "https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?w=1200",
-
-    location: "Select City Walk",
-
-    date: "15 July 2026",
-    time: "7:30 PM",
-
-    joined: 9,
-    capacity: 15,
-
-    status: "cancelled",
-  },
-];
-
-export function getHostedOutings() {
-    return outings;
-  }
+  if (error) throw error;
+}

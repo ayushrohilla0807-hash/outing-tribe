@@ -41,7 +41,6 @@ import {
   MockExplore,
 } from "@/components/landing/mockups";
 
-
 export const Route = createFileRoute("/")({
   component: Landing,
 });
@@ -81,9 +80,7 @@ function Section({
               <Sparkle className="h-3 w-3 text-primary" /> {eyebrow}
             </span>
           )}
-          {title && (
-            <h2 className="mt-4 text-4xl font-bold tracking-tight sm:text-5xl">{title}</h2>
-          )}
+          {title && <h2 className="mt-4 text-4xl font-bold tracking-tight sm:text-5xl">{title}</h2>}
           {subtitle && <p className="mt-4 text-lg text-muted-foreground">{subtitle}</p>}
         </motion.div>
       )}
@@ -130,21 +127,22 @@ function Nav() {
           >
             {theme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
           </button>
-          {!loading && (user ? (
-            <Link
-              to="/explore"
-              className="hidden rounded-full bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground shadow-glow transition-transform hover:-translate-y-0.5 sm:inline-block"
-            >
-              Explore outings
-            </Link>
-          ) : (
-            <Link
-              to="/auth"
-              className="hidden rounded-full bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground shadow-glow transition-transform hover:-translate-y-0.5 sm:inline-block"
-            >
-              Sign in
-            </Link>
-          ))}
+          {!loading &&
+            (user ? (
+              <Link
+                to="/explore"
+                className="hidden rounded-full bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground shadow-glow transition-transform hover:-translate-y-0.5 sm:inline-block"
+              >
+                Explore outings
+              </Link>
+            ) : (
+              <Link
+                to="/auth"
+                className="hidden rounded-full bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground shadow-glow transition-transform hover:-translate-y-0.5 sm:inline-block"
+              >
+                Sign in
+              </Link>
+            ))}
           <button
             onClick={() => setOpen((v) => !v)}
             className="grid h-9 w-9 place-items-center rounded-full border border-white/10 md:hidden"
@@ -195,12 +193,13 @@ function Hero() {
             cricket, trips — real plans with real people.
           </p>
           <div className="mt-8 flex flex-wrap items-center gap-3">
-          <Link to="/auth"
-                className="group inline-flex items-center gap-2 rounded-full bg-primary px-6 py-3 text-sm font-semibold text-primary-foreground shadow-glow transition-transform hover:-translate-y-0.5"
-              >
-                Get Started
-                <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
-              </Link>
+            <Link
+              to="/auth"
+              className="group inline-flex items-center gap-2 rounded-full bg-primary px-6 py-3 text-sm font-semibold text-primary-foreground shadow-glow transition-transform hover:-translate-y-0.5"
+            >
+              Get Started
+              <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
+            </Link>
             <a
               href="#how"
               className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/5 px-6 py-3 text-sm font-semibold transition-colors hover:bg-white/10"
@@ -290,7 +289,11 @@ function Problem() {
     { icon: Users, title: "Friends are busy", body: "Everyone's schedules never seem to line up." },
     { icon: Heart, title: "Going alone feels off", body: "Some plans just need company to enjoy." },
     { icon: X, title: "Plans get cancelled", body: "Last-minute drops leave you stuck at home." },
-    { icon: MapPin, title: "New in the city", body: "Hard to meet people who share your interests." },
+    {
+      icon: MapPin,
+      title: "New in the city",
+      body: "Hard to meet people who share your interests.",
+    },
   ];
   return (
     <Section
@@ -379,9 +382,7 @@ function HowItWorks() {
                 <div className="grid h-11 w-11 place-items-center rounded-2xl bg-white/10 text-white">
                   <s.icon className="h-5 w-5" />
                 </div>
-                <span className="font-display text-4xl font-bold text-white/10">
-                  0{i + 1}
-                </span>
+                <span className="font-display text-4xl font-bold text-white/10">0{i + 1}</span>
               </div>
               <h3 className="mt-4 text-lg font-semibold">{s.title}</h3>
               <p className="mt-1 text-sm text-muted-foreground">{s.body}</p>
@@ -396,7 +397,11 @@ function HowItWorks() {
 function Features() {
   const features = [
     { icon: Sparkles, title: "Create outings", body: "One tap to publish. Sensible defaults." },
-    { icon: Compass, title: "Discover nearby", body: "Map + feed with what's happening around you." },
+    {
+      icon: Compass,
+      title: "Discover nearby",
+      body: "Map + feed with what's happening around you.",
+    },
     { icon: Heart, title: "Interest-based matches", body: "See outings that actually fit you." },
     { icon: Users, title: "Join requests", body: "Approve who joins with a single swipe." },
     { icon: MessageCircle, title: "In-app chat", body: "Group threads scoped to the outing." },
@@ -540,9 +545,7 @@ function Compare() {
         {rows.map((r, i) => (
           <div
             key={r.label}
-            className={`grid grid-cols-3 items-center text-sm ${
-              i % 2 ? "bg-white/[0.02]" : ""
-            }`}
+            className={`grid grid-cols-3 items-center text-sm ${i % 2 ? "bg-white/[0.02]" : ""}`}
           >
             <div className="p-4 text-muted-foreground">{r.label}</div>
             <div className="flex items-center gap-2 p-4">
@@ -579,16 +582,12 @@ function Testimonials() {
     {
       name: "Ananya P.",
       role: "Solo traveler",
-      quote:
-        "I'm new to Mumbai. Outsy became my way of making actual friends, not just followers.",
+      quote: "I'm new to Mumbai. Outsy became my way of making actual friends, not just followers.",
       emoji: "✈️",
     },
   ];
   return (
-    <Section
-      eyebrow="Loved by early users"
-      title="Real people. Real plans. Real happy."
-    >
+    <Section eyebrow="Loved by early users" title="Real people. Real plans. Real happy.">
       <div className="grid grid-cols-1 gap-5 lg:grid-cols-3">
         {quotes.map((q, i) => (
           <motion.div
@@ -632,7 +631,10 @@ function FAQ() {
       q: "Is it safe?",
       a: "Every outing defaults to public places, profiles are verified, and you can report or block anyone instantly. Phone verification is coming soon.",
     },
-    { q: "Is it free?", a: "Yes. Creating and joining outings is free. Premium features will be optional." },
+    {
+      q: "Is it free?",
+      a: "Yes. Creating and joining outings is free. Premium features will be optional.",
+    },
     {
       q: "How do I join an outing?",
       a: "Tap join on any outing. The host reviews your profile and accepts. You'll get a private chat with everyone attending.",
@@ -710,9 +712,7 @@ function CTA() {
     }
   };
 
-
   return (
-    
     <section id="cta" className="relative mx-auto max-w-7xl px-6 py-24">
       <motion.div
         initial="hidden"
@@ -760,27 +760,23 @@ function CTA() {
           </motion.div>
         ) : (
           <>
-            <form
-              onSubmit={handleSubmit}
-              noValidate
-              className="mt-8 flex justify-center"
-            >
+            <form onSubmit={handleSubmit} noValidate className="mt-8 flex justify-center">
               <label htmlFor="cta-email" className="sr-only">
                 Email address
               </label>
-              
+
               <button
-                    type="button"
-                    onClick={() =>
-                      navigate({
-                        to: "/auth",
-                      })
-                    }
-                    className="inline-flex items-center justify-center gap-5 rounded-full bg-white px-6 py-3 text-sm font-semibold text-primary shadow-card transition-transform hover:-translate-y-0.5"
-                  >
-                    Join Outsy
-                    <ArrowRight className="h-5 w-5" />
-                  </button>
+                type="button"
+                onClick={() =>
+                  navigate({
+                    to: "/auth",
+                  })
+                }
+                className="inline-flex items-center justify-center gap-5 rounded-full bg-white px-6 py-3 text-sm font-semibold text-primary shadow-card transition-transform hover:-translate-y-0.5"
+              >
+                Join Outsy
+                <ArrowRight className="h-5 w-5" />
+              </button>
             </form>
             {status === "error" ? (
               <p role="alert" className="mt-3 text-xs font-medium text-white">
@@ -793,10 +789,8 @@ function CTA() {
         )}
       </motion.div>
     </section>
-    
   );
 }
-
 
 function Footer() {
   const cols = [

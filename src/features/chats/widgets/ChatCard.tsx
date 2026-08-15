@@ -1,54 +1,53 @@
-import { Users } from "lucide-react";
-import type { Chat } from "../models/chat";
+import { Users, MessageSquare } from "lucide-react";
+import type { Chat } from "../models/message";
 
 type Props = {
   chat: Chat;
   onClick?: () => void;
 };
 
-export default function ChatCard({
-  chat,
-  onClick,
-}: Props) {
+export default function ChatCard({ chat, onClick }: Props) {
   return (
     <button
       onClick={onClick}
-      className="w-full rounded-2xl border bg-card p-4 text-left transition hover:bg-accent"
+      className="w-full rounded-2xl border border-white/10 bg-card p-4 text-left transition-all hover:border-primary/40 hover:bg-surface-elevated hover:shadow-md cursor-pointer"
     >
       <div className="flex items-start gap-4">
-        <img
-          src={chat.outingImage}
-          alt={chat.outingName}
-          className="h-16 w-16 rounded-xl object-cover"
-        />
+        <div className="relative">
+          <img
+            src={
+              chat.otherUserAvatar ||
+              chat.outingImage ||
+              "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100&auto=format&fit=crop&q=80"
+            }
+            alt={chat.otherUserName || chat.outingName}
+            className="h-14 w-14 rounded-2xl object-cover border border-white/10"
+          />
+          {chat.otherUserAvatar && chat.outingImage && (
+            <img
+              src={chat.outingImage}
+              alt=""
+              className="absolute -bottom-1 -right-1 h-6 w-6 rounded-md object-cover border border-background shadow"
+            />
+          )}
+        </div>
 
         <div className="min-w-0 flex-1">
-          <div className="flex items-center justify-between">
-            <h3 className="truncate text-lg font-semibold">
-              {chat.outingName}
+          <div className="flex items-center justify-between gap-2">
+            <h3 className="truncate text-base font-semibold text-foreground">
+              {chat.otherUserName ? `${chat.otherUserName}` : chat.outingName}
             </h3>
 
-            <span className="text-xs text-muted-foreground">
-              {chat.lastMessageTime}
-            </span>
-          </div>
-
-          <p className="mt-1 truncate text-sm text-muted-foreground">
-            {chat.lastMessage}
-          </p>
-
-          <div className="mt-3 flex items-center justify-between">
-            <div className="flex items-center gap-1 text-xs text-muted-foreground">
-              <Users className="h-4 w-4" />
-              {chat.participants} participants
-            </div>
-
-            {chat.unreadCount > 0 && (
-              <div className="flex h-6 min-w-6 items-center justify-center rounded-full bg-primary px-2 text-xs font-semibold text-primary-foreground">
-                {chat.unreadCount}
-              </div>
+            {chat.lastMessageTime && (
+              <span className="shrink-0 text-xs text-muted-foreground">{chat.lastMessageTime}</span>
             )}
           </div>
+
+          <p className="text-xs text-primary font-medium truncate mt-0.5">{chat.outingName}</p>
+
+          <p className="mt-1 truncate text-sm text-muted-foreground">
+            {chat.lastMessage || "Start chatting..."}
+          </p>
         </div>
       </div>
     </button>

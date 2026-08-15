@@ -1,122 +1,102 @@
-import JoinButton from "@/features/outing/join/widgets/JoinButton";
-import SaveButton from "@/features/outing/saved/widgets/SaveButton";
+import { useState } from "react";
+import { useNavigate } from "@tanstack/react-router";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
+
+import Card from "@/components/cards/OutingCard";
+
 import { useSaved } from "@/features/outing/saved/context/SavedContext";
 
 import {
-  Calendar,
-  MapPin,
-  Star,
-  Users,
-} from "lucide-react";
+  getJoinStatus,
+  joinOuting,
+  type JoinStatus,
+} from "@/features/outing/join/services/participantService";
 
 import type { ExploreOuting } from "../models/outing";
 
 type Props = {
-  outing: ExploreOuting & {
-    onJoin?: () => void;
-    onCancel?: () => void;
-  };
+  outing: ExploreOuting;
 };
 
-export default function OutingCard({
-  outing,
-}: Props) {
+export default function OutingCard({ outing }: Props) {
+  const navigate = useNavigate();
+  const queryClient = useQueryClient();
+
   const { isSaved, toggleSaved } = useSaved();
+  const [loading, setLoading] = useState(false);
+
+  const { data: status = "none", isLoading: statusLoading } = useQuery<JoinStatus>({
+    queryKey: ["join-status", outing.id],
+    queryFn: () => getJoinStatus(outing.id),
+    staleTime: 1000 * 30, // 30 seconds
+  });
+
+  async function handleJoin() {
+    if (loading || status !== "none") return;
+
+    try {
+      setLoading(true);
+      await joinOuting(outing.id);
+      toast.success(`Join request sent for "${outing.title}"!`);
+
+      // Invalidate specifically this outing's join status
+      await queryClient.invalidateQueries({
+        queryKey: ["join-status", outing.id],
+      });
+
+      // Keep Explore & Recommended lists in sync
+      await queryClient.invalidateQueries({
+        queryKey: ["explore-outings"],
+      });
+    } catch (err: any) {
+      console.error(err);
+      toast.error(err.message || "Failed to send join request");
+    } finally {
+      setLoading(false);
+    }
+  }
 
   return (
-    <div className="overflow-hidden rounded-3xl border bg-card shadow-sm">
-
-      <div className="relative">
-        <img
-          src={outing.image}
-          alt={outing.title}
-          className="h-52 w-full object-cover"
-        />
-
-        <SaveButton
-          saved={isSaved(outing.id)}
-          onClick={() =>
-            toggleSaved({
-              id: outing.id,
-              title: outing.title,
-              image: outing.image,
-              category: outing.category,
-              location: outing.location,
-              date: outing.date,
-              host: outing.host,
-              rating: outing.rating,
-              joined: outing.participants,
-              capacity: outing.participants,
-            })
-          }
-        />
-      </div>
-
-      <div className="space-y-3 p-5">
-
-        <div className="flex items-center justify-between">
-
-          <span className="rounded-full bg-primary/10 px-3 py-1 text-xs font-medium text-primary">
-            {outing.category}
-          </span>
-
-          <div className="flex items-center gap-1">
-
-            <Star
-              size={16}
-              className="fill-yellow-400 text-yellow-400"
-            />
-
-            <span className="text-sm font-medium">
-              {outing.rating}
-            </span>
-
-          </div>
-
-        </div>
-
-        <h2 className="text-xl font-bold">
-          {outing.title}
-        </h2>
-
-        <div className="space-y-2 text-sm text-muted-foreground">
-
-          <div className="flex items-center gap-2">
-            <MapPin size={16} />
-            {outing.location}
-          </div>
-
-          <div className="flex items-center gap-2">
-            <Calendar size={16} />
-            {outing.date}
-          </div>
-
-          <div className="flex items-center gap-2">
-            <Users size={16} />
-            Needs {outing.participants} people
-          </div>
-
-        </div>
-
-        <div className="flex items-center justify-between pt-2">
-
-          <span className="font-medium">
-            Hosted by {outing.host}
-          </span>
-
-          <JoinButton
-            status={outing.joinStatus ?? "not_joined"}
-            onJoin={() => outing.onJoin?.()}
-            onCancel={() => outing.onCancel?.()}
-            onOpenChat={() => {
-              window.location.href = `/chats/${outing.id}`;
-            }}
-          />
-
-        </div>
-
-      </div>
-
-    </div>
+    <Card
+      id={outing.id}
+      image={outing.image}
+      title={outing.title}
+      category={outing.category}
+      location={outing.location}
+      date={outing.date}
+      host={outing.host}
+      hostAvatar={outing.avatar}
+      rating={outing.rating}
+      joinedCount={outing.participants}
+      capacity={outing.maxParticipants}
+      status={status}
+      loading={loading || statusLoading}
+      saved={isSaved(outing.id)}
+      onCardClick={() =>
+        navigate({
+          to: "/outing/$id",
+          params: {
+            id: outing.id,
+          },
+        })
+      }
+      onSave={() =>
+        toggleSaved({
+          id: outing.id,
+          title: outing.title,
+          image: outing.image,
+          category: outing.category,
+          location: outing.location,
+          date: outing.date,
+          host: outing.host,
+          hostAvatar: outing.avatar,
+          rating: outing.rating,
+          joined: outing.participants,
+          capacity: outing.maxParticipants,
+        })
+      }
+      onJoin={handleJoin}
+    />
   );
 }

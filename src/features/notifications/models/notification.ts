@@ -1,8 +1,4 @@
-export type NotificationType =
-  | "join_request"
-  | "accepted"
-  | "reminder"
-  | "message";
+export type NotificationType = "join_request" | "accepted" | "reminder" | "message";
 
 export interface Notification {
   id: string;

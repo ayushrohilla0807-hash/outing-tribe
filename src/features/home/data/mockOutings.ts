@@ -6,11 +6,9 @@ export const mockOutings: Outing[] = [
 
     title: "Cafe Hopping",
 
-    description:
-      "Explore hidden cafés and meet fellow coffee lovers.",
+    description: "Explore hidden cafés and meet fellow coffee lovers.",
 
-    coverImage:
-      "https://images.unsplash.com/photo-1495474472287-4d71bcdd2085",
+    coverImage: "https://images.unsplash.com/photo-1495474472287-4d71bcdd2085",
 
     location: "Connaught Place",
 
@@ -31,8 +29,7 @@ export const mockOutings: Outing[] = [
 
       name: "Sanya Sharma",
 
-      avatar:
-        "https://i.pravatar.cc/150?img=5",
+      avatar: "https://i.pravatar.cc/150?img=5",
 
       rating: 4.9,
 

@@ -2,11 +2,7 @@ import type { ButtonHTMLAttributes } from "react";
 
 type Props = ButtonHTMLAttributes<HTMLButtonElement>;
 
-export default function PrimaryButton({
-  children,
-  className = "",
-  ...props
-}: Props) {
+export default function PrimaryButton({ children, className = "", ...props }: Props) {
   return (
     <button
       {...props}

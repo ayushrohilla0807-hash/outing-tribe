@@ -17,9 +17,7 @@ export function PhoneMockup({
           {children}
         </div>
       </div>
-      {label ? (
-        <p className="mt-4 text-center text-sm text-muted-foreground">{label}</p>
-      ) : null}
+      {label ? <p className="mt-4 text-center text-sm text-muted-foreground">{label}</p> : null}
     </div>
   );
 }

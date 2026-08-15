@@ -4,30 +4,14 @@ type Props = {
   status: JoinStatus;
 };
 
-export default function RequestStatus({
-  status,
-}: Props) {
+export default function RequestStatus({ status }: Props) {
   if (status === "pending") {
-    return (
-      <p className="mt-3 text-sm text-yellow-500">
-        ⏳ Waiting for host approval
-      </p>
-    );
+    return <p className="mt-3 text-sm text-yellow-500 font-medium">⏳ Waiting for host approval</p>;
   }
 
-  if (status === "accepted") {
+  if (status === "joined") {
     return (
-      <p className="mt-3 text-sm text-green-500">
-        ✅ You're part of this outing
-      </p>
-    );
-  }
-
-  if (status === "rejected") {
-    return (
-      <p className="mt-3 text-sm text-red-500">
-        ❌ Your request was rejected
-      </p>
+      <p className="mt-3 text-sm text-emerald-500 font-medium">✅ You're joined in this outing</p>
     );
   }
 

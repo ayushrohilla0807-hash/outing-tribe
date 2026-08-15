@@ -1,77 +1,235 @@
-import { useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Route } from "@/routes/_authenticated/participants/$outingId";
+import { useNavigate, Link } from "@tanstack/react-router";
+import { ArrowLeft, Users, ShieldAlert, Loader2 } from "lucide-react";
+import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
 
 import ParticipantCard from "./widgets/ParticipantCard";
 import SectionHeader from "./widgets/SectionHeader";
 
-import { getParticipants } from "./services/participantService";
+import {
+  acceptParticipant,
+  getParticipants,
+  rejectParticipant,
+  removeParticipant,
+} from "./services/participantService";
+
+import type { Participant } from "./models/participant";
 
 export default function ParticipantsScreen() {
   const { outingId } = Route.useParams();
+  const navigate = useNavigate();
 
-  const participants = getParticipants(outingId);
+  const [outingTitle, setOutingTitle] = useState("");
+  const [maxParticipants, setMaxParticipants] = useState<number>(0);
+  const [isHost, setIsHost] = useState<boolean | null>(null);
+  const [participants, setParticipants] = useState<Participant[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [actionLoadingId, setActionLoadingId] = useState<string | null>(null);
+
+  async function loadData() {
+    try {
+      setLoading(true);
+
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      if (!user) {
+        navigate({ to: "/auth", replace: true });
+        return;
+      }
+
+      const { data: outing, error: outingError } = await supabase
+        .from("outings")
+        .select("id, host_id, title, max_participants")
+        .eq("id", outingId)
+        .single();
+
+      if (outingError || !outing) {
+        toast.error("Outing not found");
+        navigate({ to: "/host-dashboard" });
+        return;
+      }
+
+      if (outing.host_id !== user.id) {
+        setIsHost(false);
+        setLoading(false);
+        return;
+      }
+
+      setIsHost(true);
+      setOutingTitle(outing.title);
+      setMaxParticipants(outing.max_participants);
+
+      const data = await getParticipants(outingId);
+      setParticipants(data);
+    } catch (error) {
+      console.error(error);
+      toast.error("Failed to load participants");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  useEffect(() => {
+    loadData();
+  }, [outingId]);
+
+  async function handleAccept(id: string) {
+    try {
+      setActionLoadingId(id);
+      await acceptParticipant(id, outingId);
+      toast.success("Participant accepted!");
+      const data = await getParticipants(outingId);
+      setParticipants(data);
+    } catch (error: any) {
+      console.error(error);
+      toast.error(error.message || "Failed to accept participant");
+    } finally {
+      setActionLoadingId(null);
+    }
+  }
+
+  async function handleReject(id: string) {
+    try {
+      setActionLoadingId(id);
+      await rejectParticipant(id, outingId);
+      toast.success("Participant request rejected");
+      const data = await getParticipants(outingId);
+      setParticipants(data);
+    } catch (error: any) {
+      console.error(error);
+      toast.error(error.message || "Failed to reject participant");
+    } finally {
+      setActionLoadingId(null);
+    }
+  }
+
+  async function handleRemove(id: string) {
+    try {
+      setActionLoadingId(id);
+      await removeParticipant(id, outingId);
+      toast.success("Participant removed from outing");
+      const data = await getParticipants(outingId);
+      setParticipants(data);
+    } catch (error: any) {
+      console.error(error);
+      toast.error(error.message || "Failed to remove participant");
+    } finally {
+      setActionLoadingId(null);
+    }
+  }
 
   const pending = useMemo(
     () => participants.filter((participant) => participant.status === "pending"),
-    [participants]
+    [participants],
   );
 
-  const accepted = useMemo(
-    () => participants.filter((participant) => participant.status === "accepted"),
-    [participants]
+  const joined = useMemo(
+    () => participants.filter((participant) => participant.status === "joined"),
+    [participants],
   );
+
+  if (loading) {
+    return (
+      <div className="flex h-96 flex-col items-center justify-center gap-3">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        <p className="text-sm text-muted-foreground">Loading participants...</p>
+      </div>
+    );
+  }
+
+  if (isHost === false) {
+    return (
+      <div className="mx-auto max-w-md px-6 py-24 text-center">
+        <div className="mx-auto grid h-12 w-12 place-items-center rounded-2xl bg-destructive/15 text-destructive">
+          <ShieldAlert className="h-6 w-6" />
+        </div>
+        <h2 className="mt-4 text-xl font-bold">Unauthorized</h2>
+        <p className="mt-2 text-sm text-muted-foreground">
+          Only the host of this outing can view and manage participant requests.
+        </p>
+        <Link
+          to="/explore"
+          className="mt-6 inline-block rounded-full bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground"
+        >
+          Back to Explore
+        </Link>
+      </div>
+    );
+  }
 
   return (
-    <div className="mx-auto max-w-5xl space-y-8 p-6">
-      <div>
-        <h1 className="text-3xl font-bold">Participants</h1>
-
-        <p className="text-muted-foreground">
-          Manage join requests and accepted participants.
-        </p>
+    <div className="mx-auto max-w-4xl space-y-8 px-5 py-8 pb-32">
+      <div className="flex items-center gap-3">
+        <button
+          onClick={() => navigate({ to: "/host-dashboard" })}
+          className="grid h-10 w-10 place-items-center rounded-xl border border-white/10 bg-surface hover:bg-surface-elevated transition"
+          aria-label="Back"
+        >
+          <ArrowLeft className="h-5 w-5" />
+        </button>
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight">Manage Participants</h1>
+          <p className="text-sm text-muted-foreground">
+            {outingTitle ? `For "${outingTitle}"` : "Manage outing join requests"} • (
+            {joined.length}/{maxParticipants} Joined)
+          </p>
+        </div>
       </div>
 
+      {/* Pending Requests Section */}
       <section className="space-y-4">
-        <SectionHeader
-          title="Pending Requests"
-          count={pending.length}
-        />
+        <SectionHeader title="Pending Requests" count={pending.length} />
 
         {pending.length === 0 ? (
-          <p className="text-muted-foreground">
-            No pending requests.
-          </p>
+          <div className="rounded-2xl border border-dashed border-white/10 p-8 text-center">
+            <Users className="mx-auto h-8 w-8 text-muted-foreground/50" />
+            <p className="mt-2 text-sm text-muted-foreground">No pending join requests.</p>
+          </div>
         ) : (
-          pending.map((participant) => (
-            <ParticipantCard
-              key={participant.id}
-              participant={participant}
-              onAccept={(id) => console.log("Accept:", id)}
-              onReject={(id) => console.log("Reject:", id)}
-            />
-          ))
+          <div className="grid gap-4 sm:grid-cols-2">
+            {pending.map((participant) => (
+              <ParticipantCard
+                key={participant.id}
+                participant={participant}
+                onAccept={handleAccept}
+                onReject={handleReject}
+              />
+            ))}
+          </div>
         )}
       </section>
 
-      <section className="space-y-4">
-        <SectionHeader
-          title="Accepted Participants"
-          count={accepted.length}
-        />
+      {/* Joined Participants Section */}
+      <section className="space-y-4 pt-4">
+        <SectionHeader title="Joined Participants" count={joined.length} />
 
-        {accepted.length === 0 ? (
-          <p className="text-muted-foreground">
-            No accepted participants.
-          </p>
+        {joined.length === 0 ? (
+          <div className="rounded-2xl border border-dashed border-white/10 p-8 text-center">
+            <Users className="mx-auto h-8 w-8 text-muted-foreground/50" />
+            <p className="mt-2 text-sm text-muted-foreground">No participants have joined yet.</p>
+          </div>
         ) : (
-          accepted.map((participant) => (
-            <ParticipantCard
-              key={participant.id}
-              participant={participant}
-              onChat={(id) => console.log("Chat:", id)}
-              onRemove={(id) => console.log("Remove:", id)}
-            />
-          ))
+          <div className="grid gap-4 sm:grid-cols-2">
+            {joined.map((participant) => (
+              <ParticipantCard
+                key={participant.id}
+                participant={participant}
+                onChat={(userId) =>
+                  navigate({
+                    to: "/chats/$outingId/$userId",
+                    params: {
+                      outingId,
+                      userId,
+                    },
+                  })
+                }
+                onRemove={handleRemove}
+              />
+            ))}
+          </div>
         )}
       </section>
     </div>

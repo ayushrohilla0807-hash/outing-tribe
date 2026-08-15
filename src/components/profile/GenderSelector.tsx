@@ -5,17 +5,9 @@ type GenderSelectorProps = {
   onGenderChange: (gender: string) => void;
 };
 
-const genders = [
-  "Male",
-  "Female",
-  "Other",
-  "Prefer not to say",
-];
+const genders = ["Male", "Female", "Other", "Prefer not to say"];
 
-export default function GenderSelector({
-  selectedGender,
-  onGenderChange,
-}: GenderSelectorProps) {
+export default function GenderSelector({ selectedGender, onGenderChange }: GenderSelectorProps) {
   return (
     <div className="space-y-3">
       <label className="flex items-center gap-2 text-sm font-medium">

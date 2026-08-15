@@ -1,4 +1,19 @@
-import { Coffee, Film, Trophy, MapPin, Heart, Search, Home, Plus, MessageCircle, User, Send, Camera, Star, Bell } from "lucide-react";
+import {
+  Coffee,
+  Film,
+  Trophy,
+  MapPin,
+  Heart,
+  Search,
+  Home,
+  Plus,
+  MessageCircle,
+  User,
+  Send,
+  Camera,
+  Star,
+  Bell,
+} from "lucide-react";
 
 const TabBar = ({ active }: { active: string }) => (
   <div className="absolute inset-x-0 bottom-0 flex items-center justify-around border-t border-white/10 bg-surface/80 px-4 py-2 backdrop-blur">
@@ -30,9 +45,27 @@ const StatusBar = ({ title }: { title: string }) => (
 
 export function MockHome() {
   const items = [
-    { icon: Film, tag: "Movie", title: "Dune 3 · IMAX Night", meta: "PVR Forum · 8:30 PM", color: "from-fuchsia-500/30 to-purple-500/10" },
-    { icon: Coffee, tag: "Café", title: "Latte + Chill", meta: "Third Wave · 5 PM", color: "from-amber-500/30 to-pink-500/10" },
-    { icon: Trophy, tag: "Cricket", title: "Sunday Box Cricket", meta: "Turf 11 · 7 AM", color: "from-emerald-500/30 to-cyan-500/10" },
+    {
+      icon: Film,
+      tag: "Movie",
+      title: "Dune 3 · IMAX Night",
+      meta: "PVR Forum · 8:30 PM",
+      color: "from-fuchsia-500/30 to-purple-500/10",
+    },
+    {
+      icon: Coffee,
+      tag: "Café",
+      title: "Latte + Chill",
+      meta: "Third Wave · 5 PM",
+      color: "from-amber-500/30 to-pink-500/10",
+    },
+    {
+      icon: Trophy,
+      tag: "Cricket",
+      title: "Sunday Box Cricket",
+      meta: "Turf 11 · 7 AM",
+      color: "from-emerald-500/30 to-cyan-500/10",
+    },
   ];
   return (
     <div className="relative h-full">
@@ -40,7 +73,10 @@ export function MockHome() {
       <p className="px-5 pt-1 text-xs text-muted-foreground">Nearby outings for you</p>
       <div className="mt-4 space-y-3 px-4">
         {items.map((it) => (
-          <div key={it.title} className={`rounded-2xl border border-white/10 bg-gradient-to-br ${it.color} p-3`}>
+          <div
+            key={it.title}
+            className={`rounded-2xl border border-white/10 bg-gradient-to-br ${it.color} p-3`}
+          >
             <div className="flex items-center gap-3">
               <div className="grid h-10 w-10 place-items-center rounded-xl bg-black/40 text-white">
                 <it.icon className="h-4 w-4" />
@@ -50,7 +86,9 @@ export function MockHome() {
                 <p className="truncate text-sm font-semibold text-white">{it.title}</p>
                 <p className="truncate text-[11px] text-white/70">{it.meta}</p>
               </div>
-              <button className="rounded-full bg-white/90 px-3 py-1 text-[11px] font-semibold text-black">Join</button>
+              <button className="rounded-full bg-white/90 px-3 py-1 text-[11px] font-semibold text-black">
+                Join
+              </button>
             </div>
           </div>
         ))}
@@ -73,7 +111,9 @@ export function MockCreate() {
               <span
                 key={c}
                 className={`rounded-full px-3 py-1 text-xs ${
-                  i === 0 ? "bg-primary text-primary-foreground" : "bg-white/5 text-muted-foreground"
+                  i === 0
+                    ? "bg-primary text-primary-foreground"
+                    : "bg-white/5 text-muted-foreground"
                 }`}
               >
                 {c}

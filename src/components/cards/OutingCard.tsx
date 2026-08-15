@@ -1,43 +1,43 @@
+import { Calendar, MapPin, Star, Users } from "lucide-react";
+
 import SaveButton from "@/features/outing/saved/widgets/SaveButton";
-import { useSaved } from "@/features/outing/saved/context/SavedContext";
 import JoinButton from "@/features/outing/join/widgets/JoinButton";
-import {
-  Calendar,
-  MapPin,
-  Star,
-  Users,
-} from "lucide-react";
 
-import {
-  Avatar,
-  AvatarImage,
-  AvatarFallback,
-} from "../common/Avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "../common/Avatar";
 
-import type { JoinStatus } from "@/features/outing/join/hooks/useJoinRequest";
+type JoinStatus = "none" | "pending" | "joined";
 
 type Props = {
   id: string;
+
   image: string;
+
   title: string;
   category: string;
+
   location: string;
   date: string;
+
   host: string;
   hostAvatar?: string;
+
   rating: number;
-  joined: number;
+
+  joinedCount: number;
   capacity: number;
 
-  status?: JoinStatus;
+  saved: boolean;
 
-  onJoin?: () => void;
-  onCancel?: () => void;
-  onOpenChat?: () => void;
+  status: JoinStatus;
+
+  loading?: boolean;
+
+  onCardClick?: () => void;
+  onSave: () => void;
+  onJoin: () => void;
 };
 
 export default function OutingCard({
-  id,
   image,
   title,
   category,
@@ -46,42 +46,31 @@ export default function OutingCard({
   host,
   hostAvatar,
   rating,
-  joined,
+  joinedCount,
   capacity,
-  status = "not_joined",
+  saved,
+  status,
+  loading = false,
+  onCardClick,
+  onSave,
   onJoin,
-  onCancel,
-  onOpenChat,
 }: Props) {
-  const { isSaved, toggleSaved } = useSaved();
-
   return (
-    <div className="overflow-hidden rounded-3xl border bg-card shadow-sm transition hover:-translate-y-1">
+    <div
+      onClick={onCardClick}
+      className="overflow-hidden rounded-3xl border bg-card shadow-sm transition-all hover:-translate-y-1 hover:shadow-lg cursor-pointer"
+    >
       <div className="relative">
-        <img
-          src={image}
-          alt={title}
-          className="h-56 w-full object-cover"
-        />
+        <img src={image} alt={title} className="h-56 w-full object-cover" />
 
-        <SaveButton
-          saved={isSaved(id)}
-          onClick={() =>
-            toggleSaved({
-              id,
-              title,
-              image,
-              category,
-              location,
-              date,
-              host,
-              hostAvatar,
-              rating,
-              joined,
-              capacity,
-            })
-          }
-        />
+        <div
+          onClick={(e) => {
+            e.stopPropagation();
+            onSave();
+          }}
+        >
+          <SaveButton saved={saved} onClick={() => {}} />
+        </div>
       </div>
 
       <div className="space-y-4 p-5">
@@ -91,32 +80,30 @@ export default function OutingCard({
           </span>
 
           <div className="flex items-center gap-1">
-            <Star
-              size={16}
-              className="fill-yellow-400 text-yellow-400"
-            />
-            <span>{rating}</span>
+            <Star size={16} className="fill-yellow-400 text-yellow-400" />
+
+            <span className="font-medium">{rating}</span>
           </div>
         </div>
 
-        <h2 className="text-xl font-bold">
-          {title}
-        </h2>
+        <h2 className="text-xl font-bold">{title}</h2>
 
         <div className="space-y-2 text-sm text-muted-foreground">
           <div className="flex items-center gap-2">
             <MapPin size={16} />
-            {location}
+            <span>{location}</span>
           </div>
 
           <div className="flex items-center gap-2">
             <Calendar size={16} />
-            {date}
+            <span>{date}</span>
           </div>
 
           <div className="flex items-center gap-2">
             <Users size={16} />
-            {joined}/{capacity} Joined
+            <span>
+              {joinedCount}/{capacity} Joined
+            </span>
           </div>
         </div>
 
@@ -124,28 +111,20 @@ export default function OutingCard({
           <div className="flex items-center gap-3">
             <Avatar className="h-10 w-10">
               <AvatarImage src={hostAvatar} />
-              <AvatarFallback>
-                {host.charAt(0).toUpperCase()}
-              </AvatarFallback>
+
+              <AvatarFallback>{host.charAt(0)}</AvatarFallback>
             </Avatar>
 
             <div>
-              <p className="text-sm font-semibold">
-                {host}
-              </p>
+              <p className="text-sm font-semibold">{host}</p>
 
-              <p className="text-xs text-muted-foreground">
-                Organizer
-              </p>
+              <p className="text-xs text-muted-foreground">Organizer</p>
             </div>
           </div>
 
-          <JoinButton
-            status={status}
-            onJoin={() => onJoin?.()}
-            onCancel={() => onCancel?.()}
-            onOpenChat={() => onOpenChat?.()}
-          />
+          <div onClick={(e) => e.stopPropagation()}>
+            <JoinButton status={status} loading={loading} onJoin={onJoin} onLeave={() => {}} />
+          </div>
         </div>
       </div>
     </div>

@@ -6,20 +6,11 @@ type SearchBarProps = {
   onFilterClick?: () => void;
 };
 
-export default function SearchBar({
-  value,
-  onChange,
-  onFilterClick,
-}: SearchBarProps) {
+export default function SearchBar({ value, onChange, onFilterClick }: SearchBarProps) {
   return (
     <div className="mt-8">
-
       <div className="flex items-center gap-3 rounded-2xl border border-white/10 bg-white/5 px-5 py-4 shadow-sm">
-
-        <Search
-          className="text-muted-foreground"
-          size={22}
-        />
+        <Search className="text-muted-foreground" size={22} />
 
         <input
           type="text"
@@ -36,9 +27,7 @@ export default function SearchBar({
         >
           <SlidersHorizontal size={20} />
         </button>
-
       </div>
-
     </div>
   );
 }

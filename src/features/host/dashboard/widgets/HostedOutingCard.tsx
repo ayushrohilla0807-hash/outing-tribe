@@ -1,117 +1,150 @@
-import {
-    Calendar,
-    CheckCircle,
-    Edit,
-    MapPin,
-    Trash2,
-    Users,
-  } from "lucide-react";
-  
-  import type { HostedOuting } from "../models/hostedOuting";
-  
-  type HostedOutingCardProps = {
-    outing: HostedOuting;
-  
-    onParticipants?: (id: string) => void;
-    onEdit?: (id: string) => void;
-    onCancel?: (id: string) => void;
-    onComplete?: (id: string) => void;
-  };
-  
-  export default function HostedOutingCard({
-    outing,
-    onParticipants,
-    onEdit,
-    onCancel,
-    onComplete,
-  }: HostedOutingCardProps) {
-    return (
-      <div className="overflow-hidden rounded-3xl border bg-card shadow-sm transition-all hover:shadow-lg">
-        {/* Image */}
-        <div className="relative h-52">
-          <img
-            src={outing.image}
-            alt={outing.title}
-            className="h-full w-full object-cover"
-          />
-  
-          <span className="absolute left-4 top-4 rounded-full bg-white/90 px-3 py-1 text-xs font-semibold text-primary backdrop-blur">
-            {outing.category}
+import { Calendar, CheckCircle, Edit, MapPin, Trash2, Users, Clock } from "lucide-react";
+
+import type { HostedOuting } from "../models/hostedOuting";
+
+type HostedOutingCardProps = {
+  outing: HostedOuting;
+
+  onParticipants?: (id: string) => void;
+  onEdit?: (id: string) => void;
+  onCancel?: (id: string) => void;
+  onComplete?: (id: string) => void;
+};
+
+const STATUS_STYLE = {
+  upcoming: "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300",
+  completed: "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300",
+  cancelled: "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300",
+};
+
+export default function HostedOutingCard({
+  outing,
+  onParticipants,
+  onEdit,
+  onCancel,
+  onComplete,
+}: HostedOutingCardProps) {
+  const isUpcoming = outing.status === "upcoming";
+  const isCancelled = outing.status === "cancelled";
+  const isCompleted = outing.status === "completed";
+
+  return (
+    <div className="overflow-hidden rounded-3xl border border-white/10 bg-card shadow-sm transition-all hover:shadow-lg">
+      {/* Image */}
+      <div className="relative h-48 overflow-hidden">
+        <img
+          src={
+            outing.image ||
+            "https://images.unsplash.com/photo-1517457373958-b7bdd4587205?w=600&auto=format&fit=crop&q=80"
+          }
+          alt={outing.title}
+          className="h-full w-full object-cover"
+        />
+
+        <span className="absolute left-3 top-3 rounded-full bg-black/50 px-2.5 py-1 text-[10px] font-semibold text-white backdrop-blur">
+          {outing.category}
+        </span>
+
+        <span
+          className={`absolute right-3 top-3 rounded-full px-2.5 py-1 text-[10px] font-semibold ${STATUS_STYLE[outing.status]}`}
+        >
+          {outing.status.charAt(0).toUpperCase() + outing.status.slice(1)}
+        </span>
+
+        {/* Pending badge */}
+        {outing.pending > 0 && isUpcoming && (
+          <span className="absolute left-3 bottom-3 rounded-full bg-amber-500 px-2.5 py-1 text-[10px] font-semibold text-white shadow">
+            {outing.pending} pending
           </span>
-  
-          <span
-            className={`absolute right-4 top-4 rounded-full px-3 py-1 text-xs font-semibold ${
-              outing.status === "upcoming"
-                ? "bg-green-100 text-green-700"
-                : outing.status === "completed"
-                ? "bg-blue-100 text-blue-700"
-                : "bg-red-100 text-red-700"
-            }`}
-          >
-            {outing.status.charAt(0).toUpperCase() + outing.status.slice(1)}
-          </span>
+        )}
+      </div>
+
+      {/* Content */}
+      <div className="space-y-4 p-5">
+        <h2 className="text-lg font-bold leading-snug line-clamp-1">{outing.title}</h2>
+
+        <div className="space-y-1.5 text-xs text-muted-foreground">
+          <div className="flex items-center gap-2">
+            <MapPin size={13} />
+            <span className="truncate">{outing.location}</span>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <Calendar size={13} />
+            <span>{outing.date}</span>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <Clock size={13} />
+            <span>{outing.time}</span>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <Users size={13} />
+            <span>
+              {outing.joined} / {outing.capacity} joined
+            </span>
+          </div>
         </div>
-  
-        {/* Content */}
-        <div className="space-y-4 p-5">
-          <div>
-            <h2 className="text-xl font-bold">{outing.title}</h2>
-          </div>
-  
-          <div className="space-y-2 text-sm text-muted-foreground">
-            <div className="flex items-center gap-2">
-              <MapPin size={16} />
-              {outing.location}
-            </div>
-  
-            <div className="flex items-center gap-2">
-              <Calendar size={16} />
-              {outing.date} • {outing.time}
-            </div>
-  
-            <div className="flex items-center gap-2">
-              <Users size={16} />
-              {outing.joined} / {outing.capacity} Joined
-            </div>
-          </div>
-  
-          {/* Participants */}
-          <button
-            onClick={() => onParticipants?.(outing.id)}
-            className="w-full rounded-xl border py-3 font-medium transition hover:bg-muted"
-          >
-            View Participants
-          </button>
-  
-          {/* Actions */}
-          <div className="grid grid-cols-3 gap-3">
+
+        {/* Participants */}
+        <button
+          onClick={() => onParticipants?.(outing.id)}
+          className="w-full rounded-xl border border-white/10 bg-white/5 py-2.5 text-xs font-semibold transition hover:bg-primary/10 hover:border-primary/30"
+        >
+          View Participants
+          {outing.pending > 0 && (
+            <span className="ml-2 inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-primary px-1.5 text-[10px] text-primary-foreground">
+              {outing.pending}
+            </span>
+          )}
+        </button>
+
+        {/* Actions */}
+        <div className={`grid gap-2 ${isUpcoming ? "grid-cols-3" : "grid-cols-2"}`}>
+          {isUpcoming && (
             <button
               onClick={() => onEdit?.(outing.id)}
-              className="flex items-center justify-center gap-2 rounded-xl bg-primary py-3 text-primary-foreground transition hover:opacity-90"
+              className="flex items-center justify-center gap-1.5 rounded-xl bg-primary py-2.5 text-xs font-semibold text-primary-foreground transition hover:opacity-90"
             >
-              <Edit size={16} />
+              <Edit size={13} />
               Edit
             </button>
-  
-            <button
-              onClick={() => onCancel?.(outing.id)}
-              className="flex items-center justify-center gap-2 rounded-xl bg-destructive py-3 text-destructive-foreground transition hover:opacity-90"
-            >
-              <Trash2 size={16} />
-              Cancel
-            </button>
-  
-            {outing.status === "upcoming" && (
+          )}
+
+          {!isCancelled && !isCompleted && (
+            <>
               <button
-                onClick={() => onComplete?.(outing.id)}
-                className="flex items-center justify-center gap-2 rounded-xl bg-green-600 py-3 text-white transition hover:bg-green-700"
+                onClick={() => onCancel?.(outing.id)}
+                className="flex items-center justify-center gap-1.5 rounded-xl bg-destructive py-2.5 text-xs font-semibold text-destructive-foreground transition hover:opacity-90"
               >
-                <CheckCircle size={16} />
-                Complete
+                <Trash2 size={13} />
+                Cancel
               </button>
-            )}
-          </div>
+
+              {isUpcoming && (
+                <button
+                  onClick={() => onComplete?.(outing.id)}
+                  className="flex items-center justify-center gap-1.5 rounded-xl bg-emerald-600 py-2.5 text-xs font-semibold text-white transition hover:bg-emerald-700"
+                >
+                  <CheckCircle size={13} />
+                  Complete
+                </button>
+              )}
+            </>
+          )}
+
+          {(isCancelled || isCompleted) && (
+            <button
+              onClick={() => onEdit?.(outing.id)}
+              className="flex items-center justify-center gap-1.5 rounded-xl border border-white/10 py-2.5 text-xs font-medium transition hover:bg-white/5"
+            >
+              <Edit size={13} />
+              View Details
+            </button>
+          )}
         </div>
       </div>
-    );
-  }
+    </div>
+  );
+}

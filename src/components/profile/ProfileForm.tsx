@@ -36,9 +36,7 @@ export default function ProfileForm({
     <div className="space-y-5">
       {/* Full Name */}
       <div>
-        <label className="mb-2 block text-sm font-medium">
-          Full Name
-        </label>
+        <label className="mb-2 block text-sm font-medium">Full Name</label>
 
         <div className="flex items-center rounded-xl border border-white/10 bg-white/5 px-4">
           <User className="mr-3 h-5 w-5 text-muted-foreground" />
@@ -55,9 +53,7 @@ export default function ProfileForm({
 
       {/* Email */}
       <div>
-        <label className="mb-2 block text-sm font-medium">
-          Email
-        </label>
+        <label className="mb-2 block text-sm font-medium">Email</label>
 
         <div className="flex items-center rounded-xl border border-white/10 bg-white/10 px-4">
           <Mail className="mr-3 h-5 w-5 text-muted-foreground" />
@@ -73,9 +69,7 @@ export default function ProfileForm({
 
       {/* Age */}
       <div>
-        <label className="mb-2 block text-sm font-medium">
-          Age
-        </label>
+        <label className="mb-2 block text-sm font-medium">Age</label>
 
         <div className="flex items-center rounded-xl border border-white/10 bg-white/5 px-4">
           <Cake className="mr-3 h-5 w-5 text-muted-foreground" />
@@ -94,9 +88,7 @@ export default function ProfileForm({
 
       {/* Phone */}
       <div>
-        <label className="mb-2 block text-sm font-medium">
-          Phone Number
-        </label>
+        <label className="mb-2 block text-sm font-medium">Phone Number</label>
 
         <div className="flex items-center rounded-xl border border-white/10 bg-white/5 px-4">
           <Phone className="mr-3 h-5 w-5 text-muted-foreground" />
@@ -113,9 +105,7 @@ export default function ProfileForm({
 
       {/* City */}
       <div>
-        <label className="mb-2 block text-sm font-medium">
-          City
-        </label>
+        <label className="mb-2 block text-sm font-medium">City</label>
 
         <div className="flex items-center rounded-xl border border-white/10 bg-white/5 px-4">
           <MapPin className="mr-3 h-5 w-5 text-muted-foreground" />
@@ -132,9 +122,7 @@ export default function ProfileForm({
 
       {/* Area */}
       <div>
-        <label className="mb-2 block text-sm font-medium">
-          Area / Locality
-        </label>
+        <label className="mb-2 block text-sm font-medium">Area / Locality</label>
 
         <div className="flex items-center rounded-xl border border-white/10 bg-white/5 px-4">
           <MapPin className="mr-3 h-5 w-5 text-muted-foreground" />

@@ -11,9 +11,7 @@ export default function InterestSelector({
 }: InterestSelectorProps) {
   const toggleInterest = (interest: string) => {
     if (selectedInterests.includes(interest)) {
-      setSelectedInterests(
-        selectedInterests.filter((item) => item !== interest)
-      );
+      setSelectedInterests(selectedInterests.filter((item) => item !== interest));
     } else {
       setSelectedInterests([...selectedInterests, interest]);
     }
@@ -21,9 +19,7 @@ export default function InterestSelector({
 
   return (
     <div className="mt-8">
-      <h2 className="text-xl font-semibold">
-        ❤️ Select Your Interests
-      </h2>
+      <h2 className="text-xl font-semibold">❤️ Select Your Interests</h2>
 
       <p className="mt-2 text-sm text-muted-foreground">
         Choose at least 3 interests to get better outing recommendations.
@@ -32,14 +28,11 @@ export default function InterestSelector({
       <div className="mt-6 space-y-8">
         {interests.map((group) => (
           <div key={group.category}>
-            <h3 className="mb-4 text-lg font-semibold">
-              {group.category}
-            </h3>
+            <h3 className="mb-4 text-lg font-semibold">{group.category}</h3>
 
             <div className="flex flex-wrap gap-3">
               {group.items.map((interest) => {
-                const selected =
-                  selectedInterests.includes(interest);
+                const selected = selectedInterests.includes(interest);
 
                 return (
                   <button
@@ -63,9 +56,7 @@ export default function InterestSelector({
         ))}
       </div>
 
-      <p className="mt-6 text-sm text-primary">
-        Selected: {selectedInterests.length}
-      </p>
+      <p className="mt-6 text-sm text-primary">Selected: {selectedInterests.length}</p>
     </div>
   );
 }

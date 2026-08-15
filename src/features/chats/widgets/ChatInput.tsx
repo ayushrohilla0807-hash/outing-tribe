@@ -5,9 +5,7 @@ type Props = {
   onSend: (text: string) => void;
 };
 
-export default function ChatInput({
-  onSend,
-}: Props) {
+export default function ChatInput({ onSend }: Props) {
   const [text, setText] = useState("");
 
   function send() {
@@ -20,9 +18,7 @@ export default function ChatInput({
 
   return (
     <div className="sticky bottom-0 border-t bg-background p-4">
-
       <div className="flex items-center gap-2">
-
         <button>
           <Smile size={20} />
         </button>
@@ -33,20 +29,14 @@ export default function ChatInput({
 
         <input
           value={text}
-          onChange={(e) =>
-            setText(e.target.value)
-          }
+          onChange={(e) => setText(e.target.value)}
           placeholder="Type a message..."
           className="flex-1 rounded-full border px-4 py-3 outline-none"
         />
 
-        <button
-          onClick={send}
-          className="rounded-full bg-primary p-3 text-white"
-        >
+        <button onClick={send} className="rounded-full bg-primary p-3 text-white">
           <Send size={18} />
         </button>
-
       </div>
     </div>
   );

@@ -6,10 +6,7 @@ type StateDropdownProps = {
   onStateChange: (state: string) => void;
 };
 
-export default function StateDropdown({
-  selectedState,
-  onStateChange,
-}: StateDropdownProps) {
+export default function StateDropdown({ selectedState, onStateChange }: StateDropdownProps) {
   return (
     <div className="space-y-2">
       <label className="flex items-center gap-2 text-sm font-medium">

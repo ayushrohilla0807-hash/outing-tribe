@@ -1,57 +1,43 @@
-import type { JoinStatus } from "../hooks/useJoinRequest";
+type JoinStatus = "none" | "pending" | "joined";
 
 type Props = {
   status: JoinStatus;
+  loading?: boolean;
   onJoin: () => void;
-  onCancel: () => void;
-  onOpenChat?: () => void;
+  onLeave: () => void;
 };
 
-export default function JoinButton({
-  status,
-  onJoin,
-  onCancel,
-  onOpenChat,
-}: Props) {
-  switch (status) {
-    case "pending":
-      return (
-        <button
-          onClick={onCancel}
-          className="rounded-full bg-yellow-500 px-5 py-2 font-medium text-black"
-        >
-          Cancel Request
-        </button>
-      );
+export default function JoinButton({ status, loading = false, onJoin }: Props) {
+  function handleClick() {
+    if (loading || status !== "none") return;
 
-    case "accepted":
-      return (
-        <button
-          onClick={onOpenChat}
-          className="rounded-full bg-green-600 px-5 py-2 font-medium text-white"
-        >
-          Open Chat
-        </button>
-      );
-
-    case "rejected":
-      return (
-        <button
-          onClick={onJoin}
-          className="rounded-full bg-red-500 px-5 py-2 font-medium text-white"
-        >
-          Join Again
-        </button>
-      );
-
-    default:
-      return (
-        <button
-          onClick={onJoin}
-          className="rounded-full bg-primary px-5 py-2 text-white"
-        >
-          Join
-        </button>
-      );
+    onJoin();
   }
+
+  const buttonText = loading
+    ? "Loading..."
+    : status === "pending"
+      ? "Request Sent"
+      : status === "joined"
+        ? "Joined"
+        : "Join";
+
+  const buttonClass =
+    status === "joined"
+      ? "bg-green-600 cursor-not-allowed"
+      : status === "pending"
+        ? "bg-yellow-500 cursor-not-allowed"
+        : "bg-primary hover:opacity-90";
+
+  return (
+    <button
+      disabled={loading || status !== "none"}
+      onClick={handleClick}
+      className={`rounded-full px-5 py-2 font-medium text-white transition ${buttonClass} ${
+        loading ? "opacity-60 cursor-not-allowed" : ""
+      }`}
+    >
+      {buttonText}
+    </button>
+  );
 }

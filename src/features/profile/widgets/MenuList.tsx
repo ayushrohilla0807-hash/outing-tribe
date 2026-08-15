@@ -1,10 +1,4 @@
-import {
-  Bookmark,
-  Clock3,
-  LayoutDashboard,
-  LogOut,
-  ChevronRight,
-} from "lucide-react";
+import { Bookmark, Clock3, LayoutDashboard, LogOut, ChevronRight } from "lucide-react";
 
 type MenuListProps = {
   onSaved: () => void;
@@ -36,32 +30,17 @@ function MenuItem({
         <span className="font-medium">{title}</span>
       </div>
 
-      {!danger && (
-        <ChevronRight className="h-5 w-5 text-muted-foreground" />
-      )}
+      {!danger && <ChevronRight className="h-5 w-5 text-muted-foreground" />}
     </button>
   );
 }
 
-export default function MenuList({
-  onSaved,
-  onHistory,
-  onHostDashboard,
-  onLogout,
-}: MenuListProps) {
+export default function MenuList({ onSaved, onHistory, onHostDashboard, onLogout }: MenuListProps) {
   return (
     <section className="mt-8 space-y-3">
-      <MenuItem
-        title="Saved Outings"
-        icon={<Bookmark size={20} />}
-        onClick={onSaved}
-      />
+      <MenuItem title="Saved Outings" icon={<Bookmark size={20} />} onClick={onSaved} />
 
-      <MenuItem
-        title="History"
-        icon={<Clock3 size={20} />}
-        onClick={onHistory}
-      />
+      <MenuItem title="History" icon={<Clock3 size={20} />} onClick={onHistory} />
 
       <MenuItem
         title="Host Dashboard"
@@ -69,12 +48,7 @@ export default function MenuList({
         onClick={onHostDashboard}
       />
 
-      <MenuItem
-        title="Logout"
-        icon={<LogOut size={20} />}
-        danger
-        onClick={onLogout}
-      />
+      <MenuItem title="Logout" icon={<LogOut size={20} />} danger onClick={onLogout} />
     </section>
   );
 }

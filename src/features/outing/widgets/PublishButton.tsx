@@ -1,25 +1,16 @@
-import { Loader2 } from "lucide-react";
-
-type Props = {
+type PublishButtonProps = {
   loading: boolean;
-  onClick: () => void;
+  disabled?: boolean;
 };
 
-export default function PublishButton({
-  loading,
-  onClick,
-}: Props) {
+export default function PublishButton({ loading, disabled = false }: PublishButtonProps) {
   return (
     <button
-      onClick={onClick}
-      disabled={loading}
-      className="mt-6 flex w-full items-center justify-center gap-2 rounded-xl bg-primary py-4 font-semibold text-white transition hover:opacity-90 disabled:opacity-60"
+      type="submit"
+      onClick={() => console.log("🟢 BUTTON CLICKED")}
+      className="w-full rounded-xl bg-blue-600 px-4 py-3 text-white"
     >
-      {loading && (
-        <Loader2 className="h-5 w-5 animate-spin" />
-      )}
-
-      {loading ? "Publishing..." : "Publish Outing"}
+      Create Outing
     </button>
   );
 }

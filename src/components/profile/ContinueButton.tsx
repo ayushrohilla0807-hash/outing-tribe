@@ -5,10 +5,7 @@ type ContinueButtonProps = {
   onClick: () => void;
 };
 
-export default function ContinueButton({
-  loading,
-  onClick,
-}: ContinueButtonProps) {
+export default function ContinueButton({ loading, onClick }: ContinueButtonProps) {
   return (
     <button
       type="button"

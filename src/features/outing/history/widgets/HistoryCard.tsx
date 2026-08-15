@@ -5,24 +5,14 @@ type Props = {
   outing: HistoryOuting;
 };
 
-export default function HistoryCard({
-  outing,
-}: Props) {
+export default function HistoryCard({ outing }: Props) {
   return (
     <div className="overflow-hidden rounded-2xl border bg-card shadow-sm transition hover:shadow-md">
-
-      <img
-        src={outing.image}
-        alt={outing.title}
-        className="h-44 w-full object-cover"
-      />
+      <img src={outing.image} alt={outing.title} className="h-44 w-full object-cover" />
 
       <div className="space-y-3 p-5">
-
         <div className="flex items-start justify-between gap-3">
-          <h3 className="text-xl font-bold">
-            {outing.title}
-          </h3>
+          <h3 className="text-xl font-bold">{outing.title}</h3>
 
           <StatusBadge status={outing.status} />
         </div>
@@ -33,7 +23,6 @@ export default function HistoryCard({
           <p>👤 Hosted by {outing.host}</p>
           <p>👥 {outing.participants} Participants</p>
         </div>
-
       </div>
     </div>
   );

@@ -38,7 +38,6 @@ export default function BottomNav() {
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-50 border-t border-border bg-background/95 backdrop-blur">
       <div className="mx-auto flex h-20 max-w-md items-center justify-around">
-
         {items.map((item) => {
           const Icon = item.icon;
           const active = pathname === item.to;
@@ -54,25 +53,12 @@ export default function BottomNav() {
           }
 
           return (
-            <Link
-              key={item.to}
-              to={item.to}
-              className="flex flex-col items-center gap-1"
-            >
-              <Icon
-                size={24}
-                className={
-                  active
-                    ? "text-primary"
-                    : "text-muted-foreground"
-                }
-              />
+            <Link key={item.to} to={item.to} className="flex flex-col items-center gap-1">
+              <Icon size={24} className={active ? "text-primary" : "text-muted-foreground"} />
 
               <span
                 className={`text-xs ${
-                  active
-                    ? "text-primary font-medium"
-                    : "text-muted-foreground"
+                  active ? "text-primary font-medium" : "text-muted-foreground"
                 }`}
               >
                 {item.label}

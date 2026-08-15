@@ -6,9 +6,8 @@ export function useTheme() {
   const [theme, setTheme] = useState<Theme>("dark");
 
   useEffect(() => {
-    const stored = (typeof window !== "undefined" && localStorage.getItem("outsy-theme")) as
-      | Theme
-      | null;
+    const stored = (typeof window !== "undefined" &&
+      localStorage.getItem("outsy-theme")) as Theme | null;
     if (stored) setTheme(stored);
   }, []);
 

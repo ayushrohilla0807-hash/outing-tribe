@@ -1,4 +1,4 @@
-import { Chat } from "../models/chat";
+import { Chat } from "../models/message";
 
 export const mockChats: Chat[] = [
   {
@@ -7,8 +7,7 @@ export const mockChats: Chat[] = [
 
     outingName: "Cafe Hopping",
 
-    outingImage:
-      "https://images.unsplash.com/photo-1495474472287-4d71bcdd2085",
+    outingImage: "https://images.unsplash.com/photo-1495474472287-4d71bcdd2085",
 
     status: "accepted",
 
@@ -54,8 +53,7 @@ export const mockChats: Chat[] = [
 
     outingName: "Movie Night",
 
-    outingImage:
-      "https://images.unsplash.com/photo-1489599849927-2ee91cede3ba",
+    outingImage: "https://images.unsplash.com/photo-1489599849927-2ee91cede3ba",
 
     status: "accepted",
 
@@ -76,8 +74,7 @@ export const mockChats: Chat[] = [
 
     outingName: "Sunday Trek",
 
-    outingImage:
-      "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee",
+    outingImage: "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee",
 
     status: "pending",
 

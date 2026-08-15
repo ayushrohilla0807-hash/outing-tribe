@@ -23,8 +23,9 @@ import { Route as AuthenticatedCreateRouteImport } from './routes/_authenticated
 import { Route as AuthenticatedChatsRouteImport } from './routes/_authenticated/chats'
 import { Route as AuthenticatedChatsIndexRouteImport } from './routes/_authenticated/chats/index'
 import { Route as AuthenticatedParticipantsOutingIdRouteImport } from './routes/_authenticated/participants/$outingId'
+import { Route as AuthenticatedOutingIdRouteImport } from './routes/_authenticated/outing.$id'
 import { Route as AuthenticatedHostDashboardEditOutingIdRouteImport } from './routes/_authenticated/host-dashboard-edit.$outingId'
-import { Route as AuthenticatedChatsChatIdRouteImport } from './routes/_authenticated/chats/$chatId'
+import { Route as AuthenticatedChatsOutingIdUserIdRouteImport } from './routes/_authenticated/chats/$outingId/$userId'
 
 const AuthRoute = AuthRouteImport.update({
   id: '/auth',
@@ -98,16 +99,21 @@ const AuthenticatedParticipantsOutingIdRoute =
     path: '/participants/$outingId',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedOutingIdRoute = AuthenticatedOutingIdRouteImport.update({
+  id: '/outing/$id',
+  path: '/outing/$id',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedHostDashboardEditOutingIdRoute =
   AuthenticatedHostDashboardEditOutingIdRouteImport.update({
     id: '/host-dashboard-edit/$outingId',
     path: '/host-dashboard-edit/$outingId',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
-const AuthenticatedChatsChatIdRoute =
-  AuthenticatedChatsChatIdRouteImport.update({
-    id: '/$chatId',
-    path: '/$chatId',
+const AuthenticatedChatsOutingIdUserIdRoute =
+  AuthenticatedChatsOutingIdUserIdRouteImport.update({
+    id: '/$outingId/$userId',
+    path: '/$outingId/$userId',
     getParentRoute: () => AuthenticatedChatsRoute,
   } as any)
 
@@ -123,10 +129,11 @@ export interface FileRoutesByFullPath {
   '/notifications': typeof AuthenticatedNotificationsRoute
   '/profile': typeof AuthenticatedProfileRoute
   '/saved': typeof AuthenticatedSavedRoute
-  '/chats/$chatId': typeof AuthenticatedChatsChatIdRoute
   '/host-dashboard-edit/$outingId': typeof AuthenticatedHostDashboardEditOutingIdRoute
+  '/outing/$id': typeof AuthenticatedOutingIdRoute
   '/participants/$outingId': typeof AuthenticatedParticipantsOutingIdRoute
   '/chats/': typeof AuthenticatedChatsIndexRoute
+  '/chats/$outingId/$userId': typeof AuthenticatedChatsOutingIdUserIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -139,10 +146,11 @@ export interface FileRoutesByTo {
   '/notifications': typeof AuthenticatedNotificationsRoute
   '/profile': typeof AuthenticatedProfileRoute
   '/saved': typeof AuthenticatedSavedRoute
-  '/chats/$chatId': typeof AuthenticatedChatsChatIdRoute
   '/host-dashboard-edit/$outingId': typeof AuthenticatedHostDashboardEditOutingIdRoute
+  '/outing/$id': typeof AuthenticatedOutingIdRoute
   '/participants/$outingId': typeof AuthenticatedParticipantsOutingIdRoute
   '/chats': typeof AuthenticatedChatsIndexRoute
+  '/chats/$outingId/$userId': typeof AuthenticatedChatsOutingIdUserIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -158,10 +166,11 @@ export interface FileRoutesById {
   '/_authenticated/notifications': typeof AuthenticatedNotificationsRoute
   '/_authenticated/profile': typeof AuthenticatedProfileRoute
   '/_authenticated/saved': typeof AuthenticatedSavedRoute
-  '/_authenticated/chats/$chatId': typeof AuthenticatedChatsChatIdRoute
   '/_authenticated/host-dashboard-edit/$outingId': typeof AuthenticatedHostDashboardEditOutingIdRoute
+  '/_authenticated/outing/$id': typeof AuthenticatedOutingIdRoute
   '/_authenticated/participants/$outingId': typeof AuthenticatedParticipantsOutingIdRoute
   '/_authenticated/chats/': typeof AuthenticatedChatsIndexRoute
+  '/_authenticated/chats/$outingId/$userId': typeof AuthenticatedChatsOutingIdUserIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -177,10 +186,11 @@ export interface FileRouteTypes {
     | '/notifications'
     | '/profile'
     | '/saved'
-    | '/chats/$chatId'
     | '/host-dashboard-edit/$outingId'
+    | '/outing/$id'
     | '/participants/$outingId'
     | '/chats/'
+    | '/chats/$outingId/$userId'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -193,10 +203,11 @@ export interface FileRouteTypes {
     | '/notifications'
     | '/profile'
     | '/saved'
-    | '/chats/$chatId'
     | '/host-dashboard-edit/$outingId'
+    | '/outing/$id'
     | '/participants/$outingId'
     | '/chats'
+    | '/chats/$outingId/$userId'
   id:
     | '__root__'
     | '/'
@@ -211,10 +222,11 @@ export interface FileRouteTypes {
     | '/_authenticated/notifications'
     | '/_authenticated/profile'
     | '/_authenticated/saved'
-    | '/_authenticated/chats/$chatId'
     | '/_authenticated/host-dashboard-edit/$outingId'
+    | '/_authenticated/outing/$id'
     | '/_authenticated/participants/$outingId'
     | '/_authenticated/chats/'
+    | '/_authenticated/chats/$outingId/$userId'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -323,6 +335,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedParticipantsOutingIdRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/outing/$id': {
+      id: '/_authenticated/outing/$id'
+      path: '/outing/$id'
+      fullPath: '/outing/$id'
+      preLoaderRoute: typeof AuthenticatedOutingIdRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/host-dashboard-edit/$outingId': {
       id: '/_authenticated/host-dashboard-edit/$outingId'
       path: '/host-dashboard-edit/$outingId'
@@ -330,24 +349,24 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedHostDashboardEditOutingIdRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
-    '/_authenticated/chats/$chatId': {
-      id: '/_authenticated/chats/$chatId'
-      path: '/$chatId'
-      fullPath: '/chats/$chatId'
-      preLoaderRoute: typeof AuthenticatedChatsChatIdRouteImport
+    '/_authenticated/chats/$outingId/$userId': {
+      id: '/_authenticated/chats/$outingId/$userId'
+      path: '/$outingId/$userId'
+      fullPath: '/chats/$outingId/$userId'
+      preLoaderRoute: typeof AuthenticatedChatsOutingIdUserIdRouteImport
       parentRoute: typeof AuthenticatedChatsRoute
     }
   }
 }
 
 interface AuthenticatedChatsRouteChildren {
-  AuthenticatedChatsChatIdRoute: typeof AuthenticatedChatsChatIdRoute
   AuthenticatedChatsIndexRoute: typeof AuthenticatedChatsIndexRoute
+  AuthenticatedChatsOutingIdUserIdRoute: typeof AuthenticatedChatsOutingIdUserIdRoute
 }
 
 const AuthenticatedChatsRouteChildren: AuthenticatedChatsRouteChildren = {
-  AuthenticatedChatsChatIdRoute: AuthenticatedChatsChatIdRoute,
   AuthenticatedChatsIndexRoute: AuthenticatedChatsIndexRoute,
+  AuthenticatedChatsOutingIdUserIdRoute: AuthenticatedChatsOutingIdUserIdRoute,
 }
 
 const AuthenticatedChatsRouteWithChildren =
@@ -364,6 +383,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedProfileRoute: typeof AuthenticatedProfileRoute
   AuthenticatedSavedRoute: typeof AuthenticatedSavedRoute
   AuthenticatedHostDashboardEditOutingIdRoute: typeof AuthenticatedHostDashboardEditOutingIdRoute
+  AuthenticatedOutingIdRoute: typeof AuthenticatedOutingIdRoute
   AuthenticatedParticipantsOutingIdRoute: typeof AuthenticatedParticipantsOutingIdRoute
 }
 
@@ -379,6 +399,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedSavedRoute: AuthenticatedSavedRoute,
   AuthenticatedHostDashboardEditOutingIdRoute:
     AuthenticatedHostDashboardEditOutingIdRoute,
+  AuthenticatedOutingIdRoute: AuthenticatedOutingIdRoute,
   AuthenticatedParticipantsOutingIdRoute:
     AuthenticatedParticipantsOutingIdRoute,
 }
