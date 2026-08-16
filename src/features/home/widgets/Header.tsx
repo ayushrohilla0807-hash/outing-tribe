@@ -2,18 +2,12 @@ import { Bell, MapPin } from "lucide-react";
 import { useNavigate } from "@tanstack/react-router";
 
 type HeaderProps = {
-  userName: string;
+  userName?: string;
   location: string;
 };
 
-export default function Header({ userName, location }: HeaderProps) {
+export default function Header({ location }: HeaderProps) {
   const navigate = useNavigate();
-  const hour = new Date().getHours();
-
-  let greeting = "Hello";
-  if (hour < 12) greeting = "Good Morning";
-  else if (hour < 17) greeting = "Good Afternoon";
-  else greeting = "Good Evening";
 
   return (
     <div className="flex items-start justify-between">
@@ -24,10 +18,8 @@ export default function Header({ userName, location }: HeaderProps) {
         </div>
 
         <h1 className="mt-2 text-2xl font-bold tracking-tight sm:text-3xl text-foreground">
-          {greeting}, <span className="text-primary">{userName}</span> 👋
+          Never <span className="text-primary">Cancel Plans</span> Again
         </h1>
-
-        <p className="mt-1 text-sm text-muted-foreground">Ready for your next adventure?</p>
       </div>
 
       <button

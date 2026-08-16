@@ -88,8 +88,8 @@
   --input: #DDE2E7;
   --ring: #A97065;
 
-  /* Primary — Dusty rose with warm peach glow */
-  --primary: #A97065;
+  /* Primary — Main theme color */
+  --primary: #D99A7C;
   --primary-foreground: #FFFFFF;
   --primary-glow: #D99A7C;
 
@@ -106,8 +106,8 @@
 
 /* ─── Dark Theme (Default) ───────────────────────────────────────────────── */
 .dark {
-  /* Page canvas — deep blue-teal */
-  --background: #0F3444;
+  /* Page canvas — black */
+  --background: #000000;
   --foreground: #F4F6F8;
 
   /* Surface hierarchy */
@@ -140,8 +140,8 @@
   --input: #5A5C70;
   --ring: #D99A7C;
 
-  /* Primary — Dusty rose for primary CTAs */
-  --primary: #A97065;
+  /* Primary — Main theme color */
+  --primary: #D99A7C;
   --primary-foreground: #FFFFFF;
   --primary-glow: #D99A7C;
 

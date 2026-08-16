@@ -30,7 +30,7 @@ const TabBar = ({ active }: { active: string }) => (
           id === active ? "bg-primary text-primary-foreground" : "text-muted-foreground"
         }`}
       >
-        <Icon className="h-4 w-4" />
+        <Icon className="h-4 w-4" fill={id === active ? "currentColor" : "none"} />
       </div>
     ))}
   </div>
