@@ -22,7 +22,7 @@ function MenuItem({
     <button
       onClick={onClick}
       className={`flex w-full items-center justify-between rounded-2xl border p-4 transition hover:bg-muted/50 ${
-        danger ? "text-red-500" : ""
+        danger ? "text-destructive" : ""
       }`}
     >
       <div className="flex items-center gap-3">

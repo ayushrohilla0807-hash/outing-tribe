@@ -80,7 +80,7 @@ export default function OutingCard({
           </span>
 
           <div className="flex items-center gap-1">
-            <Star size={16} className="fill-yellow-400 text-yellow-400" />
+            <Star size={16} className="fill-pending text-pending" />
 
             <span className="font-medium">{rating}</span>
           </div>

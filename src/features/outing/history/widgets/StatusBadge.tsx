@@ -13,12 +13,12 @@ const styles: Record<
 > = {
   pending: {
     label: "Pending",
-    className: "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300",
+    className: "bg-pending/20 text-pending dark:bg-pending/30 dark:text-pending-foreground",
   },
 
   joined: {
     label: "Joined",
-    className: "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300",
+    className: "bg-success/20 text-success dark:bg-success/30 dark:text-success-foreground",
   },
 
   completed: {
@@ -28,7 +28,7 @@ const styles: Record<
 
   cancelled: {
     label: "Cancelled",
-    className: "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300",
+    className: "bg-destructive/20 text-destructive dark:bg-destructive/30 dark:text-destructive-foreground",
   },
 };
 

@@ -3,6 +3,7 @@ import { X, Camera, Loader2 } from "lucide-react";
 import type { UserProfile } from "../models/profile";
 import { uploadAvatar } from "../services/profileService";
 import { toast } from "sonner";
+import { interests as interestGroups } from "@/lib/interests";
 
 type Props = {
   open: boolean;
@@ -11,18 +12,7 @@ type Props = {
   onSave: (profile: UserProfile) => void;
 };
 
-const AVAILABLE_INTERESTS = [
-  "Coffee",
-  "Movies",
-  "Travel",
-  "Tech",
-  "Sports",
-  "Gaming",
-  "Music",
-  "Photography",
-  "Fitness",
-  "Food",
-];
+const AVAILABLE_INTERESTS = interestGroups.flatMap((g) => g.items);
 
 export default function EditProfileModal({ open, profile, onClose, onSave }: Props) {
   const [form, setForm] = useState(profile);

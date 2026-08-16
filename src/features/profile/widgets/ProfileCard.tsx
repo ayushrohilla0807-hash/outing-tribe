@@ -21,7 +21,7 @@ export default function ProfileCard({ profile }: Props) {
         <div className="mt-4 flex items-center gap-2">
           <h2 className="text-2xl font-bold">{profile.name}</h2>
 
-          {profile.verified && <BadgeCheck className="h-6 w-6 text-blue-500" />}
+          {profile.verified && <BadgeCheck className="h-6 w-6 text-primary" />}
         </div>
 
         <p className="mt-2 text-center text-muted-foreground">{profile.bio}</p>
@@ -32,7 +32,7 @@ export default function ProfileCard({ profile }: Props) {
         </div>
 
         <div className="mt-5 flex items-center gap-2 rounded-full bg-primary/10 px-4 py-2">
-          <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
+          <Star className="h-4 w-4 fill-pending text-pending" />
 
           <span className="font-semibold">{profile.hostRating}</span>
 

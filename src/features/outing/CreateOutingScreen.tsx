@@ -30,7 +30,7 @@ export default function CreateOutingScreen() {
           />
 
           {form.formState.errors.title && (
-            <p className="mt-1 text-sm text-red-500">{form.formState.errors.title.message}</p>
+            <p className="mt-1 text-sm text-destructive">{form.formState.errors.title.message}</p>
           )}
         </div>
 
@@ -47,7 +47,7 @@ export default function CreateOutingScreen() {
             <span>{form.watch("description")?.length ?? 0}/500</span>
 
             {form.formState.errors.description && (
-              <span className="text-red-500">{form.formState.errors.description.message}</span>
+              <span className="text-destructive">{form.formState.errors.description.message}</span>
             )}
           </div>
         </div>

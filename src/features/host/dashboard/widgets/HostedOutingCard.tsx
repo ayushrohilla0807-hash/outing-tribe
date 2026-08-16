@@ -12,9 +12,9 @@ type HostedOutingCardProps = {
 };
 
 const STATUS_STYLE = {
-  upcoming: "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300",
+  upcoming: "bg-success/20 text-success dark:bg-success/30 dark:text-success-foreground",
   completed: "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300",
-  cancelled: "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300",
+  cancelled: "bg-destructive/20 text-destructive dark:bg-destructive/30 dark:text-destructive-foreground",
 };
 
 export default function HostedOutingCard({
@@ -53,7 +53,7 @@ export default function HostedOutingCard({
 
         {/* Pending badge */}
         {outing.pending > 0 && isUpcoming && (
-          <span className="absolute left-3 bottom-3 rounded-full bg-amber-500 px-2.5 py-1 text-[10px] font-semibold text-white shadow">
+          <span className="absolute left-3 bottom-3 rounded-full bg-pending px-2.5 py-1 text-[10px] font-semibold text-pending-foreground shadow">
             {outing.pending} pending
           </span>
         )}
@@ -125,7 +125,7 @@ export default function HostedOutingCard({
               {isUpcoming && (
                 <button
                   onClick={() => onComplete?.(outing.id)}
-                  className="flex items-center justify-center gap-1.5 rounded-xl bg-emerald-600 py-2.5 text-xs font-semibold text-white transition hover:bg-emerald-700"
+                  className="flex items-center justify-center gap-1.5 rounded-xl bg-success py-2.5 text-xs font-semibold text-success-foreground transition hover:opacity-90"
                 >
                   <CheckCircle size={13} />
                   Complete

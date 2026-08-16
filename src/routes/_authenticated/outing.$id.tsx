@@ -263,9 +263,9 @@ function OutingDetailsPage() {
             <p className="text-sm font-semibold mt-0.5">{outing.max_participants} Max</p>
           </div>
           <div className="rounded-2xl border border-white/10 bg-surface p-4">
-            <Shield className="h-5 w-5 text-emerald-400 mb-2" />
+            <Shield className="h-5 w-5 text-success mb-2" />
             <p className="text-xs text-muted-foreground">Safety</p>
-            <p className="text-sm font-semibold mt-0.5 text-emerald-400">Public Meetup</p>
+            <p className="text-sm font-semibold mt-0.5 text-success">Public Meetup</p>
           </div>
         </div>
 
@@ -346,7 +346,7 @@ function OutingDetailsPage() {
                   />
                   <div className="truncate">
                     <p className="truncate text-xs font-semibold">{member.name}</p>
-                    <p className="text-[10px] text-emerald-400">Joined</p>
+                    <p className="text-[10px] text-success">Joined</p>
                   </div>
                 </div>
               ))}

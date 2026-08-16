@@ -88,7 +88,7 @@ export async function getProfile(): Promise<UserProfile> {
     avatarUrl:
       profile?.avatar_url ||
       "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=200&auto=format&fit=crop&q=80",
-    interests: [],
+    interests: Array.isArray(profile?.interests) ? profile.interests : [],
     hostRating: 5.0,
     hostedCount: hostedCount || 0,
     joinedCount: joinedCount || 0,
@@ -127,6 +127,83 @@ export async function updateProfile(updates: Partial<UserProfile>): Promise<void
     console.error("Error updating profile:", error);
     throw error;
   }
+}
+
+/** Persist interests and mark profile setup as complete. */
+export async function updateInterests(interests: string[]): Promise<void> {
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) throw new Error("Not authenticated");
+
+  const { error } = await supabase
+    .from("profiles")
+    .update({ interests, profile_setup_complete: true })
+    .eq("id", user.id);
+
+  if (error) {
+    console.error("Error updating interests:", error);
+    throw error;
+  }
+}
+
+/** Complete the full profile setup in one call. */
+export async function completeProfileSetup(data: {
+  name: string;
+  age: number;
+  city: string;
+  avatarUrl?: string;
+  interests: string[];
+}): Promise<void> {
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) throw new Error("Not authenticated");
+
+  const today = new Date();
+  const birthYear = today.getFullYear() - data.age;
+
+  const payload: Record<string, any> = {
+    full_name: data.name.trim(),
+    city: data.city.trim(),
+    date_of_birth: `${birthYear}-01-01`,
+    interests: data.interests,
+    profile_setup_complete: true,
+  };
+
+  if (data.avatarUrl) payload.avatar_url = data.avatarUrl;
+
+  const { error } = await supabase.from("profiles").update(payload).eq("id", user.id);
+
+  if (error) {
+    console.error("Error completing profile setup:", error);
+    throw error;
+  }
+}
+
+/** Returns true if the user needs to go through the profile setup wizard. */
+export async function needsProfileSetup(): Promise<boolean> {
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) return false;
+
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("profile_setup_complete, city, interests")
+    .eq("id", user.id)
+    .maybeSingle();
+
+  if (!profile) return true;
+
+  // Consider setup done if the flag is set OR legacy users have city + 3+ interests
+  if (profile.profile_setup_complete) return false;
+  const hasCity = Boolean(profile.city);
+  const hasInterests = Array.isArray(profile.interests) && profile.interests.length >= 3;
+  return !(hasCity && hasInterests);
 }
 
 export async function uploadAvatar(file: File): Promise<string> {

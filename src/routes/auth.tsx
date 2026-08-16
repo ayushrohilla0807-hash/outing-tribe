@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { motion } from "motion/react";
 import { Compass, Loader2, Mail, Lock } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { needsProfileSetup } from "@/features/profile/services/profileService";
 
 export const Route = createFileRoute("/auth")({
   component: AuthPage,
@@ -24,8 +25,11 @@ function AuthPage() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data }) => {
-      if (data.session) navigate({ to: "/profile", replace: true });
+    supabase.auth.getSession().then(async ({ data }) => {
+      if (data.session) {
+        const needs = await needsProfileSetup();
+        navigate({ to: needs ? "/profile-setup" : "/home", replace: true });
+      }
     });
   }, [navigate]);
 
@@ -75,8 +79,9 @@ function AuthPage() {
 
       if (error) throw error;
 
+      const needs = await needsProfileSetup();
       navigate({
-        to: "/explore",
+        to: needs ? "/profile-setup" : "/home",
         replace: true,
       });
     } catch (err) {
@@ -94,7 +99,7 @@ function AuthPage() {
       const { error } = await supabase.auth.signInWithOAuth({
         provider: "google",
         options: {
-          redirectTo: `${window.location.origin}/profile`,
+          redirectTo: `${window.location.origin}/profile-setup`,
         },
       });
 
@@ -182,7 +187,7 @@ function AuthPage() {
               />
             </label>
             {error && (
-              <p role="alert" className="text-xs text-red-400">
+              <p role="alert" className="text-xs text-destructive">
                 {error}
               </p>
             )}

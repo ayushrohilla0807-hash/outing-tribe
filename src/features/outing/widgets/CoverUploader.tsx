@@ -61,7 +61,7 @@ export default function CoverUploader() {
             }
             className="absolute right-3 top-3 rounded-full bg-white p-2 shadow"
           >
-            <Trash2 className="h-4 w-4 text-red-500" />
+            <Trash2 className="h-4 w-4 text-destructive" />
           </button>
         </div>
       ) : (

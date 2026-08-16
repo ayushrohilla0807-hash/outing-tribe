@@ -24,16 +24,16 @@ export default function JoinButton({ status, loading = false, onJoin }: Props) {
 
   const buttonClass =
     status === "joined"
-      ? "bg-green-600 cursor-not-allowed"
+      ? "bg-success text-success-foreground cursor-not-allowed"
       : status === "pending"
-        ? "bg-yellow-500 cursor-not-allowed"
-        : "bg-primary hover:opacity-90";
+        ? "bg-pending text-pending-foreground cursor-not-allowed"
+        : "bg-primary text-primary-foreground hover:bg-primary-glow";
 
   return (
     <button
       disabled={loading || status !== "none"}
       onClick={handleClick}
-      className={`rounded-full px-5 py-2 font-medium text-white transition ${buttonClass} ${
+      className={`rounded-full px-5 py-2 font-medium transition ${buttonClass} ${
         loading ? "opacity-60 cursor-not-allowed" : ""
       }`}
     >

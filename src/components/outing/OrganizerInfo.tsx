@@ -30,7 +30,7 @@ export default function OrganizerInfo({
           <div className="flex items-center gap-1">
             <h3 className="font-semibold text-base">{name}</h3>
 
-            {isVerified && <BadgeCheck className="h-5 w-5 text-blue-500" />}
+            {isVerified && <BadgeCheck className="h-5 w-5 text-primary" />}
           </div>
 
           <p className="text-sm text-muted-foreground">Hosted {totalHosted} outings</p>
@@ -40,7 +40,7 @@ export default function OrganizerInfo({
       {/* Right Section */}
 
       <div className="flex items-center gap-1 rounded-full bg-primary/10 px-3 py-1">
-        <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
+        <Star className="h-4 w-4 fill-pending text-pending" />
 
         <span className="font-medium">{rating.toFixed(1)}</span>
       </div>

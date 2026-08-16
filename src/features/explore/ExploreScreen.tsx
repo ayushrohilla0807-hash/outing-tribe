@@ -49,7 +49,7 @@ export default function ExploreScreen() {
   if (isError) {
     return (
       <main className="flex h-screen items-center justify-center">
-        <p className="text-red-500">{(error as Error).message}</p>
+        <p className="text-destructive">{(error as Error).message}</p>
       </main>
     );
   }
