@@ -49,100 +49,49 @@
   --shadow-card: 0 4px 24px -6px oklch(0.24 0.02 320 / 0.10);
 }
 
-/* ─── Light Theme (Default) ─────────────────────────────────────────────── */
-:root {
+/* ─── Light Theme ─────────────────────────────────────────────────────────── */
+:root,
+.light {
   --radius: 1rem;
 
-  /* Page canvas — warm off-white */
-  --background: #FAF7F2;
-  --foreground: #242124;
+  /* Page canvas — clean warm light background */
+  --background: #F8F9FA;
+  --foreground: #0F3444;
 
   /* Surface hierarchy */
-  --surface: #F3EDE5;
+  --surface: #EEF2F5;
   --surface-elevated: #FFFFFF;
 
   /* Cards */
   --card: #FFFFFF;
-  --card-foreground: #242124;
+  --card-foreground: #0F3444;
 
   /* Popovers/Dropdowns */
   --popover: #FFFFFF;
-  --popover-foreground: #242124;
-
-  /* Secondary (muted backgrounds for chips, pills, inputs) */
-  --secondary: #F3EDE5;
-  --secondary-foreground: #242124;
-
-  /* Muted text and backgrounds */
-  --muted: #F3EDE5;
-  --muted-foreground: #756E72;
-
-  /* Accent — terracotta/coral used very sparingly */
-  --accent: #F3D5C8;
-  --accent-foreground: #4A2545;
-  --accent-soft: #F3D5C8;
-
-  /* Borders & inputs */
-  --border: #E7DED7;
-  --input: #E7DED7;
-  --ring: #4A2545;
-
-  /* Primary — deep plum */
-  --primary: #4A2545;
-  --primary-foreground: #FFFFFF;
-  --primary-glow: #C96B4B;
-
-  /* Destructive — warm red */
-  --destructive: #B94A48;
-  --destructive-foreground: #FFFFFF;
-
-  /* Status tokens */
-  --success: #397A5A;
-  --success-foreground: #FFFFFF;
-  --pending: #B7791F;
-  --pending-foreground: #FFFFFF;
-}
-
-/* ─── Dark Theme ─────────────────────────────────────────────────────────── */
-.dark {
-  /* Page canvas — very deep warm-tinted dark */
-  --background: #1A1218;
-  --foreground: #F0EAE6;
-
-  /* Surface hierarchy */
-  --surface: #241820;
-  --surface-elevated: #2E2028;
-
-  /* Cards */
-  --card: #241820;
-  --card-foreground: #F0EAE6;
-
-  /* Popovers */
-  --popover: #2E2028;
-  --popover-foreground: #F0EAE6;
+  --popover-foreground: #0F3444;
 
   /* Secondary */
-  --secondary: #2E2028;
-  --secondary-foreground: #F0EAE6;
+  --secondary: #EEF2F5;
+  --secondary-foreground: #0F3444;
 
-  /* Muted */
-  --muted: #2E2028;
-  --muted-foreground: #9E9298;
+  /* Muted text and backgrounds */
+  --muted: #EEF2F5;
+  --muted-foreground: #5C6672;
 
   /* Accent */
-  --accent: #3D2236;
-  --accent-foreground: #F3D5C8;
-  --accent-soft: #3D2236;
+  --accent: #F5E8E2;
+  --accent-foreground: #A97065;
+  --accent-soft: #FDF3EE;
 
   /* Borders & inputs */
-  --border: #3D2A38;
-  --input: #3D2A38;
-  --ring: #7A3D72;
+  --border: #DDE2E7;
+  --input: #DDE2E7;
+  --ring: #A97065;
 
-  /* Primary — lighter plum for dark mode readability */
-  --primary: #7A3D72;
+  /* Primary — Dusty rose with warm peach glow */
+  --primary: #A97065;
   --primary-foreground: #FFFFFF;
-  --primary-glow: #C96B4B;
+  --primary-glow: #D99A7C;
 
   /* Destructive */
   --destructive: #B94A48;
@@ -151,8 +100,60 @@
   /* Status tokens */
   --success: #397A5A;
   --success-foreground: #FFFFFF;
-  --pending: #B7791F;
-  --pending-foreground: #FFFFFF;
+  --pending: #D99A7C;
+  --pending-foreground: #0F3444;
+}
+
+/* ─── Dark Theme (Default) ───────────────────────────────────────────────── */
+.dark {
+  /* Page canvas — deep blue-teal */
+  --background: #0F3444;
+  --foreground: #F4F6F8;
+
+  /* Surface hierarchy */
+  --surface: #4A4B5E;
+  --surface-elevated: #55576D;
+
+  /* Cards */
+  --card: #4A4B5E;
+  --card-foreground: #F4F6F8;
+
+  /* Popovers */
+  --popover: #4A4B5E;
+  --popover-foreground: #F4F6F8;
+
+  /* Secondary */
+  --secondary: #3D3E50;
+  --secondary-foreground: #F4F6F8;
+
+  /* Muted */
+  --muted: #3D3E50;
+  --muted-foreground: #A4A9B8;
+
+  /* Accent */
+  --accent: #55576D;
+  --accent-foreground: #D99A7C;
+  --accent-soft: rgba(217, 154, 124, 0.15);
+
+  /* Borders & inputs */
+  --border: #5A5C70;
+  --input: #5A5C70;
+  --ring: #D99A7C;
+
+  /* Primary — Dusty rose for primary CTAs */
+  --primary: #A97065;
+  --primary-foreground: #FFFFFF;
+  --primary-glow: #D99A7C;
+
+  /* Destructive */
+  --destructive: #D34E4E;
+  --destructive-foreground: #FFFFFF;
+
+  /* Status tokens */
+  --success: #3E9B68;
+  --success-foreground: #FFFFFF;
+  --pending: #D99A7C;
+  --pending-foreground: #0F3444;
 }
 
 @layer base {

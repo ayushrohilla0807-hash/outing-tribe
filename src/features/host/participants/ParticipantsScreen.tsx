@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { Route } from "@/routes/_authenticated/participants/$outingId";
 import { useNavigate, Link } from "@tanstack/react-router";
+import { useQueryClient } from "@tanstack/react-query";
 import { ArrowLeft, Users, ShieldAlert, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
@@ -20,6 +21,7 @@ import type { Participant } from "./models/participant";
 export default function ParticipantsScreen() {
   const { outingId } = Route.useParams();
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
 
   const [outingTitle, setOutingTitle] = useState("");
   const [maxParticipants, setMaxParticipants] = useState<number>(0);
@@ -81,6 +83,7 @@ export default function ParticipantsScreen() {
       setActionLoadingId(id);
       await acceptParticipant(id, outingId);
       toast.success("Participant accepted!");
+      await queryClient.invalidateQueries({ queryKey: ["accepted-chats"] });
       const data = await getParticipants(outingId);
       setParticipants(data);
     } catch (error: any) {
@@ -96,6 +99,7 @@ export default function ParticipantsScreen() {
       setActionLoadingId(id);
       await rejectParticipant(id, outingId);
       toast.success("Participant request rejected");
+      await queryClient.invalidateQueries({ queryKey: ["accepted-chats"] });
       const data = await getParticipants(outingId);
       setParticipants(data);
     } catch (error: any) {
@@ -111,6 +115,7 @@ export default function ParticipantsScreen() {
       setActionLoadingId(id);
       await removeParticipant(id, outingId);
       toast.success("Participant removed from outing");
+      await queryClient.invalidateQueries({ queryKey: ["accepted-chats"] });
       const data = await getParticipants(outingId);
       setParticipants(data);
     } catch (error: any) {

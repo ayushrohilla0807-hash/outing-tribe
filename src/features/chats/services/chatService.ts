@@ -115,61 +115,126 @@ export async function getAcceptedChats(): Promise<Chat[]> {
 
   if (!user) return [];
 
-  const chatList: Chat[] = [];
+  interface ChatTarget {
+    outingId: string;
+    otherUserId: string;
+    outingName: string;
+    outingImage: string | null;
+  }
+
+  const targets: ChatTarget[] = [];
   const seenKeys = new Set<string>();
 
-  // 1. Outings where user is a joined participant (chat with Host)
-  const { data: joinedParticipations, error: partError } = await supabase
+  // 1. As Participant: Find outings where current user is 'joined' (chat with Host)
+  const { data: participations, error: partErr } = await supabase
     .from("participants")
-    .select(
-      `
-      outing_id,
-      outings (
-        id,
-        title,
-        cover_image,
-        host_id,
-        profiles:host_id (
-          id,
-          full_name,
-          avatar_url
-        )
-      )
-    `,
-    )
+    .select("outing_id")
     .eq("user_id", user.id)
     .eq("status", "joined");
 
-  if (partError) {
-    console.error("Error fetching participations for chats:", partError);
+  if (partErr) {
+    console.error("Error loading user participations:", partErr);
   }
 
-  if (joinedParticipations) {
-    for (const item of joinedParticipations) {
-      const outing = item.outings as any;
-      if (!outing) continue;
+  const joinedOutingIds = (participations ?? []).map((p) => p.outing_id);
 
-      const otherUserId = outing.host_id;
-      if (!otherUserId || otherUserId === user.id) continue;
+  if (joinedOutingIds.length > 0) {
+    const { data: outingsData } = await supabase
+      .from("outings")
+      .select("id, title, cover_image, host_id")
+      .in("id", joinedOutingIds);
 
-      const chatKey = `${outing.id}-${otherUserId}`;
-      if (seenKeys.has(chatKey)) continue;
-      seenKeys.add(chatKey);
+    for (const outing of outingsData ?? []) {
+      if (!outing.host_id || outing.host_id === user.id) continue;
+      const key = `${outing.id}-${outing.host_id}`;
+      if (!seenKeys.has(key)) {
+        seenKeys.add(key);
+        targets.push({
+          outingId: outing.id,
+          otherUserId: outing.host_id,
+          outingName: outing.title,
+          outingImage: outing.cover_image,
+        });
+      }
+    }
+  }
 
-      // Fetch latest message
+  // 2. As Host: Find outings created by user, and all 'joined' participants
+  const { data: hostedOutings, error: hostErr } = await supabase
+    .from("outings")
+    .select("id, title, cover_image")
+    .eq("host_id", user.id);
+
+  if (hostErr) {
+    console.error("Error loading hosted outings:", hostErr);
+  }
+
+  const hostedOutingMap = new Map<string, { title: string; cover_image: string | null }>();
+  for (const h of hostedOutings ?? []) {
+    hostedOutingMap.set(h.id, { title: h.title, cover_image: h.cover_image });
+  }
+
+  const hostedIds = Array.from(hostedOutingMap.keys());
+  if (hostedIds.length > 0) {
+    const { data: hostParticipants } = await supabase
+      .from("participants")
+      .select("outing_id, user_id")
+      .in("outing_id", hostedIds)
+      .eq("status", "joined");
+
+    for (const p of hostParticipants ?? []) {
+      if (!p.user_id || p.user_id === user.id) continue;
+      const outingInfo = hostedOutingMap.get(p.outing_id);
+      if (!outingInfo) continue;
+
+      const key = `${p.outing_id}-${p.user_id}`;
+      if (!seenKeys.has(key)) {
+        seenKeys.add(key);
+        targets.push({
+          outingId: p.outing_id,
+          otherUserId: p.user_id,
+          outingName: outingInfo.title,
+          outingImage: outingInfo.cover_image,
+        });
+      }
+    }
+  }
+
+  if (targets.length === 0) {
+    return [];
+  }
+
+  // 3. Batch fetch other users' profiles
+  const uniqueOtherUserIds = Array.from(new Set(targets.map((t) => t.otherUserId)));
+  const { data: profiles } = await supabase
+    .from("profiles")
+    .select("id, full_name, avatar_url")
+    .in("id", uniqueOtherUserIds);
+
+  const profileMap = new Map(
+    (profiles ?? []).map((p) => [
+      p.id,
+      { fullName: p.full_name ?? "Participant", avatarUrl: p.avatar_url ?? null },
+    ]),
+  );
+
+  // 4. Fetch latest message and count for each conversation
+  const chatList: Chat[] = await Promise.all(
+    targets.map(async (t) => {
+      const profile = profileMap.get(t.otherUserId);
+
       const { data: latestMsgs } = await supabase
         .from("messages")
-        .select("*")
-        .eq("outing_id", outing.id)
+        .select("message, created_at")
+        .eq("outing_id", t.outingId)
         .or(
-          `and(sender_id.eq.${user.id},receiver_id.eq.${otherUserId}),and(sender_id.eq.${otherUserId},receiver_id.eq.${user.id})`,
+          `and(sender_id.eq.${user.id},receiver_id.eq.${t.otherUserId}),and(sender_id.eq.${t.otherUserId},receiver_id.eq.${user.id})`,
         )
         .order("created_at", { ascending: false })
         .limit(1);
 
       const lastMsg = latestMsgs?.[0];
 
-      // Format time
       let formattedTime = "";
       if (lastMsg?.created_at) {
         const d = new Date(lastMsg.created_at);
@@ -179,96 +244,20 @@ export async function getAcceptedChats(): Promise<Chat[]> {
         });
       }
 
-      chatList.push({
-        outingId: outing.id,
-        otherUserId,
-        outingName: outing.title,
-        outingImage: outing.cover_image,
-        otherUserName: outing.profiles?.full_name || "Host",
-        otherUserAvatar: outing.profiles?.avatar_url || null,
-        lastMessage: lastMsg?.message || "Say hello to start planning!",
+      return {
+        outingId: t.outingId,
+        otherUserId: t.otherUserId,
+        outingName: t.outingName,
+        outingImage: t.outingImage,
+        otherUserName: profile?.fullName ?? "Participant",
+        otherUserAvatar: profile?.avatarUrl ?? null,
+        lastMessage: lastMsg?.message || "",
         lastMessageTime: formattedTime,
         unreadCount: 0,
         participants: 2,
-      });
-    }
-  }
-
-  // 2. Outings where user is the Host (chat with each joined Participant)
-  const { data: hostedOutings, error: hostError } = await supabase
-    .from("outings")
-    .select(
-      `
-      id,
-      title,
-      cover_image,
-      participants (
-        id,
-        user_id,
-        status,
-        profiles:user_id (
-          id,
-          full_name,
-          avatar_url
-        )
-      )
-    `,
-    )
-    .eq("host_id", user.id);
-
-  if (hostError) {
-    console.error("Error fetching hosted chats:", hostError);
-  }
-
-  if (hostedOutings) {
-    for (const outing of hostedOutings) {
-      const participants = (outing.participants as any[]) || [];
-      const joinedMembers = participants.filter((p) => p.status === "joined");
-
-      for (const member of joinedMembers) {
-        const otherUserId = member.user_id;
-        if (!otherUserId || otherUserId === user.id) continue;
-
-        const chatKey = `${outing.id}-${otherUserId}`;
-        if (seenKeys.has(chatKey)) continue;
-        seenKeys.add(chatKey);
-
-        const { data: latestMsgs } = await supabase
-          .from("messages")
-          .select("*")
-          .eq("outing_id", outing.id)
-          .or(
-            `and(sender_id.eq.${user.id},receiver_id.eq.${otherUserId}),and(sender_id.eq.${otherUserId},receiver_id.eq.${user.id})`,
-          )
-          .order("created_at", { ascending: false })
-          .limit(1);
-
-        const lastMsg = latestMsgs?.[0];
-
-        let formattedTime = "";
-        if (lastMsg?.created_at) {
-          const d = new Date(lastMsg.created_at);
-          formattedTime = d.toLocaleTimeString([], {
-            hour: "2-digit",
-            minute: "2-digit",
-          });
-        }
-
-        chatList.push({
-          outingId: outing.id,
-          otherUserId,
-          outingName: outing.title,
-          outingImage: outing.cover_image,
-          otherUserName: member.profiles?.full_name || "Participant",
-          otherUserAvatar: member.profiles?.avatar_url || null,
-          lastMessage: lastMsg?.message || "Say hello to start planning!",
-          lastMessageTime: formattedTime,
-          unreadCount: 0,
-          participants: 2,
-        });
-      }
-    }
-  }
+      };
+    }),
+  );
 
   return chatList;
 }

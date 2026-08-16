@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { useNavigate, useParams } from "@tanstack/react-router";
+import { useQueryClient } from "@tanstack/react-query";
 import { Loader2, ShieldAlert } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
@@ -24,6 +25,7 @@ export default function ChatScreen() {
   });
 
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
 
   const [chat, setChat] = useState<Chat | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
@@ -147,6 +149,7 @@ export default function ChatScreen() {
     try {
       await sendMessage(outingId, currentUserId, userId, text);
       await loadMessages(currentUserId);
+      await queryClient.invalidateQueries({ queryKey: ["accepted-chats"] });
     } catch (err: any) {
       console.error(err);
       toast.error(err.message || "Failed to send message");

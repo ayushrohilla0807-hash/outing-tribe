@@ -1,39 +1,68 @@
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { useNavigate } from "@tanstack/react-router";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { Loader2 } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
 
-import type { Chat } from "./models/message";
 import { getAcceptedChats } from "./services/chatService";
-
 import ChatCard from "./widgets/ChatCard";
 import EmptyState from "./widgets/EmptyState";
 
 export default function ChatListScreen() {
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
 
-  const [chats, setChats] = useState<Chat[]>([]);
-  const [loading, setLoading] = useState(true);
+  const {
+    data: chats = [],
+    isLoading,
+    isError,
+  } = useQuery({
+    queryKey: ["accepted-chats"],
+    queryFn: getAcceptedChats,
+  });
 
   useEffect(() => {
-    async function loadChats() {
-      try {
-        const data = await getAcceptedChats();
-        setChats(data);
-      } catch (err) {
-        console.error(err);
-      } finally {
-        setLoading(false);
-      }
-    }
+    // Listen for new messages & participant updates to keep chat list reactive
+    const channel = supabase
+      .channel("chat-list-realtime")
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "messages" },
+        () => {
+          queryClient.invalidateQueries({ queryKey: ["accepted-chats"] });
+        },
+      )
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "participants" },
+        () => {
+          queryClient.invalidateQueries({ queryKey: ["accepted-chats"] });
+        },
+      )
+      .subscribe();
 
-    loadChats();
-  }, []);
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [queryClient]);
 
-  if (loading) {
+  if (isLoading) {
     return (
       <main className="mx-auto max-w-2xl px-5 py-6">
         <h1 className="mb-8 text-4xl font-bold">Chats</h1>
+        <div className="flex items-center gap-2 text-muted-foreground">
+          <Loader2 className="h-5 w-5 animate-spin text-primary" />
+          <p>Loading chats...</p>
+        </div>
+      </main>
+    );
+  }
 
-        <p className="text-muted-foreground">Loading chats...</p>
+  if (isError) {
+    return (
+      <main className="mx-auto max-w-2xl px-5 py-6">
+        <h1 className="mb-8 text-4xl font-bold">Chats</h1>
+        <p className="text-destructive">Failed to load chats. Please try refreshing.</p>
       </main>
     );
   }
