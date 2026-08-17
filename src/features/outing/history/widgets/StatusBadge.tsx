@@ -28,7 +28,8 @@ const styles: Record<
 
   cancelled: {
     label: "Cancelled",
-    className: "bg-destructive/20 text-destructive dark:bg-destructive/30 dark:text-destructive-foreground",
+    className:
+      "bg-destructive/20 text-destructive dark:bg-destructive/30 dark:text-destructive-foreground",
   },
 };
 

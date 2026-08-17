@@ -10,11 +10,13 @@ export async function getProfile(): Promise<UserProfile> {
     throw new Error("Not authenticated");
   }
 
-  let { data: profile, error } = await supabase
+  const { data: fetchProfile, error } = await supabase
     .from("profiles")
     .select("*")
     .eq("id", user.id)
     .maybeSingle();
+
+  let profile = fetchProfile;
 
   if (error) {
     console.error("Error fetching profile:", error);

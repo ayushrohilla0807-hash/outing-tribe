@@ -10,9 +10,7 @@ export default function RequestStatus({ status }: Props) {
   }
 
   if (status === "joined") {
-    return (
-      <p className="mt-3 text-sm text-success font-medium">✅ You're joined in this outing</p>
-    );
+    return <p className="mt-3 text-sm text-success font-medium">✅ You're joined in this outing</p>;
   }
 
   return null;

@@ -25,20 +25,12 @@ export default function ChatListScreen() {
     // Listen for new messages & participant updates to keep chat list reactive
     const channel = supabase
       .channel("chat-list-realtime")
-      .on(
-        "postgres_changes",
-        { event: "*", schema: "public", table: "messages" },
-        () => {
-          queryClient.invalidateQueries({ queryKey: ["accepted-chats"] });
-        },
-      )
-      .on(
-        "postgres_changes",
-        { event: "*", schema: "public", table: "participants" },
-        () => {
-          queryClient.invalidateQueries({ queryKey: ["accepted-chats"] });
-        },
-      )
+      .on("postgres_changes", { event: "*", schema: "public", table: "messages" }, () => {
+        queryClient.invalidateQueries({ queryKey: ["accepted-chats"] });
+      })
+      .on("postgres_changes", { event: "*", schema: "public", table: "participants" }, () => {
+        queryClient.invalidateQueries({ queryKey: ["accepted-chats"] });
+      })
       .subscribe();
 
     return () => {

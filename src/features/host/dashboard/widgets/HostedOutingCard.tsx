@@ -14,7 +14,8 @@ type HostedOutingCardProps = {
 const STATUS_STYLE = {
   upcoming: "bg-success/20 text-success dark:bg-success/30 dark:text-success-foreground",
   completed: "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300",
-  cancelled: "bg-destructive/20 text-destructive dark:bg-destructive/30 dark:text-destructive-foreground",
+  cancelled:
+    "bg-destructive/20 text-destructive dark:bg-destructive/30 dark:text-destructive-foreground",
 };
 
 export default function HostedOutingCard({
