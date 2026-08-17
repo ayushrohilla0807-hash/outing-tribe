@@ -197,6 +197,13 @@ using (
         where public.outings.id = public.participants.outing_id
         and public.outings.host_id = auth.uid()
     )
+)
+with check (
+    exists (
+        select 1 from public.outings
+        where public.outings.id = public.participants.outing_id
+        and public.outings.host_id = auth.uid()
+    )
 );
 
 drop policy if exists "Users can leave or hosts can remove/reject participants" on public.participants;

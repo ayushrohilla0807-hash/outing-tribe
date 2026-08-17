@@ -10,14 +10,19 @@ function calculateAge(dateOfBirth: string | null): number {
   let age = today.getFullYear() - dob.getFullYear();
   const monthDiff = today.getMonth() - dob.getMonth();
 
-  if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < dob.getDate())) {
+  if (
+    monthDiff < 0 ||
+    (monthDiff === 0 && today.getDate() < dob.getDate())
+  ) {
     age--;
   }
 
   return age > 0 ? age : 0;
 }
 
-export async function getParticipants(outingId: string): Promise<Participant[]> {
+export async function getParticipants(
+  outingId: string
+): Promise<Participant[]> {
   const { data: participantRows, error } = await supabase
     .from("participants")
     .select("*")
@@ -34,20 +39,23 @@ export async function getParticipants(outingId: string): Promise<Participant[]> 
 
   const { data: profiles, error: profileError } = await supabase
     .from("profiles")
-    .select(
-      `
+    .select(`
       id,
       full_name,
       avatar_url,
       city,
       date_of_birth
-    `,
-    )
+    `)
     .in("id", userIds);
 
   if (profileError) throw profileError;
 
-  const profileMap = new Map((profiles ?? []).map((profile) => [profile.id, profile]));
+  const profileMap = new Map(
+    (profiles ?? []).map((profile) => [
+      profile.id,
+      profile,
+    ])
+  );
 
   return participantRows.map((participant): Participant => {
     const profile = profileMap.get(participant.user_id);
@@ -65,78 +73,151 @@ export async function getParticipants(outingId: string): Promise<Participant[]> 
       rating: 5,
       interests: [],
       joinedAt: participant.joined_at
-        ? new Date(participant.joined_at).toLocaleDateString()
+        ? new Date(
+          participant.joined_at
+        ).toLocaleDateString()
         : "Recently",
-      status: participant.status === "joined" ? "joined" : "pending",
+      status:
+        participant.status === "joined"
+          ? "joined"
+          : "pending",
     };
   });
 }
 
-export async function acceptParticipant(participantId: string, outingId: string) {
+/* =========================
+   ACCEPT PARTICIPANT
+========================= */
+
+export async function acceptParticipant(
+  participantId: string,
+  outingId: string
+) {
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  if (!user) throw new Error("Not authenticated");
 
-  // Verify host ownership and capacity
-  const { data: outing, error: outingError } = await supabase
-    .from("outings")
-    .select("id, host_id, max_participants")
-    .eq("id", outingId)
-    .single();
-
-  if (outingError || !outing) throw new Error("Outing not found");
-  if (outing.host_id !== user.id)
-    throw new Error("Unauthorized: Only the host can accept requests");
-
-  // Check current joined count
-  const { count: joinedCount, error: countError } = await supabase
-    .from("participants")
-    .select("id", { count: "exact", head: true })
-    .eq("outing_id", outingId)
-    .eq("status", "joined");
-
-  if (countError) throw countError;
-  if ((joinedCount ?? 0) >= outing.max_participants) {
-    throw new Error("This outing has reached maximum participant capacity");
+  if (!user) {
+    throw new Error("Not authenticated");
   }
 
-  const { error } = await supabase
+  console.log("[acceptParticipant] Initiating mutation:", {
+    participantId,
+    outingId,
+    hostUserId: user.id,
+  });
+
+  const { data, error } = await supabase
     .from("participants")
     .update({
       status: "joined",
     })
-    .eq("id", participantId);
+    .eq("id", participantId)
+    .select();
 
-  if (error) throw error;
+  console.log("[acceptParticipant] Supabase response:", { data, error });
+
+  if (error) {
+    console.error("[acceptParticipant] Supabase error:", error);
+    throw new Error(error.message || "Failed to update participant in database");
+  }
+
+  if (!data || data.length === 0) {
+    const errorMsg = `Database update blocked: 0 rows modified for participant ID ${participantId}. Check that the Supabase 'Hosts can update participant status' RLS policy is applied.`;
+    console.error(`[acceptParticipant] ${errorMsg}`);
+    throw new Error(errorMsg);
+  }
+
+  console.log("[acceptParticipant] Success:", data[0]);
+  return data[0];
 }
 
-export async function rejectParticipant(participantId: string, outingId: string) {
+/* =========================
+   REJECT PARTICIPANT
+========================= */
+
+export async function rejectParticipant(
+  participantId: string,
+  outingId: string
+) {
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  if (!user) throw new Error("Not authenticated");
 
-  const { error } = await supabase
+  if (!user) {
+    throw new Error("Not authenticated");
+  }
+
+  console.log("[rejectParticipant] Initiating mutation:", {
+    participantId,
+    outingId,
+    hostUserId: user.id,
+  });
+
+  const { data, error } = await supabase
     .from("participants")
     .delete()
     .eq("id", participantId)
-    .eq("outing_id", outingId);
+    .select();
 
-  if (error) throw error;
+  console.log("[rejectParticipant] Supabase response:", { data, error });
+
+  if (error) {
+    console.error("[rejectParticipant] Supabase error:", error);
+    throw new Error(error.message || "Failed to delete participant in database");
+  }
+
+  if (!data || data.length === 0) {
+    const errorMsg = `Database delete blocked: 0 rows deleted for participant ID ${participantId}. Check that the Supabase 'Users can leave or hosts can remove/reject participants' RLS policy is applied.`;
+    console.error(`[rejectParticipant] ${errorMsg}`);
+    throw new Error(errorMsg);
+  }
+
+  console.log("[rejectParticipant] Success:", data[0]);
+  return data[0];
 }
 
-export async function removeParticipant(participantId: string, outingId: string) {
+/* =========================
+   REMOVE PARTICIPANT
+========================= */
+
+export async function removeParticipant(
+  participantId: string,
+  outingId: string
+) {
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  if (!user) throw new Error("Not authenticated");
 
-  const { error } = await supabase
+  if (!user) {
+    throw new Error("Not authenticated");
+  }
+
+  console.log("[removeParticipant] Initiating mutation:", {
+    participantId,
+    outingId,
+    hostUserId: user.id,
+  });
+
+  const { data, error } = await supabase
     .from("participants")
     .delete()
     .eq("id", participantId)
-    .eq("outing_id", outingId);
+    .select();
 
-  if (error) throw error;
+  console.log("[removeParticipant] Supabase response:", { data, error });
+
+  if (error) {
+    console.error("[removeParticipant] Supabase error:", error);
+    throw new Error(error.message || "Failed to remove participant in database");
+  }
+
+  if (!data || data.length === 0) {
+    const errorMsg = `Database delete blocked: 0 rows deleted for participant ID ${participantId}.`;
+    console.error(`[removeParticipant] ${errorMsg}`);
+    throw new Error(errorMsg);
+  }
+
+  console.log("[removeParticipant] Success:", data[0]);
+  return data[0];
 }

@@ -83,12 +83,28 @@ export default function ParticipantsScreen() {
       setActionLoadingId(id);
       await acceptParticipant(id, outingId);
       toast.success("Participant accepted!");
-      await queryClient.invalidateQueries({ queryKey: ["accepted-chats"] });
+
+      // Optimistic update for instant UI response
+      setParticipants((prev) =>
+        prev.map((p) => (p.id === id ? { ...p, status: "joined" as const } : p)),
+      );
+
+      // Invalidate relevant react-query caches
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ["accepted-chats"] }),
+        queryClient.invalidateQueries({ queryKey: ["outing-details", outingId] }),
+        queryClient.invalidateQueries({ queryKey: ["explore-outings"] }),
+        queryClient.invalidateQueries({ queryKey: ["join-status", outingId] }),
+      ]);
+
+      // Re-fetch authoritative participant list
       const data = await getParticipants(outingId);
       setParticipants(data);
     } catch (error: any) {
-      console.error(error);
+      console.error("Error accepting participant:", error);
       toast.error(error.message || "Failed to accept participant");
+      const data = await getParticipants(outingId);
+      setParticipants(data);
     } finally {
       setActionLoadingId(null);
     }
@@ -99,12 +115,24 @@ export default function ParticipantsScreen() {
       setActionLoadingId(id);
       await rejectParticipant(id, outingId);
       toast.success("Participant request rejected");
-      await queryClient.invalidateQueries({ queryKey: ["accepted-chats"] });
+
+      // Optimistic remove from local state
+      setParticipants((prev) => prev.filter((p) => p.id !== id));
+
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ["accepted-chats"] }),
+        queryClient.invalidateQueries({ queryKey: ["outing-details", outingId] }),
+        queryClient.invalidateQueries({ queryKey: ["explore-outings"] }),
+        queryClient.invalidateQueries({ queryKey: ["join-status", outingId] }),
+      ]);
+
       const data = await getParticipants(outingId);
       setParticipants(data);
     } catch (error: any) {
-      console.error(error);
+      console.error("Error rejecting participant:", error);
       toast.error(error.message || "Failed to reject participant");
+      const data = await getParticipants(outingId);
+      setParticipants(data);
     } finally {
       setActionLoadingId(null);
     }
@@ -115,12 +143,24 @@ export default function ParticipantsScreen() {
       setActionLoadingId(id);
       await removeParticipant(id, outingId);
       toast.success("Participant removed from outing");
-      await queryClient.invalidateQueries({ queryKey: ["accepted-chats"] });
+
+      // Optimistic remove from local state
+      setParticipants((prev) => prev.filter((p) => p.id !== id));
+
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ["accepted-chats"] }),
+        queryClient.invalidateQueries({ queryKey: ["outing-details", outingId] }),
+        queryClient.invalidateQueries({ queryKey: ["explore-outings"] }),
+        queryClient.invalidateQueries({ queryKey: ["join-status", outingId] }),
+      ]);
+
       const data = await getParticipants(outingId);
       setParticipants(data);
     } catch (error: any) {
-      console.error(error);
+      console.error("Error removing participant:", error);
       toast.error(error.message || "Failed to remove participant");
+      const data = await getParticipants(outingId);
+      setParticipants(data);
     } finally {
       setActionLoadingId(null);
     }
@@ -199,6 +239,7 @@ export default function ParticipantsScreen() {
               <ParticipantCard
                 key={participant.id}
                 participant={participant}
+                loading={actionLoadingId === participant.id}
                 onAccept={handleAccept}
                 onReject={handleReject}
               />
@@ -222,6 +263,7 @@ export default function ParticipantsScreen() {
               <ParticipantCard
                 key={participant.id}
                 participant={participant}
+                loading={actionLoadingId === participant.id}
                 onChat={(userId) =>
                   navigate({
                     to: "/chats/$outingId/$userId",
