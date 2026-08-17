@@ -3,7 +3,7 @@ import { Calendar, MapPin, Star, Users } from "lucide-react";
 import SaveButton from "@/features/outing/saved/widgets/SaveButton";
 import JoinButton from "@/features/outing/join/widgets/JoinButton";
 
-import { Avatar, AvatarFallback, AvatarImage } from "../common/Avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 type JoinStatus = "none" | "pending" | "joined";
 

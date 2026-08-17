@@ -113,7 +113,7 @@ export default function ProfileSetupScreen() {
   // ─── Interests multi-select ─────────────────────────────────────────────────
   function toggleInterest(interest: string) {
     setSelectedInterests((prev) =>
-      prev.includes(interest) ? prev.filter((i) => i !== interest) : [...prev, interest]
+      prev.includes(interest) ? prev.filter((i) => i !== interest) : [...prev, interest],
     );
     if (errors.interests) setErrors((e) => ({ ...e, interests: undefined }));
   }
@@ -123,8 +123,7 @@ export default function ProfileSetupScreen() {
   }
 
   const filteredInterests = ALL_INTERESTS.filter(
-    (i) =>
-      i.toLowerCase().includes(interestSearch.toLowerCase()) && !selectedInterests.includes(i)
+    (i) => i.toLowerCase().includes(interestSearch.toLowerCase()) && !selectedInterests.includes(i),
   );
 
   // ─── Submit ─────────────────────────────────────────────────────────────────
@@ -227,7 +226,9 @@ export default function ProfileSetupScreen() {
                           setShowAvatarPicker(false);
                         }}
                         className={`relative rounded-full overflow-hidden border-2 transition-all ${
-                          avatarUrl === src ? "border-primary scale-110" : "border-transparent hover:border-white/30"
+                          avatarUrl === src
+                            ? "border-primary scale-110"
+                            : "border-transparent hover:border-white/30"
                         }`}
                       >
                         <img src={src} alt={`Avatar ${i + 1}`} className="h-10 w-10 bg-surface" />
@@ -373,8 +374,8 @@ export default function ProfileSetupScreen() {
                   errors.interests
                     ? "border-red-400/60"
                     : dropdownOpen
-                    ? "border-primary/60"
-                    : "border-white/10 hover:border-white/20"
+                      ? "border-primary/60"
+                      : "border-white/10 hover:border-white/20"
                 }`}
               >
                 <span className={selectedInterests.length === 0 ? "text-muted-foreground" : ""}>
@@ -416,7 +417,7 @@ export default function ProfileSetupScreen() {
                         const items = group.items.filter(
                           (i) =>
                             i.toLowerCase().includes(interestSearch.toLowerCase()) &&
-                            !selectedInterests.includes(i)
+                            !selectedInterests.includes(i),
                         );
                         if (items.length === 0) return null;
                         return (

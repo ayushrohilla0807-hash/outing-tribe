@@ -54,17 +54,6 @@ function AuthPage() {
 
         if (error) throw error;
 
-        // if (data.user) {
-        //   const { error: profileError } = await supabase
-        //     .from("profiles")
-        //     .upsert({
-        //       id: data.user.id,
-        //       full_name: name || email.split("@")[0],
-        //     });
-
-        //   if (profileError) throw profileError;
-        // }
-
         alert("Account created successfully. Please verify your email before signing in.");
 
         setMode("signin");

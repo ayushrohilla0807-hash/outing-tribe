@@ -7,10 +7,10 @@ export default function PublishButton({ loading, disabled = false }: PublishButt
   return (
     <button
       type="submit"
-      onClick={() => console.log("🟢 BUTTON CLICKED")}
-      className="w-full rounded-xl bg-blue-600 px-4 py-3 text-white"
+      disabled={disabled || loading}
+      className="w-full rounded-full bg-primary px-4 py-3.5 text-base font-semibold text-black shadow-lg shadow-primary/20 transition-all hover:bg-primary/90 active:scale-[0.99] disabled:opacity-50 cursor-pointer"
     >
-      Create Outing
+      {loading ? "Creating Outing..." : "Create Outing"}
     </button>
   );
 }

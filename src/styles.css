@@ -46,7 +46,7 @@
   --color-pending-foreground: var(--pending-foreground);
 
   --shadow-glow: 0 20px 60px -20px color-mix(in oklab, var(--primary) 40%, transparent);
-  --shadow-card: 0 4px 24px -6px oklch(0.24 0.02 320 / 0.10);
+  --shadow-card: 0 4px 24px -6px oklch(0.24 0.02 320 / 0.1);
 }
 
 /* ─── Light Theme ─────────────────────────────────────────────────────────── */
@@ -55,105 +55,105 @@
   --radius: 1rem;
 
   /* Page canvas — clean warm light background */
-  --background: #F8F9FA;
-  --foreground: #0F3444;
+  --background: #f8f9fa;
+  --foreground: #0f3444;
 
   /* Surface hierarchy */
-  --surface: #EEF2F5;
-  --surface-elevated: #FFFFFF;
+  --surface: #eef2f5;
+  --surface-elevated: #ffffff;
 
   /* Cards */
-  --card: #FFFFFF;
-  --card-foreground: #0F3444;
+  --card: #ffffff;
+  --card-foreground: #0f3444;
 
   /* Popovers/Dropdowns */
-  --popover: #FFFFFF;
-  --popover-foreground: #0F3444;
+  --popover: #ffffff;
+  --popover-foreground: #0f3444;
 
   /* Secondary */
-  --secondary: #EEF2F5;
-  --secondary-foreground: #0F3444;
+  --secondary: #eef2f5;
+  --secondary-foreground: #0f3444;
 
   /* Muted text and backgrounds */
-  --muted: #EEF2F5;
-  --muted-foreground: #5C6672;
+  --muted: #eef2f5;
+  --muted-foreground: #5c6672;
 
   /* Accent */
-  --accent: #F5E8E2;
-  --accent-foreground: #A97065;
-  --accent-soft: #FDF3EE;
+  --accent: #f5e8e2;
+  --accent-foreground: #a97065;
+  --accent-soft: #fdf3ee;
 
   /* Borders & inputs */
-  --border: #DDE2E7;
-  --input: #DDE2E7;
-  --ring: #A97065;
+  --border: #dde2e7;
+  --input: #dde2e7;
+  --ring: #a97065;
 
-  /* Primary — Dusty rose with warm peach glow */
-  --primary: #A97065;
-  --primary-foreground: #FFFFFF;
-  --primary-glow: #D99A7C;
+  /* Primary — Main theme color */
+  --primary: #d99a7c;
+  --primary-foreground: #ffffff;
+  --primary-glow: #d99a7c;
 
   /* Destructive */
-  --destructive: #B94A48;
-  --destructive-foreground: #FFFFFF;
+  --destructive: #b94a48;
+  --destructive-foreground: #ffffff;
 
   /* Status tokens */
-  --success: #397A5A;
-  --success-foreground: #FFFFFF;
-  --pending: #D99A7C;
-  --pending-foreground: #0F3444;
+  --success: #397a5a;
+  --success-foreground: #ffffff;
+  --pending: #d99a7c;
+  --pending-foreground: #0f3444;
 }
 
 /* ─── Dark Theme (Default) ───────────────────────────────────────────────── */
 .dark {
-  /* Page canvas — deep blue-teal */
-  --background: #0F3444;
-  --foreground: #F4F6F8;
+  /* Page canvas — black */
+  --background: #000000;
+  --foreground: #f4f6f8;
 
   /* Surface hierarchy */
-  --surface: #4A4B5E;
-  --surface-elevated: #55576D;
+  --surface: #4a4b5e;
+  --surface-elevated: #55576d;
 
   /* Cards */
-  --card: #4A4B5E;
-  --card-foreground: #F4F6F8;
+  --card: #4a4b5e;
+  --card-foreground: #f4f6f8;
 
   /* Popovers */
-  --popover: #4A4B5E;
-  --popover-foreground: #F4F6F8;
+  --popover: #4a4b5e;
+  --popover-foreground: #f4f6f8;
 
   /* Secondary */
-  --secondary: #3D3E50;
-  --secondary-foreground: #F4F6F8;
+  --secondary: #3d3e50;
+  --secondary-foreground: #f4f6f8;
 
   /* Muted */
-  --muted: #3D3E50;
-  --muted-foreground: #A4A9B8;
+  --muted: #3d3e50;
+  --muted-foreground: #a4a9b8;
 
   /* Accent */
-  --accent: #55576D;
-  --accent-foreground: #D99A7C;
+  --accent: #55576d;
+  --accent-foreground: #d99a7c;
   --accent-soft: rgba(217, 154, 124, 0.15);
 
   /* Borders & inputs */
-  --border: #5A5C70;
-  --input: #5A5C70;
-  --ring: #D99A7C;
+  --border: #5a5c70;
+  --input: #5a5c70;
+  --ring: #d99a7c;
 
-  /* Primary — Dusty rose for primary CTAs */
-  --primary: #A97065;
-  --primary-foreground: #FFFFFF;
-  --primary-glow: #D99A7C;
+  /* Primary — Main theme color */
+  --primary: #d99a7c;
+  --primary-foreground: #ffffff;
+  --primary-glow: #d99a7c;
 
   /* Destructive */
-  --destructive: #D34E4E;
-  --destructive-foreground: #FFFFFF;
+  --destructive: #d34e4e;
+  --destructive-foreground: #ffffff;
 
   /* Status tokens */
-  --success: #3E9B68;
-  --success-foreground: #FFFFFF;
-  --pending: #D99A7C;
-  --pending-foreground: #0F3444;
+  --success: #3e9b68;
+  --success-foreground: #ffffff;
+  --pending: #d99a7c;
+  --pending-foreground: #0f3444;
 }
 
 @layer base {
@@ -177,11 +177,7 @@
 }
 
 @utility gradient-text {
-  background: linear-gradient(
-    135deg,
-    var(--primary) 0%,
-    var(--primary-glow) 100%
-  );
+  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-glow) 100%);
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
