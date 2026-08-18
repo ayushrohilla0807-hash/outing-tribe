@@ -8,122 +8,131 @@ export async function getHistory(): Promise<HistoryOuting[]> {
 
   if (!user) return [];
 
+  console.log("[getHistory] Loading history for user:", user.id);
+
   const historyList: HistoryOuting[] = [];
   const seenIds = new Set<string>();
 
-  // 1. Participated outings
-  const { data: participations } = await supabase
+  // 1. Participated outings (pending or joined)
+  const { data: participations, error: partError } = await supabase
     .from("participants")
-    .select(
-      `
-      status,
-      outing_id,
-      outings (
-        id,
-        title,
-        location,
-        outing_date,
-        start_time,
-        cover_image,
-        status,
-        max_participants,
-        host_id,
-        profiles:host_id (
-          full_name
-        ),
-        participants (
-          id,
-          status
-        )
-      )
-    `,
-    )
+    .select("id, status, outing_id, joined_at")
     .eq("user_id", user.id)
     .order("joined_at", { ascending: false });
 
-  if (participations) {
-    for (const p of participations) {
-      const outing = p.outings as any;
-      if (!outing) continue;
-      seenIds.add(outing.id);
+  if (partError) {
+    console.error("[getHistory] Error fetching participations:", partError);
+  }
 
-      let status: HistoryStatus = "pending";
-      if (outing.status === "cancelled") status = "cancelled";
-      else if (outing.status === "completed") status = "completed";
-      else if (p.status === "joined") status = "joined";
-      else status = "pending";
+  const participatedOutingIds = (participations ?? []).map((p) => p.outing_id);
+  const participationStatusMap = new Map((participations ?? []).map((p) => [p.outing_id, p.status]));
 
-      const joinedCount = ((outing.participants as any[]) || []).filter(
-        (part) => part.status === "joined",
-      ).length;
+  // Fetch outing records for participations
+  let participatedOutings: any[] = [];
+  if (participatedOutingIds.length > 0) {
+    const { data: outingsData, error: outingsError } = await supabase
+      .from("outings")
+      .select("*")
+      .in("id", participatedOutingIds);
 
-      historyList.push({
-        id: outing.id,
-        title: outing.title,
-        location: outing.location,
-        date: `${outing.outing_date} • ${outing.start_time}`,
-        host: outing.profiles?.full_name || "Host",
-        image:
-          outing.cover_image ||
-          "https://images.unsplash.com/photo-1517457373958-b7bdd4587205?w=500&auto=format&fit=crop&q=80",
-        status,
-        participants: joinedCount,
-      });
+    if (outingsError) {
+      console.error("[getHistory] Error fetching participated outings:", outingsError);
     }
+    participatedOutings = outingsData ?? [];
   }
 
   // 2. Hosted outings
-  const { data: hosted } = await supabase
+  const { data: hostedOutings, error: hostError } = await supabase
     .from("outings")
-    .select(
-      `
-      id,
-      title,
-      location,
-      outing_date,
-      start_time,
-      cover_image,
-      status,
-      max_participants,
-      profiles:host_id (
-        full_name
-      ),
-      participants (
-        id,
-        status
-      )
-    `,
-    )
+    .select("*")
     .eq("host_id", user.id)
     .order("created_at", { ascending: false });
 
-  if (hosted) {
-    for (const outing of hosted) {
-      if (seenIds.has(outing.id)) continue;
-      seenIds.add(outing.id);
+  if (hostError) {
+    console.error("[getHistory] Error fetching hosted outings:", hostError);
+  }
 
-      let status: HistoryStatus = "joined";
-      if (outing.status === "cancelled") status = "cancelled";
-      else if (outing.status === "completed") status = "completed";
+  const allOutings = [...participatedOutings, ...(hostedOutings ?? [])];
+  const allOutingIds = Array.from(new Set(allOutings.map((o) => o.id)));
 
-      const joinedCount = ((outing.participants as any[]) || []).filter(
-        (part: any) => part.status === "joined",
-      ).length;
+  // Batch fetch host profiles
+  const allHostIds = Array.from(new Set(allOutings.map((o) => o.host_id).filter(Boolean)));
+  let profileMap = new Map<string, string>();
+  if (allHostIds.length > 0) {
+    const { data: profiles } = await supabase
+      .from("profiles")
+      .select("id, full_name")
+      .in("id", allHostIds);
 
-      historyList.push({
-        id: outing.id,
-        title: outing.title,
-        location: outing.location,
-        date: `${outing.outing_date} • ${outing.start_time}`,
-        host: "You (Host)",
-        image:
-          outing.cover_image ||
-          "https://images.unsplash.com/photo-1517457373958-b7bdd4587205?w=500&auto=format&fit=crop&q=80",
-        status,
-        participants: joinedCount,
-      });
+    if (profiles) {
+      profileMap = new Map(profiles.map((p) => [p.id, p.full_name || "Host"]));
     }
   }
 
+  // Batch fetch joined participant counts
+  const countsMap = new Map<string, number>();
+  if (allOutingIds.length > 0) {
+    const { data: allParticipants } = await supabase
+      .from("participants")
+      .select("outing_id")
+      .in("outing_id", allOutingIds)
+      .eq("status", "joined");
+
+    if (allParticipants) {
+      for (const p of allParticipants) {
+        countsMap.set(p.outing_id, (countsMap.get(p.outing_id) || 0) + 1);
+      }
+    }
+  }
+
+  // Build participated entries
+  for (const outing of participatedOutings) {
+    seenIds.add(outing.id);
+    const pStatus = participationStatusMap.get(outing.id);
+
+    let status: HistoryStatus = "pending";
+    if (outing.status === "cancelled") status = "cancelled";
+    else if (outing.status === "completed") status = "completed";
+    else if (pStatus === "joined") status = "joined";
+    else status = "pending";
+
+    historyList.push({
+      id: outing.id,
+      title: outing.title,
+      location: outing.location,
+      date: `${outing.outing_date} • ${outing.start_time}`,
+      host: profileMap.get(outing.host_id) || "Host",
+      image:
+        outing.cover_image ||
+        "https://images.unsplash.com/photo-1517457373958-b7bdd4587205?w=500&auto=format&fit=crop&q=80",
+      status,
+      participants: countsMap.get(outing.id) || 0,
+    });
+  }
+
+  // Build hosted entries
+  for (const outing of hostedOutings ?? []) {
+    if (seenIds.has(outing.id)) continue;
+    seenIds.add(outing.id);
+
+    let status: HistoryStatus = "joined";
+    if (outing.status === "cancelled") status = "cancelled";
+    else if (outing.status === "completed") status = "completed";
+
+    historyList.push({
+      id: outing.id,
+      title: outing.title,
+      location: outing.location,
+      date: `${outing.outing_date} • ${outing.start_time}`,
+      host: "You (Host)",
+      image:
+        outing.cover_image ||
+        "https://images.unsplash.com/photo-1517457373958-b7bdd4587205?w=500&auto=format&fit=crop&q=80",
+      status,
+      participants: countsMap.get(outing.id) || 0,
+    });
+  }
+
+  console.log("[getHistory] Total history items returned:", historyList.length);
   return historyList;
 }

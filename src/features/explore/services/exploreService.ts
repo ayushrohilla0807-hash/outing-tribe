@@ -2,7 +2,25 @@ import { supabase } from "@/integrations/supabase/client";
 import type { ExploreOuting } from "../models/outing";
 
 export async function getExploreOutings(): Promise<ExploreOuting[]> {
-  const { data: outings, error } = await supabase
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  // Find outing IDs where current user is pending or joined
+  const excludedOutingIds = new Set<string>();
+  if (user) {
+    const { data: userParticipations } = await supabase
+      .from("participants")
+      .select("outing_id")
+      .eq("user_id", user.id)
+      .in("status", ["pending", "joined"]);
+
+    if (userParticipations) {
+      userParticipations.forEach((p) => excludedOutingIds.add(p.outing_id));
+    }
+  }
+
+  let query = supabase
     .from("outings")
     .select(
       `
@@ -16,6 +34,13 @@ export async function getExploreOutings(): Promise<ExploreOuting[]> {
     .neq("status", "cancelled")
     .order("created_at", { ascending: false });
 
+  // Exclude outings created by the current user at the data-query level
+  if (user) {
+    query = query.neq("host_id", user.id);
+  }
+
+  const { data: outings, error } = await query;
+
   if (error) {
     console.error("Error fetching explore outings:", error);
     throw error;
@@ -23,8 +48,15 @@ export async function getExploreOutings(): Promise<ExploreOuting[]> {
 
   if (!outings || outings.length === 0) return [];
 
+  // Exclude outings where the current user is pending/joined or host
+  const visibleOutings = outings.filter(
+    (item) => (!user || item.host_id !== user.id) && !excludedOutingIds.has(item.id),
+  );
+
+  if (visibleOutings.length === 0) return [];
+
   // Fetch host profiles for these outings
-  const hostIds = Array.from(new Set(outings.map((o) => o.host_id).filter(Boolean)));
+  const hostIds = Array.from(new Set(visibleOutings.map((o) => o.host_id).filter(Boolean)));
 
   let profileMap = new Map<string, { full_name: string | null; avatar_url: string | null }>();
   if (hostIds.length > 0) {
@@ -38,7 +70,7 @@ export async function getExploreOutings(): Promise<ExploreOuting[]> {
     }
   }
 
-  return outings.map((item: any): ExploreOuting => {
+  return visibleOutings.map((item: any): ExploreOuting => {
     const hostProfile = profileMap.get(item.host_id);
     const participantsList = (item.participants as any[]) || [];
     const joinedCount = participantsList.filter((p) => p.status === "joined").length;

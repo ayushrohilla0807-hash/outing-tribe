@@ -87,6 +87,10 @@ function RecommendedCard({ outing }: { outing: ExploreOuting }) {
       await queryClient.invalidateQueries({
         queryKey: ["explore-outings"],
       });
+
+      await queryClient.invalidateQueries({
+        queryKey: ["history-outings"],
+      });
     } catch (err: any) {
       console.error(err);
       toast.error(err.message || "Failed to send join request");

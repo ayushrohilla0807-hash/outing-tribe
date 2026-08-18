@@ -12,7 +12,7 @@ const styles: Record<
   }
 > = {
   pending: {
-    label: "Pending",
+    label: "Request Pending",
     className: "bg-pending/20 text-pending dark:bg-pending/30 dark:text-pending-foreground",
   },
 

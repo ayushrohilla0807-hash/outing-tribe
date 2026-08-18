@@ -95,6 +95,7 @@ export default function ParticipantsScreen() {
         queryClient.invalidateQueries({ queryKey: ["outing-details", outingId] }),
         queryClient.invalidateQueries({ queryKey: ["explore-outings"] }),
         queryClient.invalidateQueries({ queryKey: ["join-status", outingId] }),
+        queryClient.invalidateQueries({ queryKey: ["history-outings"] }),
       ]);
 
       // Re-fetch authoritative participant list
@@ -124,6 +125,7 @@ export default function ParticipantsScreen() {
         queryClient.invalidateQueries({ queryKey: ["outing-details", outingId] }),
         queryClient.invalidateQueries({ queryKey: ["explore-outings"] }),
         queryClient.invalidateQueries({ queryKey: ["join-status", outingId] }),
+        queryClient.invalidateQueries({ queryKey: ["history-outings"] }),
       ]);
 
       const data = await getParticipants(outingId);
@@ -152,6 +154,7 @@ export default function ParticipantsScreen() {
         queryClient.invalidateQueries({ queryKey: ["outing-details", outingId] }),
         queryClient.invalidateQueries({ queryKey: ["explore-outings"] }),
         queryClient.invalidateQueries({ queryKey: ["join-status", outingId] }),
+        queryClient.invalidateQueries({ queryKey: ["history-outings"] }),
       ]);
 
       const data = await getParticipants(outingId);

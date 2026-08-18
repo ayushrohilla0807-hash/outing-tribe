@@ -1,4 +1,5 @@
-import { useEffect, useMemo, useState } from "react";
+import { useMemo } from "react";
+import { useQuery } from "@tanstack/react-query";
 
 import type { HistoryOuting } from "./models/history";
 import { getHistory } from "./services/historyService";
@@ -14,27 +15,16 @@ const STATUS_ORDER: Record<string, number> = {
 };
 
 export default function HistoryScreen() {
-  const [history, setHistory] = useState<HistoryOuting[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    async function loadHistory() {
-      try {
-        const data = await getHistory();
-        setHistory(data);
-      } finally {
-        setLoading(false);
-      }
-    }
-
-    loadHistory();
-  }, []);
+  const { data: history = [], isLoading } = useQuery<HistoryOuting[]>({
+    queryKey: ["history-outings"],
+    queryFn: getHistory,
+  });
 
   const sortedHistory = useMemo(() => {
     return [...history].sort((a, b) => STATUS_ORDER[a.status] - STATUS_ORDER[b.status]);
   }, [history]);
 
-  if (loading) {
+  if (isLoading) {
     return (
       <main className="mx-auto max-w-2xl px-5 py-8 pb-32">
         <h1 className="mb-8 text-4xl font-bold">History</h1>

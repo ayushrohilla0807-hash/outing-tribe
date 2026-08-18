@@ -49,6 +49,11 @@ export default function OutingCard({ outing }: Props) {
       await queryClient.invalidateQueries({
         queryKey: ["explore-outings"],
       });
+
+      // Keep History in sync
+      await queryClient.invalidateQueries({
+        queryKey: ["history-outings"],
+      });
     } catch (err: any) {
       console.error(err);
       toast.error(err.message || "Failed to send join request");

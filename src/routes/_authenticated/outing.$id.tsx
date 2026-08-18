@@ -82,6 +82,7 @@ function OutingDetailsPage() {
       await queryClient.invalidateQueries({ queryKey: ["outing-details", id] });
       await queryClient.invalidateQueries({ queryKey: ["explore-outings"] });
       await queryClient.invalidateQueries({ queryKey: ["accepted-chats"] });
+      await queryClient.invalidateQueries({ queryKey: ["history-outings"] });
     } catch (err: any) {
       console.error(err);
       toast.error(err.message || "Failed to send join request");
@@ -91,7 +92,7 @@ function OutingDetailsPage() {
   }
 
   async function handleLeave() {
-    if (!window.confirm("Are you sure you want to leave this outing?")) return;
+    if (!window.confirm("Are you sure you want to leave / withdraw request for this outing?")) return;
     try {
       setJoinLoading(true);
       await leaveOuting(id);
@@ -100,6 +101,7 @@ function OutingDetailsPage() {
       await queryClient.invalidateQueries({ queryKey: ["outing-details", id] });
       await queryClient.invalidateQueries({ queryKey: ["explore-outings"] });
       await queryClient.invalidateQueries({ queryKey: ["accepted-chats"] });
+      await queryClient.invalidateQueries({ queryKey: ["history-outings"] });
     } catch (err: any) {
       console.error(err);
       toast.error(err.message || "Failed to leave outing");

@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "@tanstack/react-router";
+import { useQueryClient } from "@tanstack/react-query";
 import { useForm, type SubmitHandler } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
@@ -11,6 +12,7 @@ import { supabase } from "@/integrations/supabase/client";
 
 export function useCreateOuting() {
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
 
   const [loading, setLoading] = useState(false);
 
@@ -73,6 +75,12 @@ export function useCreateOuting() {
       });
 
       toast.success("Outing created successfully!");
+
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ["explore-outings"] }),
+        queryClient.invalidateQueries({ queryKey: ["history-outings"] }),
+        queryClient.invalidateQueries({ queryKey: ["hosted-outings"] }),
+      ]);
 
       navigate({
         to: "/host-dashboard",
