@@ -25,7 +25,9 @@ export async function getHistory(): Promise<HistoryOuting[]> {
   }
 
   const participatedOutingIds = (participations ?? []).map((p) => p.outing_id);
-  const participationStatusMap = new Map((participations ?? []).map((p) => [p.outing_id, p.status]));
+  const participationStatusMap = new Map(
+    (participations ?? []).map((p) => [p.outing_id, p.status]),
+  );
 
   // Fetch outing records for participations
   let participatedOutings: any[] = [];

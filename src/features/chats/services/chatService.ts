@@ -244,6 +244,15 @@ export async function getAcceptedChats(): Promise<Chat[]> {
         });
       }
 
+      let lastMessagePreview = lastMsg?.message || "";
+      if (lastMessagePreview.startsWith("[image:")) {
+        const afterTag = lastMessagePreview.replace(/^\[image:[^\]]+\]\s*/, "");
+        lastMessagePreview = afterTag ? `📷 ${afterTag}` : "📷 Photo";
+      } else if (lastMessagePreview.startsWith("[file:")) {
+        const afterTag = lastMessagePreview.replace(/^\[file:[^\]]+\]\s*/, "");
+        lastMessagePreview = afterTag ? `📎 ${afterTag}` : "📎 Attachment";
+      }
+
       return {
         outingId: t.outingId,
         otherUserId: t.otherUserId,
@@ -251,7 +260,7 @@ export async function getAcceptedChats(): Promise<Chat[]> {
         outingImage: t.outingImage,
         otherUserName: profile?.fullName ?? "Participant",
         otherUserAvatar: profile?.avatarUrl ?? null,
-        lastMessage: lastMsg?.message || "",
+        lastMessage: lastMessagePreview,
         lastMessageTime: formattedTime,
         unreadCount: 0,
         participants: 2,

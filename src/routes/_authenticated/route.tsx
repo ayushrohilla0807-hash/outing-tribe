@@ -22,8 +22,8 @@ export const Route = createFileRoute("/_authenticated")({
 function AuthenticatedLayout() {
   return (
     <SavedProvider>
-      <div className="min-h-screen bg-background">
-        <main className="pb-24">
+      <div className="min-h-screen bg-background text-foreground">
+        <main className="pb-[calc(5rem+env(safe-area-inset-bottom,0px))]">
           <Outlet />
         </main>
 

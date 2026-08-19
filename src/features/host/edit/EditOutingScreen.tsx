@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Route } from "@/routes/_authenticated/host-dashboard-edit.$outingId";
 import { useNavigate } from "@tanstack/react-router";
+import { useQueryClient } from "@tanstack/react-query";
 import { ArrowLeft, Loader2, Save } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
@@ -12,6 +13,7 @@ import { getOuting, updateOuting, type EditOutingData } from "./services/editOut
 
 export default function EditOutingScreen() {
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const { outingId } = Route.useParams();
 
   const [form, setForm] = useState<EditOutingData | null>(null);
@@ -87,6 +89,14 @@ export default function EditOutingScreen() {
       setSaving(true);
       await updateOuting(form);
       toast.success("Outing updated successfully!");
+
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ["outing-details", outingId] }),
+        queryClient.invalidateQueries({ queryKey: ["explore-outings"] }),
+        queryClient.invalidateQueries({ queryKey: ["hosted-outings"] }),
+        queryClient.invalidateQueries({ queryKey: ["history-outings"] }),
+      ]);
+
       navigate({
         to: "/host-dashboard",
       });

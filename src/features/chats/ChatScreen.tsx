@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useCallback } from "react";
 import { useNavigate, useParams } from "@tanstack/react-router";
 import { useQueryClient } from "@tanstack/react-query";
 import { Loader2, ShieldAlert } from "lucide-react";
@@ -35,29 +35,30 @@ export default function ChatScreen() {
 
   const bottomRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
-    loadChat();
-  }, [outingId, userId]);
+  const loadMessages = useCallback(
+    async (myId: string) => {
+      try {
+        const data = await getMessages(outingId, myId, userId);
 
-  useEffect(() => {
-    if (!currentUserId || !authorized) return;
+        const formatted: Message[] = data.map((m) => ({
+          id: m.id,
+          outingId: m.outing_id,
+          senderId: m.sender_id,
+          receiverId: m.receiver_id,
+          message: m.message,
+          createdAt: m.created_at ?? "",
+          isMine: m.sender_id === myId,
+        }));
 
-    const channel = subscribeMessages(outingId, () => {
-      loadMessages(currentUserId);
-    });
+        setMessages(formatted);
+      } catch (err) {
+        console.error(err);
+      }
+    },
+    [outingId, userId],
+  );
 
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, [outingId, currentUserId, authorized]);
-
-  useEffect(() => {
-    bottomRef.current?.scrollIntoView({
-      behavior: "smooth",
-    });
-  }, [messages]);
-
-  async function loadChat() {
+  const loadChat = useCallback(async () => {
     try {
       setLoading(true);
       const user = await getCurrentUser();
@@ -121,27 +122,29 @@ export default function ChatScreen() {
     } finally {
       setLoading(false);
     }
-  }
+  }, [outingId, userId, navigate, loadMessages]);
 
-  async function loadMessages(myId: string) {
-    try {
-      const data = await getMessages(outingId, myId, userId);
+  useEffect(() => {
+    loadChat();
+  }, [loadChat]);
 
-      const formatted: Message[] = data.map((m) => ({
-        id: m.id,
-        outingId: m.outing_id,
-        senderId: m.sender_id,
-        receiverId: m.receiver_id,
-        message: m.message,
-        createdAt: m.created_at ?? "",
-        isMine: m.sender_id === myId,
-      }));
+  useEffect(() => {
+    if (!currentUserId || !authorized) return;
 
-      setMessages(formatted);
-    } catch (err) {
-      console.error(err);
-    }
-  }
+    const channel = subscribeMessages(outingId, () => {
+      loadMessages(currentUserId);
+    });
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [outingId, currentUserId, authorized, loadMessages]);
+
+  useEffect(() => {
+    bottomRef.current?.scrollIntoView({
+      behavior: "smooth",
+    });
+  }, [messages]);
 
   async function handleSend(text: string) {
     if (!currentUserId || !text.trim()) return;
@@ -190,7 +193,7 @@ export default function ChatScreen() {
   }
 
   return (
-    <main className="flex h-[calc(100vh-80px)] flex-col bg-background">
+    <main className="flex h-[calc(100dvh-5rem-env(safe-area-inset-bottom,0px))] flex-col bg-background text-foreground">
       <ChatHeader
         title={chat.otherUserName ? `${chat.otherUserName} • ${chat.outingName}` : chat.outingName}
         image={chat.otherUserAvatar || chat.outingImage}
@@ -205,7 +208,7 @@ export default function ChatScreen() {
       <div className="flex-1 overflow-y-auto px-4 py-4 space-y-2">
         {messages.length === 0 ? (
           <div className="flex h-full flex-col items-center justify-center text-center p-6 text-muted-foreground">
-            <p className="text-sm">No messages yet.</p>
+            <p className="text-sm font-medium">No messages yet.</p>
             <p className="text-xs mt-1">Send a message to start planning the meetup!</p>
           </div>
         ) : (
@@ -215,7 +218,7 @@ export default function ChatScreen() {
         <div ref={bottomRef} />
       </div>
 
-      <div className="border-t border-white/10 bg-surface/80 p-4 backdrop-blur">
+      <div className="border-t border-white/10 bg-surface/90 p-3.5 sm:p-4 backdrop-blur-xl">
         <ChatInput onSend={handleSend} />
       </div>
     </main>

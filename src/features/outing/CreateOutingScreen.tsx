@@ -16,38 +16,43 @@ export default function CreateOutingScreen() {
     <FormProvider {...form}>
       <form
         onSubmit={form.handleSubmit(onSubmit)}
-        className="mx-auto w-full max-w-2xl space-y-6 p-6"
+        className="mx-auto w-full max-w-2xl space-y-6 px-5 py-8 pb-32"
       >
-        <h1 className="text-3xl font-bold">Create Outing</h1>
+        <h1 className="text-3xl font-bold tracking-tight text-foreground">Create Outing</h1>
 
         <CoverUploader />
 
-        <div>
+        <div className="space-y-1.5">
+          <label className="block text-sm font-semibold text-foreground">Title *</label>
           <input
             {...form.register("title")}
-            placeholder="Outing title"
-            className="w-full rounded-xl border p-3"
+            placeholder="e.g. Weekend Coffee & Chill"
+            className="w-full rounded-2xl border border-white/15 bg-white/5 p-3.5 text-sm text-foreground placeholder:text-muted-foreground outline-none focus:border-primary transition"
           />
 
           {form.formState.errors.title && (
-            <p className="mt-1 text-sm text-destructive">{form.formState.errors.title.message}</p>
+            <p className="mt-1 text-xs text-destructive">{form.formState.errors.title.message}</p>
           )}
         </div>
 
         <CategorySelector />
 
-        <div>
+        <div className="space-y-1.5">
+          <label className="block text-sm font-semibold text-foreground">Description *</label>
           <textarea
             {...form.register("description")}
-            placeholder="Describe your outing..."
-            className="min-h-40 w-full rounded-xl border p-3"
+            placeholder="Describe what you're planning, who should join, and what to expect..."
+            rows={4}
+            className="w-full rounded-2xl border border-white/15 bg-white/5 p-3.5 text-sm text-foreground placeholder:text-muted-foreground outline-none focus:border-primary transition resize-none"
           />
 
-          <div className="mt-1 flex justify-between text-sm text-muted-foreground">
+          <div className="mt-1 flex justify-between text-xs text-muted-foreground">
             <span>{form.watch("description")?.length ?? 0}/500</span>
 
             {form.formState.errors.description && (
-              <span className="text-destructive">{form.formState.errors.description.message}</span>
+              <span className="text-destructive font-medium">
+                {form.formState.errors.description.message}
+              </span>
             )}
           </div>
         </div>
@@ -58,7 +63,7 @@ export default function CreateOutingScreen() {
 
         <ParticipantsStepper />
 
-        <PublishButton loading={loading} disabled={false} />
+        <PublishButton loading={loading} disabled={loading} />
       </form>
     </FormProvider>
   );

@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useNavigate } from "@tanstack/react-router";
 import { motion, AnimatePresence } from "motion/react";
 import {
@@ -42,10 +42,7 @@ export default function ProfileSetupScreen() {
   const navigate = useNavigate();
 
   // Form state
-  const [name, setName] = useState(() => {
-    // Pre-fill from auth metadata synchronously if available (will be overwritten on mount anyway)
-    return "";
-  });
+  const [name, setName] = useState("");
   const [age, setAge] = useState("");
   const [city, setCity] = useState("");
   const [avatarUrl, setAvatarUrl] = useState(DEFAULT_AVATARS[0]);
@@ -62,14 +59,17 @@ export default function ProfileSetupScreen() {
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   // Pre-fill name from Supabase user metadata
-  useState(() => {
+  useEffect(() => {
     supabase.auth.getUser().then(({ data }) => {
       if (data.user) {
         const meta = data.user.user_metadata;
         setName(meta?.full_name || data.user.email?.split("@")[0] || "");
+        if (meta?.avatar_url) {
+          setAvatarUrl(meta.avatar_url);
+        }
       }
     });
-  });
+  }, []);
 
   // ─── Validation ────────────────────────────────────────────────────────────
   function validate(): boolean {

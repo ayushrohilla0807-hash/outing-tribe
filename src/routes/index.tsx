@@ -679,38 +679,7 @@ function FAQ() {
 }
 
 function CTA() {
-  const [email, setEmail] = useState("");
-  const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
-  const [errorMsg, setErrorMsg] = useState("");
   const navigate = useNavigate();
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    const trimmed = email.trim().toLowerCase();
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmed)) {
-      setStatus("error");
-      setErrorMsg("Please enter a valid email address.");
-      return;
-    }
-    setStatus("loading");
-    setErrorMsg("");
-    try {
-      const { supabase } = await import("@/integrations/supabase/client");
-      const { error } = await supabase.from("leads").insert({
-        email: trimmed,
-        source: "landing_cta",
-        user_agent: typeof navigator !== "undefined" ? navigator.userAgent : null,
-      });
-      if (error && error.code !== "23505") {
-        throw error;
-      }
-      setStatus("success");
-    } catch (err) {
-      console.error("Lead signup failed", err);
-      setStatus("error");
-      setErrorMsg("Something went wrong. Please try again.");
-    }
-  };
 
   return (
     <section id="cta" className="relative mx-auto max-w-7xl px-6 py-24">
@@ -730,63 +699,21 @@ function CTA() {
           Join thousands turning solo evenings into stories worth telling.
         </p>
 
-        {status === "success" ? (
-          <motion.div
-            initial={{ opacity: 0, y: 8, scale: 0.98 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            transition={{ duration: 0.35 }}
-            role="status"
-            aria-live="polite"
-            className="mx-auto mt-8 flex max-w-md flex-col items-center gap-3 rounded-2xl border border-white/25 bg-white/15 px-6 py-6 backdrop-blur"
+        <div className="mt-8 flex flex-col items-center justify-center gap-3">
+          <button
+            type="button"
+            onClick={() =>
+              navigate({
+                to: "/auth",
+              })
+            }
+            className="inline-flex items-center justify-center gap-3 rounded-full bg-white px-8 py-3.5 text-base font-bold text-black shadow-card transition-transform hover:-translate-y-0.5 active:scale-95 cursor-pointer"
           >
-            <div className="grid h-12 w-12 place-items-center rounded-full bg-white/90">
-              <CheckCircle2 className="h-6 w-6 text-primary" />
-            </div>
-            <h3 className="text-xl font-semibold text-white">You're on the list!</h3>
-            <p className="text-sm text-white/85">
-              We sent a confirmation to <span className="font-medium text-white">{email}</span>.
-              Watch your inbox — early access drops soon.
-            </p>
-            <button
-              type="button"
-              onClick={() => {
-                setStatus("idle");
-                setEmail("");
-              }}
-              className="mt-1 text-xs font-medium text-white/80 underline-offset-4 hover:underline"
-            >
-              Sign up another email
-            </button>
-          </motion.div>
-        ) : (
-          <>
-            <form onSubmit={handleSubmit} noValidate className="mt-8 flex justify-center">
-              <label htmlFor="cta-email" className="sr-only">
-                Email address
-              </label>
-
-              <button
-                type="button"
-                onClick={() =>
-                  navigate({
-                    to: "/auth",
-                  })
-                }
-                className="inline-flex items-center justify-center gap-5 rounded-full bg-white px-6 py-3 text-sm font-semibold text-primary shadow-card transition-transform hover:-translate-y-0.5"
-              >
-                Join Outsy
-                <ArrowRight className="h-5 w-5" />
-              </button>
-            </form>
-            {status === "error" ? (
-              <p role="alert" className="mt-3 text-xs font-medium text-white">
-                {errorMsg}
-              </p>
-            ) : (
-              <p className="mt-3 text-xs text-white/70">Free forever. No spam. Cancel anytime.</p>
-            )}
-          </>
-        )}
+            Join Outsy
+            <ArrowRight className="h-5 w-5 text-black" />
+          </button>
+          <p className="mt-2 text-xs text-white/75">Free forever. No spam. Find your crowd.</p>
+        </div>
       </motion.div>
     </section>
   );

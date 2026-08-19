@@ -40,16 +40,37 @@ export default function ExploreScreen() {
 
   if (isLoading) {
     return (
-      <main className="flex h-screen items-center justify-center">
-        <p className="text-lg font-medium">Loading outings...</p>
+      <main className="mx-auto max-w-2xl px-5 py-8 pb-32">
+        <div className="mb-6 flex items-center justify-between">
+          <div className="h-10 w-36 bg-white/10 rounded-2xl animate-pulse" />
+          <div className="h-10 w-10 bg-white/10 rounded-2xl animate-pulse" />
+        </div>
+        <div className="h-12 w-full bg-white/10 rounded-2xl animate-pulse mb-4" />
+        <div className="flex gap-2 overflow-hidden mb-8">
+          {Array.from({ length: 5 }).map((_, i) => (
+            <div key={i} className="h-8 w-20 bg-white/10 rounded-full animate-pulse shrink-0" />
+          ))}
+        </div>
+        <div className="space-y-6">
+          <div className="h-64 w-full bg-white/10 rounded-3xl animate-pulse" />
+          <div className="h-64 w-full bg-white/10 rounded-3xl animate-pulse" />
+        </div>
       </main>
     );
   }
 
   if (isError) {
     return (
-      <main className="flex h-screen items-center justify-center">
-        <p className="text-destructive">{(error as Error).message}</p>
+      <main className="mx-auto max-w-2xl px-5 py-16 text-center">
+        <h2 className="text-xl font-bold text-foreground">Failed to load outings</h2>
+        <p className="mt-2 text-sm text-destructive">{(error as Error).message}</p>
+        <button
+          type="button"
+          onClick={() => window.location.reload()}
+          className="mt-6 inline-flex rounded-full bg-primary px-6 py-2.5 text-sm font-semibold text-primary-foreground shadow-glow"
+        >
+          Try Again
+        </button>
       </main>
     );
   }

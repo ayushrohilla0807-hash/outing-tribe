@@ -77,7 +77,8 @@ export default function ParticipantCard({
             onClick={() => onAccept?.(participant.id)}
             className="flex-1 inline-flex items-center justify-center gap-2 rounded-xl bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground shadow-glow hover:opacity-90 transition disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Check className="h-4 w-4" />} Accept
+            {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Check className="h-4 w-4" />}{" "}
+            Accept
           </button>
 
           <button
@@ -105,7 +106,12 @@ export default function ParticipantCard({
             onClick={() => onRemove?.(participant.id)}
             className="inline-flex items-center justify-center gap-1.5 rounded-xl border border-destructive/30 bg-destructive/10 px-4 py-2 text-sm font-medium text-destructive hover:bg-destructive/20 transition disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Trash2 className="h-4 w-4" />} Remove
+            {loading ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <Trash2 className="h-4 w-4" />
+            )}{" "}
+            Remove
           </button>
         </div>
       )}

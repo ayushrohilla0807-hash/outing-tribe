@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, useCallback } from "react";
 import { useNavigate } from "@tanstack/react-router";
 import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
@@ -28,7 +28,7 @@ export default function HostDashboard() {
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState("All");
 
-  async function loadOutings() {
+  const loadOutings = useCallback(async () => {
     try {
       setLoading(true);
 
@@ -51,11 +51,11 @@ export default function HostDashboard() {
     } finally {
       setLoading(false);
     }
-  }
+  }, [navigate]);
 
   useEffect(() => {
     loadOutings();
-  }, []);
+  }, [loadOutings]);
 
   const stats = {
     hosted: outings.length,

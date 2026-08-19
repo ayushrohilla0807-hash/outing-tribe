@@ -10,19 +10,14 @@ function calculateAge(dateOfBirth: string | null): number {
   let age = today.getFullYear() - dob.getFullYear();
   const monthDiff = today.getMonth() - dob.getMonth();
 
-  if (
-    monthDiff < 0 ||
-    (monthDiff === 0 && today.getDate() < dob.getDate())
-  ) {
+  if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < dob.getDate())) {
     age--;
   }
 
   return age > 0 ? age : 0;
 }
 
-export async function getParticipants(
-  outingId: string
-): Promise<Participant[]> {
+export async function getParticipants(outingId: string): Promise<Participant[]> {
   const { data: participantRows, error } = await supabase
     .from("participants")
     .select("*")
@@ -39,23 +34,20 @@ export async function getParticipants(
 
   const { data: profiles, error: profileError } = await supabase
     .from("profiles")
-    .select(`
+    .select(
+      `
       id,
       full_name,
       avatar_url,
       city,
       date_of_birth
-    `)
+    `,
+    )
     .in("id", userIds);
 
   if (profileError) throw profileError;
 
-  const profileMap = new Map(
-    (profiles ?? []).map((profile) => [
-      profile.id,
-      profile,
-    ])
-  );
+  const profileMap = new Map((profiles ?? []).map((profile) => [profile.id, profile]));
 
   return participantRows.map((participant): Participant => {
     const profile = profileMap.get(participant.user_id);
@@ -73,14 +65,9 @@ export async function getParticipants(
       rating: 5,
       interests: [],
       joinedAt: participant.joined_at
-        ? new Date(
-          participant.joined_at
-        ).toLocaleDateString()
+        ? new Date(participant.joined_at).toLocaleDateString()
         : "Recently",
-      status:
-        participant.status === "joined"
-          ? "joined"
-          : "pending",
+      status: participant.status === "joined" ? "joined" : "pending",
     };
   });
 }
@@ -89,10 +76,7 @@ export async function getParticipants(
    ACCEPT PARTICIPANT
 ========================= */
 
-export async function acceptParticipant(
-  participantId: string,
-  outingId: string
-) {
+export async function acceptParticipant(participantId: string, outingId: string) {
   const {
     data: { user },
   } = await supabase.auth.getUser();
@@ -136,10 +120,7 @@ export async function acceptParticipant(
    REJECT PARTICIPANT
 ========================= */
 
-export async function rejectParticipant(
-  participantId: string,
-  outingId: string
-) {
+export async function rejectParticipant(participantId: string, outingId: string) {
   const {
     data: { user },
   } = await supabase.auth.getUser();
@@ -181,10 +162,7 @@ export async function rejectParticipant(
    REMOVE PARTICIPANT
 ========================= */
 
-export async function removeParticipant(
-  participantId: string,
-  outingId: string
-) {
+export async function removeParticipant(participantId: string, outingId: string) {
   const {
     data: { user },
   } = await supabase.auth.getUser();

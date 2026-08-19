@@ -1,6 +1,18 @@
 import { supabase } from "@/integrations/supabase/client";
 import type { UserProfile } from "../models/profile";
 
+function getLocalSavedCount(): number {
+  if (typeof window === "undefined") return 0;
+  try {
+    const raw = localStorage.getItem("outsy_saved_outings");
+    if (!raw) return 0;
+    const parsed = JSON.parse(raw);
+    return Array.isArray(parsed) ? parsed.length : 0;
+  } catch {
+    return 0;
+  }
+}
+
 export async function getProfile(): Promise<UserProfile> {
   const {
     data: { user },
@@ -71,15 +83,14 @@ export async function getProfile(): Promise<UserProfile> {
     .eq("user_id", user.id)
     .eq("status", "joined");
 
-  // Real saved count
-  const { count: savedCount } = await supabase
-    .from("saved_outings")
-    .select("id", { count: "exact", head: true })
-    .eq("user_id", user.id);
+  const savedCount = getLocalSavedCount();
+  const metaInterests = user.user_metadata?.interests;
+  const interests = Array.isArray(metaInterests) ? metaInterests : [];
 
   return {
     id: user.id,
-    name: profile?.full_name || user.email?.split("@")[0] || "User",
+    name:
+      profile?.full_name || user.user_metadata?.full_name || user.email?.split("@")[0] || "User",
     email: user.email || "",
     phone: "",
     age: age > 0 ? age : 0,
@@ -89,12 +100,13 @@ export async function getProfile(): Promise<UserProfile> {
     bio: profile?.bio || "",
     avatarUrl:
       profile?.avatar_url ||
+      user.user_metadata?.avatar_url ||
       "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=200&auto=format&fit=crop&q=80",
-    interests: Array.isArray(profile?.interests) ? profile.interests : [],
+    interests,
     hostRating: 5.0,
     hostedCount: hostedCount || 0,
     joinedCount: joinedCount || 0,
-    savedCount: savedCount || 0,
+    savedCount,
     verified: true,
   };
 }
@@ -108,7 +120,14 @@ export async function updateProfile(updates: Partial<UserProfile>): Promise<void
     throw new Error("Not authenticated");
   }
 
-  const payload: Record<string, any> = {};
+  const payload: {
+    full_name?: string;
+    bio?: string | null;
+    city?: string | null;
+    gender?: string | null;
+    avatar_url?: string | null;
+    date_of_birth?: string | null;
+  } = {};
 
   if (updates.name !== undefined) payload.full_name = updates.name.trim();
   if (updates.bio !== undefined) payload.bio = updates.bio.trim();
@@ -129,6 +148,16 @@ export async function updateProfile(updates: Partial<UserProfile>): Promise<void
     console.error("Error updating profile:", error);
     throw error;
   }
+
+  if (updates.interests !== undefined) {
+    await supabase.auth.updateUser({
+      data: {
+        interests: updates.interests,
+        full_name: updates.name ? updates.name.trim() : user.user_metadata?.full_name,
+        avatar_url: updates.avatarUrl || user.user_metadata?.avatar_url,
+      },
+    });
+  }
 }
 
 /** Persist interests and mark profile setup as complete. */
@@ -139,10 +168,12 @@ export async function updateInterests(interests: string[]): Promise<void> {
 
   if (!user) throw new Error("Not authenticated");
 
-  const { error } = await supabase
-    .from("profiles")
-    .update({ interests, profile_setup_complete: true })
-    .eq("id", user.id);
+  const { error } = await supabase.auth.updateUser({
+    data: {
+      interests,
+      profile_setup_complete: true,
+    },
+  });
 
   if (error) {
     console.error("Error updating interests:", error);
@@ -167,21 +198,36 @@ export async function completeProfileSetup(data: {
   const today = new Date();
   const birthYear = today.getFullYear() - data.age;
 
-  const payload: Record<string, any> = {
+  const payload = {
     full_name: data.name.trim(),
     city: data.city.trim(),
     date_of_birth: `${birthYear}-01-01`,
-    interests: data.interests,
-    profile_setup_complete: true,
+    avatar_url: data.avatarUrl || user.user_metadata?.avatar_url || null,
   };
 
-  if (data.avatarUrl) payload.avatar_url = data.avatarUrl;
+  const { error: profileError } = await supabase.from("profiles").upsert({
+    id: user.id,
+    ...payload,
+  });
 
-  const { error } = await supabase.from("profiles").update(payload).eq("id", user.id);
+  if (profileError) {
+    console.error("Error completing profile setup (profile row):", profileError);
+    throw profileError;
+  }
 
-  if (error) {
-    console.error("Error completing profile setup:", error);
-    throw error;
+  const { error: authError } = await supabase.auth.updateUser({
+    data: {
+      full_name: data.name.trim(),
+      avatar_url: data.avatarUrl,
+      interests: data.interests,
+      city: data.city.trim(),
+      profile_setup_complete: true,
+    },
+  });
+
+  if (authError) {
+    console.error("Error completing profile setup (auth metadata):", authError);
+    throw authError;
   }
 }
 
@@ -193,18 +239,23 @@ export async function needsProfileSetup(): Promise<boolean> {
 
   if (!user) return false;
 
+  // Check auth user metadata first
+  if (user.user_metadata?.profile_setup_complete) {
+    return false;
+  }
+
   const { data: profile } = await supabase
     .from("profiles")
-    .select("profile_setup_complete, city, interests")
+    .select("city, full_name")
     .eq("id", user.id)
     .maybeSingle();
 
   if (!profile) return true;
 
-  // Consider setup done if the flag is set OR legacy users have city + 3+ interests
-  if (profile.profile_setup_complete) return false;
+  const metaInterests = user.user_metadata?.interests;
+  const hasInterests = Array.isArray(metaInterests) && metaInterests.length >= 3;
   const hasCity = Boolean(profile.city);
-  const hasInterests = Array.isArray(profile.interests) && profile.interests.length >= 3;
+
   return !(hasCity && hasInterests);
 }
 

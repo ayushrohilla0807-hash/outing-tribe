@@ -128,11 +128,11 @@
 
   /* Muted */
   --muted: #3d3e50;
-  --muted-foreground: #a4a9b8;
+  --muted-foreground: #cbd5e1;
 
   /* Accent */
-  --accent: #55576d;
-  --accent-foreground: #d99a7c;
+  --accent: #d99a7c;
+  --accent-foreground: #0f3444;
   --accent-soft: rgba(217, 154, 124, 0.15);
 
   /* Borders & inputs */

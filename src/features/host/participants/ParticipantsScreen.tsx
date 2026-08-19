@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, useCallback } from "react";
 import { Route } from "@/routes/_authenticated/participants/$outingId";
 import { useNavigate, Link } from "@tanstack/react-router";
 import { useQueryClient } from "@tanstack/react-query";
@@ -30,7 +30,7 @@ export default function ParticipantsScreen() {
   const [loading, setLoading] = useState(true);
   const [actionLoadingId, setActionLoadingId] = useState<string | null>(null);
 
-  async function loadData() {
+  const loadData = useCallback(async () => {
     try {
       setLoading(true);
 
@@ -72,11 +72,11 @@ export default function ParticipantsScreen() {
     } finally {
       setLoading(false);
     }
-  }
+  }, [outingId, navigate]);
 
   useEffect(() => {
     loadData();
-  }, [outingId]);
+  }, [loadData]);
 
   async function handleAccept(id: string) {
     try {
