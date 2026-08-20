@@ -94,7 +94,10 @@ export async function getProfile(): Promise<UserProfile> {
     email: user.email || "",
     phone: "",
     age: age > 0 ? age : 0,
-    gender: (profile?.gender as "Male" | "Female" | "Other") || "Other",
+    gender:
+      (profile?.gender as UserProfile["gender"]) ||
+      user.user_metadata?.gender ||
+      "Prefer not to say",
     state: "",
     city: profile?.city || "",
     bio: profile?.bio || "",
@@ -149,13 +152,16 @@ export async function updateProfile(updates: Partial<UserProfile>): Promise<void
     throw error;
   }
 
-  if (updates.interests !== undefined) {
+  const authMetadataUpdates: Record<string, any> = {};
+  if (updates.interests !== undefined) authMetadataUpdates.interests = updates.interests;
+  if (updates.name !== undefined) authMetadataUpdates.full_name = updates.name.trim();
+  if (updates.avatarUrl !== undefined) authMetadataUpdates.avatar_url = updates.avatarUrl;
+  if (updates.city !== undefined) authMetadataUpdates.city = updates.city.trim();
+  if (updates.gender !== undefined) authMetadataUpdates.gender = updates.gender;
+
+  if (Object.keys(authMetadataUpdates).length > 0) {
     await supabase.auth.updateUser({
-      data: {
-        interests: updates.interests,
-        full_name: updates.name ? updates.name.trim() : user.user_metadata?.full_name,
-        avatar_url: updates.avatarUrl || user.user_metadata?.avatar_url,
-      },
+      data: authMetadataUpdates,
     });
   }
 }
@@ -185,6 +191,7 @@ export async function updateInterests(interests: string[]): Promise<void> {
 export async function completeProfileSetup(data: {
   name: string;
   age: number;
+  gender: string;
   city: string;
   avatarUrl?: string;
   interests: string[];
@@ -201,6 +208,7 @@ export async function completeProfileSetup(data: {
   const payload = {
     full_name: data.name.trim(),
     city: data.city.trim(),
+    gender: data.gender,
     date_of_birth: `${birthYear}-01-01`,
     avatar_url: data.avatarUrl || user.user_metadata?.avatar_url || null,
   };
@@ -221,6 +229,7 @@ export async function completeProfileSetup(data: {
       avatar_url: data.avatarUrl,
       interests: data.interests,
       city: data.city.trim(),
+      gender: data.gender,
       profile_setup_complete: true,
     },
   });

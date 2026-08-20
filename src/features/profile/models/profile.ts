@@ -1,3 +1,5 @@
+export type GenderOption = "Male" | "Female" | "Non-binary" | "Prefer not to say";
+
 export interface UserProfile {
   id: string;
 
@@ -9,7 +11,7 @@ export interface UserProfile {
 
   age: number;
 
-  gender: "Male" | "Female" | "Other";
+  gender: GenderOption | string;
 
   state: string;
 

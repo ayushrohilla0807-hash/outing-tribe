@@ -8,6 +8,7 @@ import {
   Loader2,
   User,
   Cake,
+  Heart,
   MapPin,
   Compass,
   Check,
@@ -31,9 +32,12 @@ const DEFAULT_AVATARS = [
   "https://api.dicebear.com/8.x/adventurer/svg?seed=Zara&backgroundColor=f9c6ff",
 ];
 
+const GENDER_OPTIONS = ["Male", "Female", "Non-binary", "Prefer not to say"] as const;
+
 interface FormErrors {
   name?: string;
   age?: string;
+  gender?: string;
   city?: string;
   interests?: string;
 }
@@ -44,6 +48,7 @@ export default function ProfileSetupScreen() {
   // Form state
   const [name, setName] = useState("");
   const [age, setAge] = useState("");
+  const [gender, setGender] = useState("");
   const [city, setCity] = useState("");
   const [avatarUrl, setAvatarUrl] = useState(DEFAULT_AVATARS[0]);
   const [selectedInterests, setSelectedInterests] = useState<string[]>([]);
@@ -67,6 +72,9 @@ export default function ProfileSetupScreen() {
         if (meta?.avatar_url) {
           setAvatarUrl(meta.avatar_url);
         }
+        if (meta?.gender) {
+          setGender(meta.gender);
+        }
       }
     });
   }, []);
@@ -82,6 +90,8 @@ export default function ProfileSetupScreen() {
     if (!age) errs.age = "Age is required.";
     else if (!Number.isInteger(ageNum) || ageNum < 13 || ageNum > 100)
       errs.age = "Enter a valid age between 13 and 100.";
+
+    if (!gender) errs.gender = "Please select your gender.";
 
     if (!city.trim()) errs.city = "City is required.";
     else if (city.trim().length < 2) errs.city = "Enter a valid city name.";
@@ -136,6 +146,7 @@ export default function ProfileSetupScreen() {
       await completeProfileSetup({
         name: name.trim(),
         age: Number(age),
+        gender,
         city: city.trim(),
         avatarUrl,
         interests: selectedInterests,
@@ -153,6 +164,7 @@ export default function ProfileSetupScreen() {
     name.trim().length >= 2 &&
     Number(age) >= 13 &&
     Number(age) <= 100 &&
+    Boolean(gender) &&
     city.trim().length >= 2 &&
     selectedInterests.length >= 3;
 
@@ -306,6 +318,41 @@ export default function ProfileSetupScreen() {
               />
             </div>
             {errors.age && <p className="text-xs text-red-400">{errors.age}</p>}
+          </div>
+
+          {/* ── Gender ── */}
+          <div className="space-y-1.5">
+            <label htmlFor="setup-gender" className="block text-sm font-medium">
+              Gender <span className="text-primary">*</span>
+            </label>
+            <div
+              className={`flex items-center gap-3 rounded-2xl border bg-white/5 px-4 transition-colors ${
+                errors.gender
+                  ? "border-red-400/60"
+                  : "border-white/10 focus-within:border-primary/60"
+              }`}
+            >
+              <Heart className="h-4 w-4 shrink-0 text-muted-foreground" />
+              <select
+                id="setup-gender"
+                value={gender}
+                onChange={(e) => {
+                  setGender(e.target.value);
+                  if (errors.gender) setErrors((err) => ({ ...err, gender: undefined }));
+                }}
+                className="h-12 w-full bg-transparent text-sm text-foreground outline-none cursor-pointer"
+              >
+                <option value="" disabled className="bg-background text-muted-foreground">
+                  Select your gender
+                </option>
+                {GENDER_OPTIONS.map((opt) => (
+                  <option key={opt} value={opt} className="bg-background text-foreground">
+                    {opt}
+                  </option>
+                ))}
+              </select>
+            </div>
+            {errors.gender && <p className="text-xs text-red-400">{errors.gender}</p>}
           </div>
 
           {/* ── City ── */}
