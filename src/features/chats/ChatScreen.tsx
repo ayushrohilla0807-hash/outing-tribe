@@ -193,7 +193,7 @@ export default function ChatScreen() {
   }
 
   return (
-    <main className="flex h-[calc(100dvh-5rem-env(safe-area-inset-bottom,0px))] flex-col bg-background text-foreground">
+    <main className="flex h-[100dvh] flex-col bg-background text-foreground overflow-hidden">
       <ChatHeader
         title={chat.otherUserName ? `${chat.otherUserName} • ${chat.outingName}` : chat.outingName}
         image={chat.otherUserAvatar || chat.outingImage}
@@ -205,7 +205,7 @@ export default function ChatScreen() {
         }
       />
 
-      <div className="flex-1 overflow-y-auto px-4 py-4 space-y-2">
+      <div className="flex-1 min-h-0 overflow-y-auto px-4 py-4 space-y-2 overscroll-contain">
         {messages.length === 0 ? (
           <div className="flex h-full flex-col items-center justify-center text-center p-6 text-muted-foreground">
             <p className="text-sm font-medium">No messages yet.</p>
@@ -218,7 +218,7 @@ export default function ChatScreen() {
         <div ref={bottomRef} />
       </div>
 
-      <div className="border-t border-white/10 bg-surface/90 p-3.5 sm:p-4 backdrop-blur-xl">
+      <div className="shrink-0 border-t border-white/10 bg-surface/95 p-3 sm:p-4 pb-[calc(0.75rem+env(safe-area-inset-bottom,0px))] backdrop-blur-xl">
         <ChatInput onSend={handleSend} />
       </div>
     </main>

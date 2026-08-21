@@ -35,6 +35,11 @@ export default function BottomNav() {
     select: (state) => state.location.pathname,
   });
 
+  // Hide completely on individual chat conversation screens
+  if (/^\/chats\/[^/]+\/[^/]+/.test(pathname)) {
+    return null;
+  }
+
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-50 border-t border-white/10 bg-background/95 backdrop-blur-xl pb-[env(safe-area-inset-bottom,0px)] transition-all">
       <div className="mx-auto flex h-16 max-w-md items-center justify-around px-2">
