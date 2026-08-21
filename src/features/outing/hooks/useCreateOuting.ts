@@ -27,6 +27,7 @@ export function useCreateOuting() {
       city: "",
       date: "",
       startTime: "",
+      endDate: "",
       endTime: "",
       participants: 5,
       rules: "",
@@ -41,25 +42,36 @@ export function useCreateOuting() {
     try {
       setLoading(true);
 
+      // Strict validation before upload
+      if (!values.image || !(values.image instanceof File)) {
+        toast.error("Please upload an image for your outing.");
+        setLoading(false);
+        return;
+      }
+
+      if (values.image.size >= 1024 * 1024) {
+        toast.error("Image size must be less than 1 MB.");
+        setLoading(false);
+        return;
+      }
+
       let imageUrl = "";
 
       // Upload image to Supabase Storage
-      if (values.image instanceof File) {
-        const fileExt = values.image.name.split(".").pop();
-        const fileName = `${crypto.randomUUID()}.${fileExt}`;
+      const fileExt = values.image.name.split(".").pop();
+      const fileName = `${crypto.randomUUID()}.${fileExt}`;
 
-        const { error: uploadError } = await supabase.storage
-          .from("outing-image")
-          .upload(fileName, values.image);
+      const { error: uploadError } = await supabase.storage
+        .from("outing-image")
+        .upload(fileName, values.image);
 
-        if (uploadError) {
-          throw uploadError;
-        }
-
-        const { data } = supabase.storage.from("outing-image").getPublicUrl(fileName);
-
-        imageUrl = data.publicUrl;
+      if (uploadError) {
+        throw uploadError;
       }
+
+      const { data } = supabase.storage.from("outing-image").getPublicUrl(fileName);
+
+      imageUrl = data.publicUrl;
 
       await createOuting({
         title: values.title,
