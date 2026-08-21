@@ -40,11 +40,13 @@ export default function ChatListScreen() {
 
   if (isLoading) {
     return (
-      <div className="mx-auto max-w-2xl px-5 py-6">
-        <h1 className="mb-8 text-4xl font-bold">Chats</h1>
+      <div className="w-full max-w-3xl mx-auto px-4 sm:px-6 py-6 pb-32">
+        <h1 className="mb-6 text-3xl sm:text-4xl font-bold tracking-tight text-foreground">
+          Chats
+        </h1>
         <div className="flex items-center gap-2 text-muted-foreground">
           <Loader2 className="h-5 w-5 animate-spin text-primary" />
-          <p>Loading chats...</p>
+          <p className="text-sm">Loading chats...</p>
         </div>
       </div>
     );
@@ -52,21 +54,23 @@ export default function ChatListScreen() {
 
   if (isError) {
     return (
-      <div className="mx-auto max-w-2xl px-5 py-6">
-        <h1 className="mb-8 text-4xl font-bold">Chats</h1>
-        <p className="text-destructive">Failed to load chats. Please try refreshing.</p>
+      <div className="w-full max-w-3xl mx-auto px-4 sm:px-6 py-6 pb-32">
+        <h1 className="mb-6 text-3xl sm:text-4xl font-bold tracking-tight text-foreground">
+          Chats
+        </h1>
+        <p className="text-sm text-destructive">Failed to load chats. Please try refreshing.</p>
       </div>
     );
   }
 
   return (
-    <div className="mx-auto max-w-2xl px-5 py-6 pb-6">
-      <h1 className="mb-8 text-4xl font-bold">Chats</h1>
+    <div className="w-full max-w-3xl mx-auto px-4 sm:px-6 py-6 pb-32">
+      <h1 className="mb-6 text-3xl sm:text-4xl font-bold tracking-tight text-foreground">Chats</h1>
 
       {chats.length === 0 ? (
         <EmptyState />
       ) : (
-        <div className="space-y-4">
+        <div className="w-full space-y-3.5">
           {chats.map((chat) => (
             <ChatCard
               key={`${chat.outingId}-${chat.otherUserId}`}

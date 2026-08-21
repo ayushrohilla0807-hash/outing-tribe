@@ -105,17 +105,35 @@ export const createOutingSchema = z
     }
 
     // 3. End date/time must be strictly after start date/time
+    if (data.endDate) {
+      const now = new Date();
+      const localYear = now.getFullYear();
+      const localMonth = String(now.getMonth() + 1).padStart(2, "0");
+      const localDay = String(now.getDate()).padStart(2, "0");
+      const todayStr = `${localYear}-${localMonth}-${localDay}`;
+
+      if (data.endDate < todayStr) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "End date cannot be in the past.",
+          path: ["endDate"],
+        });
+      }
+    }
+
+    if (data.date && data.endDate && data.endDate < data.date) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "End date cannot be earlier than start date.",
+        path: ["endDate"],
+      });
+    }
+
     if (data.date && data.startTime && data.endDate && data.endTime) {
       const startDateTimeStr = `${data.date}T${data.startTime}`;
       const endDateTimeStr = `${data.endDate}T${data.endTime}`;
 
-      if (data.endDate < data.date) {
-        ctx.addIssue({
-          code: z.ZodIssueCode.custom,
-          message: "End date cannot be earlier than start date.",
-          path: ["endDate"],
-        });
-      } else if (endDateTimeStr <= startDateTimeStr) {
+      if (endDateTimeStr <= startDateTimeStr) {
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
           message: "End time must be after start time.",

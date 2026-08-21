@@ -167,6 +167,18 @@
     font-family: var(--font-sans);
     -webkit-font-smoothing: antialiased;
   }
+  input[type="date"],
+  input[type="time"],
+  input[type="datetime-local"] {
+    min-width: 0;
+    max-width: 100%;
+    width: 100%;
+    box-sizing: border-box;
+  }
+  input[type="date"]::-webkit-date-and-time-value,
+  input[type="time"]::-webkit-date-and-time-value {
+    text-align: left;
+  }
   h1,
   h2,
   h3,

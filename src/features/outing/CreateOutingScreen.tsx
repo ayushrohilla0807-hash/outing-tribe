@@ -16,7 +16,7 @@ export default function CreateOutingScreen() {
     <FormProvider {...form}>
       <form
         onSubmit={form.handleSubmit(onSubmit)}
-        className="mx-auto w-full max-w-2xl space-y-6 px-5 py-8 pb-32"
+        className="mx-auto w-full max-w-2xl space-y-6 px-4 sm:px-6 py-8 pb-32 overflow-x-hidden box-border"
       >
         <h1 className="text-3xl font-bold tracking-tight text-foreground">Create Outing</h1>
 
