@@ -40,27 +40,27 @@ export default function ChatListScreen() {
 
   if (isLoading) {
     return (
-      <main className="mx-auto max-w-2xl px-5 py-6">
+      <div className="mx-auto max-w-2xl px-5 py-6">
         <h1 className="mb-8 text-4xl font-bold">Chats</h1>
         <div className="flex items-center gap-2 text-muted-foreground">
           <Loader2 className="h-5 w-5 animate-spin text-primary" />
           <p>Loading chats...</p>
         </div>
-      </main>
+      </div>
     );
   }
 
   if (isError) {
     return (
-      <main className="mx-auto max-w-2xl px-5 py-6">
+      <div className="mx-auto max-w-2xl px-5 py-6">
         <h1 className="mb-8 text-4xl font-bold">Chats</h1>
         <p className="text-destructive">Failed to load chats. Please try refreshing.</p>
-      </main>
+      </div>
     );
   }
 
   return (
-    <main className="mx-auto max-w-2xl px-5 py-6 pb-32">
+    <div className="mx-auto max-w-2xl px-5 py-6 pb-6">
       <h1 className="mb-8 text-4xl font-bold">Chats</h1>
 
       {chats.length === 0 ? (
@@ -84,6 +84,6 @@ export default function ChatListScreen() {
           ))}
         </div>
       )}
-    </main>
+    </div>
   );
 }

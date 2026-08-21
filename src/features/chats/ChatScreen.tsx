@@ -161,7 +161,7 @@ export default function ChatScreen() {
 
   if (loading) {
     return (
-      <div className="flex h-screen flex-col items-center justify-center gap-3">
+      <div className="flex h-full flex-1 flex-col items-center justify-center gap-3 bg-background text-foreground">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
         <p className="text-sm text-muted-foreground">Loading chat...</p>
       </div>
@@ -170,12 +170,12 @@ export default function ChatScreen() {
 
   if (authorized === false) {
     return (
-      <div className="mx-auto max-w-md px-6 py-24 text-center">
+      <div className="flex h-full flex-1 flex-col items-center justify-center px-6 text-center bg-background text-foreground">
         <div className="mx-auto grid h-12 w-12 place-items-center rounded-2xl bg-destructive/15 text-destructive">
           <ShieldAlert className="h-6 w-6" />
         </div>
         <h2 className="mt-4 text-xl font-bold">Chat Restricted</h2>
-        <p className="mt-2 text-sm text-muted-foreground">
+        <p className="mt-2 text-sm text-muted-foreground max-w-sm">
           You can only access this chat once your join request has been accepted by the host.
         </p>
         <button
@@ -189,11 +189,15 @@ export default function ChatScreen() {
   }
 
   if (!chat) {
-    return <div className="flex h-screen items-center justify-center">Chat not available.</div>;
+    return (
+      <div className="flex h-full flex-1 items-center justify-center bg-background text-foreground">
+        Chat not available.
+      </div>
+    );
   }
 
   return (
-    <main className="flex h-[100dvh] flex-col bg-background text-foreground overflow-hidden">
+    <div className="flex h-full w-full flex-1 flex-col bg-background text-foreground overflow-hidden">
       <ChatHeader
         title={chat.otherUserName ? `${chat.otherUserName} • ${chat.outingName}` : chat.outingName}
         image={chat.otherUserAvatar || chat.outingImage}
@@ -218,9 +222,9 @@ export default function ChatScreen() {
         <div ref={bottomRef} />
       </div>
 
-      <div className="shrink-0 border-t border-white/10 bg-surface/95 p-3 sm:p-4 pb-[calc(0.75rem+env(safe-area-inset-bottom,0px))] backdrop-blur-xl">
+      <div className="shrink-0 border-t border-white/10 bg-surface/95 p-3 sm:p-4 pb-[max(0.75rem,env(safe-area-inset-bottom,0px))] backdrop-blur-xl">
         <ChatInput onSend={handleSend} />
       </div>
-    </main>
+    </div>
   );
 }
