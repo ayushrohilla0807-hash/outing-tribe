@@ -696,7 +696,7 @@ function CTA() {
     setErrorMsg("");
     try {
       const { supabase } = await import("@/integrations/supabase/client");
-      const { error } = await supabase.from("leads").insert({
+      const { error } = await (supabase.from("leads" as any) as any).insert({
         email: trimmed,
         source: "landing_cta",
         user_agent: typeof navigator !== "undefined" ? navigator.userAgent : null,

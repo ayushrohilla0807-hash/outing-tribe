@@ -22,17 +22,39 @@ export async function getProfile(): Promise<UserProfile> {
     console.error("Error fetching profile:", error);
   }
 
+  const fallbackName =
+    user.user_metadata?.full_name ||
+    user.user_metadata?.name ||
+    user.email?.split("@")[0] ||
+    "User";
+
+  // Google OAuth metadata / identity provides avatar in avatar_url or picture
+  const googleAvatar =
+    user.user_metadata?.avatar_url ||
+    user.user_metadata?.picture ||
+    user.identities?.find((i) => i.provider === "google")?.identity_data?.avatar_url ||
+    user.identities?.find((i) => i.provider === "google")?.identity_data?.picture ||
+    user.identities?.[0]?.identity_data?.avatar_url ||
+    user.identities?.[0]?.identity_data?.picture ||
+    null;
+
+  const defaultAvatar = `https://api.dicebear.com/8.x/adventurer/svg?seed=${encodeURIComponent(
+    fallbackName
+  )}&backgroundColor=b6e3f4`;
+
+  const isPlaceholderAvatar = (url?: string | null) =>
+    !url ||
+    url.includes("images.unsplash.com") ||
+    url.includes("dicebear.com/8.x/adventurer/svg?seed=Felix");
+
   // Graceful self-healing fallback if profile row was not created yet
   if (!profile) {
-    const fallbackName = user.user_metadata?.full_name || user.email?.split("@")[0] || "Outsy User";
-    const fallbackAvatar = user.user_metadata?.avatar_url || null;
-
     const { data: newProfile, error: insertError } = await supabase
       .from("profiles")
       .upsert({
         id: user.id,
         full_name: fallbackName,
-        avatar_url: fallbackAvatar,
+        avatar_url: googleAvatar || defaultAvatar,
       })
       .select()
       .single();
@@ -41,6 +63,18 @@ export async function getProfile(): Promise<UserProfile> {
       console.error("Error creating fallback profile:", insertError);
     } else {
       profile = newProfile;
+    }
+  } else if (googleAvatar && isPlaceholderAvatar(profile.avatar_url)) {
+    // If profile exists with a placeholder/empty avatar but user has Google photo, sync it
+    const { data: updatedProfile, error: updateErr } = await supabase
+      .from("profiles")
+      .update({ avatar_url: googleAvatar })
+      .eq("id", user.id)
+      .select()
+      .single();
+
+    if (!updateErr && updatedProfile) {
+      profile = updatedProfile;
     }
   }
 
@@ -72,14 +106,13 @@ export async function getProfile(): Promise<UserProfile> {
     .eq("status", "joined");
 
   // Real saved count
-  const { count: savedCount } = await supabase
-    .from("saved_outings")
+  const { count: savedCount } = await (supabase.from("saved_outings" as any) as any)
     .select("id", { count: "exact", head: true })
     .eq("user_id", user.id);
 
   return {
     id: user.id,
-    name: profile?.full_name || user.email?.split("@")[0] || "User",
+    name: profile?.full_name || fallbackName,
     email: user.email || "",
     phone: "",
     age: age > 0 ? age : 0,
@@ -88,9 +121,11 @@ export async function getProfile(): Promise<UserProfile> {
     city: profile?.city || "",
     bio: profile?.bio || "",
     avatarUrl:
+      (profile?.avatar_url && !isPlaceholderAvatar(profile.avatar_url) ? profile.avatar_url : null) ||
+      googleAvatar ||
       profile?.avatar_url ||
-      "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=200&auto=format&fit=crop&q=80",
-    interests: Array.isArray(profile?.interests) ? profile.interests : [],
+      defaultAvatar,
+    interests: Array.isArray((profile as any)?.interests) ? (profile as any).interests : [],
     hostRating: 5.0,
     hostedCount: hostedCount || 0,
     joinedCount: joinedCount || 0,
@@ -123,7 +158,7 @@ export async function updateProfile(updates: Partial<UserProfile>): Promise<void
     payload.date_of_birth = `${birthYear}-01-01`;
   }
 
-  const { error } = await supabase.from("profiles").update(payload).eq("id", user.id);
+  const { error } = await (supabase.from("profiles") as any).update(payload).eq("id", user.id);
 
   if (error) {
     console.error("Error updating profile:", error);
@@ -139,8 +174,8 @@ export async function updateInterests(interests: string[]): Promise<void> {
 
   if (!user) throw new Error("Not authenticated");
 
-  const { error } = await supabase
-    .from("profiles")
+  const { error } = await (supabase
+    .from("profiles") as any)
     .update({ interests, profile_setup_complete: true })
     .eq("id", user.id);
 
@@ -177,7 +212,7 @@ export async function completeProfileSetup(data: {
 
   if (data.avatarUrl) payload.avatar_url = data.avatarUrl;
 
-  const { error } = await supabase.from("profiles").update(payload).eq("id", user.id);
+  const { error } = await (supabase.from("profiles") as any).update(payload).eq("id", user.id);
 
   if (error) {
     console.error("Error completing profile setup:", error);
@@ -193,8 +228,8 @@ export async function needsProfileSetup(): Promise<boolean> {
 
   if (!user) return false;
 
-  const { data: profile } = await supabase
-    .from("profiles")
+  const { data: profile } = await (supabase
+    .from("profiles") as any)
     .select("profile_setup_complete, city, interests")
     .eq("id", user.id)
     .maybeSingle();

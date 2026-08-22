@@ -12,10 +12,12 @@ export default function ProfileCard({ profile }: Props) {
   return (
     <div className="rounded-3xl border bg-card p-6 shadow-sm">
       <div className="flex flex-col items-center">
-        <Avatar className="h-28 w-28">
-          <AvatarImage src={profile.avatarUrl} alt={profile.name} />
+        <Avatar className="h-28 w-28 border-2 border-white/10 shadow-lg">
+          <AvatarImage src={profile.avatarUrl} alt={profile.name} className="h-full w-full object-cover" />
 
-          <AvatarFallback>{profile.name[0]}</AvatarFallback>
+          <AvatarFallback className="text-2xl font-bold bg-primary/20 text-primary">
+            {profile.name ? profile.name[0].toUpperCase() : "U"}
+          </AvatarFallback>
         </Avatar>
 
         <div className="mt-4 flex items-center gap-2">

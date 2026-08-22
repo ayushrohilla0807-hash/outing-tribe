@@ -1,4 +1,6 @@
 import { Link, useRouterState } from "@tanstack/react-router";
+import { useQuery } from "@tanstack/react-query";
+import { getProfile } from "@/features/profile/services/profileService";
 import { HomeIcon, ExploreIcon, CreateIcon, ChatsIcon, ProfileIcon } from "./NavIcons";
 
 const items = [
@@ -35,6 +37,13 @@ export default function BottomNav() {
     select: (state) => state.location.pathname,
   });
 
+  const { data: profile } = useQuery({
+    queryKey: ["user-profile"],
+    queryFn: getProfile,
+    staleTime: 1000 * 60 * 5,
+    retry: false,
+  });
+
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-50 border-t border-white/10 bg-background/95 backdrop-blur-lg">
       <div className="mx-auto flex h-16 max-w-md items-center justify-around px-2">
@@ -52,6 +61,9 @@ export default function BottomNav() {
             );
           }
 
+          const isProfile = item.to === "/profile";
+          const hasAvatar = isProfile && Boolean(profile?.avatarUrl);
+
           return (
             <Link
               key={item.to}
@@ -59,15 +71,32 @@ export default function BottomNav() {
               aria-label={item.label}
               className="group flex items-center justify-center p-3 transition-all duration-200"
             >
-              <Icon
-                size={24}
-                active={active}
-                className={`transition-all duration-200 ${
-                  active
-                    ? "text-primary scale-110"
-                    : "text-muted-foreground group-hover:text-foreground"
-                }`}
-              />
+              {hasAvatar ? (
+                <div
+                  className={`relative h-7 w-7 rounded-full overflow-hidden border transition-all duration-200 ${
+                    active
+                      ? "border-primary ring-2 ring-primary/40 scale-110"
+                      : "border-white/20 opacity-80 group-hover:opacity-100 group-hover:border-white/50"
+                  }`}
+                >
+                  <img
+                    src={profile!.avatarUrl}
+                    alt={profile?.name || "Profile"}
+                    referrerPolicy="no-referrer"
+                    className="h-full w-full object-cover"
+                  />
+                </div>
+              ) : (
+                <Icon
+                  size={24}
+                  active={active}
+                  className={`transition-all duration-200 ${
+                    active
+                      ? "text-primary scale-110"
+                      : "text-muted-foreground group-hover:text-foreground"
+                  }`}
+                />
+              )}
             </Link>
           );
         })}

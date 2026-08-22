@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useNavigate } from "@tanstack/react-router";
 import { motion, AnimatePresence } from "motion/react";
 import {
@@ -42,13 +42,11 @@ export default function ProfileSetupScreen() {
   const navigate = useNavigate();
 
   // Form state
-  const [name, setName] = useState(() => {
-    // Pre-fill from auth metadata synchronously if available (will be overwritten on mount anyway)
-    return "";
-  });
+  const [name, setName] = useState("");
   const [age, setAge] = useState("");
   const [city, setCity] = useState("");
   const [avatarUrl, setAvatarUrl] = useState(DEFAULT_AVATARS[0]);
+  const [googlePhoto, setGooglePhoto] = useState<string | null>(null);
   const [selectedInterests, setSelectedInterests] = useState<string[]>([]);
   const [interestSearch, setInterestSearch] = useState("");
   const [dropdownOpen, setDropdownOpen] = useState(false);
@@ -61,15 +59,42 @@ export default function ProfileSetupScreen() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
-  // Pre-fill name from Supabase user metadata
-  useState(() => {
-    supabase.auth.getUser().then(({ data }) => {
+  // Pre-fill name and avatar from Google / Supabase user metadata
+  useEffect(() => {
+    supabase.auth.getUser().then(async ({ data }) => {
       if (data.user) {
         const meta = data.user.user_metadata;
-        setName(meta?.full_name || data.user.email?.split("@")[0] || "");
+        const gAvatar = meta?.avatar_url || meta?.picture || null;
+        const gName = meta?.full_name || meta?.name || data.user.email?.split("@")[0] || "";
+
+        if (gName) {
+          setName(gName);
+        }
+
+        if (gAvatar) {
+          setGooglePhoto(gAvatar);
+          setAvatarUrl(gAvatar);
+        }
+
+        // Fetch existing profile if available
+        const { data: prof } = await supabase
+          .from("profiles")
+          .select("avatar_url, full_name, city")
+          .eq("id", data.user.id)
+          .maybeSingle();
+
+        if (prof?.avatar_url) {
+          setAvatarUrl(prof.avatar_url);
+        }
+        if (prof?.full_name) {
+          setName(prof.full_name);
+        }
+        if (prof?.city) {
+          setCity(prof.city);
+        }
       }
     });
-  });
+  }, []);
 
   // ─── Validation ────────────────────────────────────────────────────────────
   function validate(): boolean {
@@ -235,6 +260,19 @@ export default function ProfileSetupScreen() {
                       </button>
                     ))}
                   </div>
+                  {googlePhoto && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setAvatarUrl(googlePhoto);
+                        setShowAvatarPicker(false);
+                      }}
+                      className="mb-2 w-full rounded-xl border border-white/10 bg-white/5 py-2.5 px-3 text-sm font-medium hover:bg-white/10 transition flex items-center justify-center gap-2"
+                    >
+                      <img src={googlePhoto} alt="Google Profile" className="h-5 w-5 rounded-full object-cover" />
+                      Use Google profile photo
+                    </button>
+                  )}
                   <button
                     type="button"
                     onClick={() => fileInputRef.current?.click()}

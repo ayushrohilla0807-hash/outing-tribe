@@ -1,6 +1,6 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useNavigate } from "@tanstack/react-router";
-import { useQueryClient } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
@@ -23,28 +23,17 @@ export default function ProfileScreen() {
   const queryClient = useQueryClient();
   const { theme, toggle } = useTheme();
 
-  const [profile, setProfile] = useState<UserProfile | null>(null);
-  const [loading, setLoading] = useState(true);
-
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [editModalOpen, setEditModalOpen] = useState(false);
 
-  async function loadProfile() {
-    try {
-      setLoading(true);
-      const data = await getProfile();
-      setProfile(data);
-    } catch (err: any) {
-      console.error(err);
-      toast.error("Failed to load profile");
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  useEffect(() => {
-    loadProfile();
-  }, []);
+  const {
+    data: profile,
+    isLoading: loading,
+    refetch: loadProfile,
+  } = useQuery({
+    queryKey: ["user-profile"],
+    queryFn: getProfile,
+  });
 
   const logout = async () => {
     try {
@@ -64,11 +53,10 @@ export default function ProfileScreen() {
   const handleSaveProfile = async (updatedProfile: UserProfile) => {
     try {
       await updateProfile(updatedProfile);
-      setProfile(updatedProfile);
       setEditModalOpen(false);
       toast.success("Profile updated successfully!");
       // Invalidate profile queries
-      await queryClient.invalidateQueries();
+      await queryClient.invalidateQueries({ queryKey: ["user-profile"] });
     } catch (err: any) {
       console.error(err);
       toast.error(err.message || "Failed to update profile");
@@ -89,7 +77,9 @@ export default function ProfileScreen() {
       <div className="flex h-screen flex-col items-center justify-center gap-4 text-center px-6">
         <p className="text-muted-foreground">Could not load profile.</p>
         <button
-          onClick={loadProfile}
+          onClick={() => {
+            loadProfile();
+          }}
           className="rounded-full bg-primary px-5 py-2 text-sm font-semibold text-primary-foreground"
         >
           Retry

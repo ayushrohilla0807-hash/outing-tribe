@@ -3,6 +3,7 @@ import { X, Camera, Loader2 } from "lucide-react";
 import type { UserProfile } from "../models/profile";
 import { uploadAvatar } from "../services/profileService";
 import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
 import { interests as interestGroups } from "@/lib/interests";
 
 type Props = {
@@ -17,12 +18,27 @@ const AVAILABLE_INTERESTS = interestGroups.flatMap((g) => g.items);
 export default function EditProfileModal({ open, profile, onClose, onSave }: Props) {
   const [form, setForm] = useState(profile);
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
+  const [googlePhoto, setGooglePhoto] = useState<string | null>(null);
 
   useEffect(() => {
     setForm(profile);
   }, [profile]);
 
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data }) => {
+      if (data.user) {
+        const meta = data.user.user_metadata;
+        const gAvatar = meta?.avatar_url || meta?.picture || null;
+        if (gAvatar) setGooglePhoto(gAvatar);
+      }
+    });
+  }, []);
+
   if (!open) return null;
+
+  const defaultAvatar = `https://api.dicebear.com/8.x/adventurer/svg?seed=${encodeURIComponent(
+    form.name || "User"
+  )}&backgroundColor=b6e3f4`;
 
   async function handleAvatarUpload(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
@@ -74,11 +90,8 @@ export default function EditProfileModal({ open, profile, onClose, onSave }: Pro
             <div className="flex flex-col items-center">
               <div className="relative">
                 <img
-                  src={
-                    form.avatarUrl ||
-                    "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=200&auto=format&fit=crop&q=80"
-                  }
-                  alt=""
+                  src={form.avatarUrl || defaultAvatar}
+                  alt={form.name || "Profile"}
                   className="h-28 w-28 rounded-full object-cover border border-white/15"
                 />
 
@@ -97,6 +110,17 @@ export default function EditProfileModal({ open, profile, onClose, onSave }: Pro
                   />
                 </label>
               </div>
+
+              {googlePhoto && form.avatarUrl !== googlePhoto && (
+                <button
+                  type="button"
+                  onClick={() => setForm((prev) => ({ ...prev, avatarUrl: googlePhoto }))}
+                  className="mt-3 text-xs text-primary hover:underline flex items-center gap-1.5"
+                >
+                  <img src={googlePhoto} alt="Google" className="h-4 w-4 rounded-full object-cover" />
+                  Reset to Google photo
+                </button>
+              )}
             </div>
 
             <div>
