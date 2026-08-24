@@ -32,15 +32,15 @@ function AuthenticatedLayout() {
       <div
         className={
           isIndividualChat
-            ? "h-[100dvh] flex flex-col overflow-hidden bg-background text-foreground"
-            : "min-h-screen bg-background text-foreground"
+            ? "h-[100dvh] max-h-[100dvh] flex flex-col overflow-hidden bg-background text-foreground"
+            : "min-h-[100dvh] flex flex-col bg-background text-foreground"
         }
       >
         <main
           className={
             isIndividualChat
               ? "flex-1 min-h-0 flex flex-col overflow-hidden"
-              : "pb-[calc(5rem+env(safe-area-inset-bottom,0px))]"
+              : "flex-1 pb-[calc(5rem+env(safe-area-inset-bottom,0px))]"
           }
         >
           <Outlet />

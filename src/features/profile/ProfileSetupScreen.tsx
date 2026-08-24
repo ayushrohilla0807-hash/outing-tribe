@@ -169,12 +169,12 @@ export default function ProfileSetupScreen() {
     selectedInterests.length >= 3;
 
   return (
-    <div className="relative min-h-screen bg-background text-foreground overflow-x-hidden">
+    <div className="relative min-h-[100dvh] bg-background text-foreground overflow-x-hidden">
       {/* Background decoration */}
       <div className="pointer-events-none absolute inset-0 bg-radial-primary opacity-60" />
       <div className="pointer-events-none absolute inset-0 bg-grid opacity-20 [mask-image:radial-gradient(60%_50%_at_50%_30%,#000,transparent)]" />
 
-      <div className="relative mx-auto max-w-lg px-5 py-10 pb-16">
+      <div className="relative mx-auto max-w-lg px-4 sm:px-6 pt-[calc(1.5rem+env(safe-area-inset-top,0px))] pb-[calc(2rem+env(safe-area-inset-bottom,0px))]">
         {/* Header */}
         <div className="mb-8 flex flex-col items-center text-center">
           <div className="mb-4 grid h-12 w-12 place-items-center rounded-2xl bg-gradient-to-br from-primary to-primary-glow shadow-glow">

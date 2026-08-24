@@ -100,10 +100,10 @@ function AuthPage() {
   };
 
   return (
-    <div className="relative min-h-screen bg-background text-foreground">
+    <div className="relative min-h-[100dvh] bg-background text-foreground">
       <div className="pointer-events-none absolute inset-0 bg-radial-primary opacity-70" />
       <div className="pointer-events-none absolute inset-0 bg-grid opacity-30 [mask-image:radial-gradient(60%_50%_at_50%_30%,#000,transparent)]" />
-      <div className="relative mx-auto flex min-h-screen max-w-md flex-col items-center justify-center px-6 py-16">
+      <div className="relative mx-auto flex min-h-[100dvh] max-w-md flex-col items-center justify-center px-4 sm:px-6 pt-[calc(2rem+env(safe-area-inset-top,0px))] pb-[calc(2rem+env(safe-area-inset-bottom,0px))]">
         <Link to="/" className="mb-8 flex items-center gap-2">
           <div className="grid h-10 w-10 place-items-center rounded-xl bg-gradient-to-br from-primary to-primary-glow shadow-glow">
             <Compass className="h-4 w-4 text-white" />

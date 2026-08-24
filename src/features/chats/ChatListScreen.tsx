@@ -40,7 +40,7 @@ export default function ChatListScreen() {
 
   if (isLoading) {
     return (
-      <div className="w-full max-w-3xl mx-auto px-4 sm:px-6 py-6 pb-32">
+      <div className="w-full max-w-3xl mx-auto px-4 sm:px-6 pt-[calc(0.75rem+env(safe-area-inset-top,0px))] pb-8">
         <h1 className="mb-6 text-3xl sm:text-4xl font-bold tracking-tight text-foreground">
           Chats
         </h1>
@@ -54,7 +54,7 @@ export default function ChatListScreen() {
 
   if (isError) {
     return (
-      <div className="w-full max-w-3xl mx-auto px-4 sm:px-6 py-6 pb-32">
+      <div className="w-full max-w-3xl mx-auto px-4 sm:px-6 pt-[calc(0.75rem+env(safe-area-inset-top,0px))] pb-8">
         <h1 className="mb-6 text-3xl sm:text-4xl font-bold tracking-tight text-foreground">
           Chats
         </h1>
@@ -64,7 +64,7 @@ export default function ChatListScreen() {
   }
 
   return (
-    <div className="w-full max-w-3xl mx-auto px-4 sm:px-6 py-6 pb-32">
+    <div className="w-full max-w-3xl mx-auto px-4 sm:px-6 pt-[calc(0.75rem+env(safe-area-inset-top,0px))] pb-8">
       <h1 className="mb-6 text-3xl sm:text-4xl font-bold tracking-tight text-foreground">Chats</h1>
 
       {chats.length === 0 ? (

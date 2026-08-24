@@ -67,7 +67,7 @@ export default function NotificationsScreen() {
 
   if (isError) {
     return (
-      <div className="mx-auto max-w-2xl px-5 py-8 pb-32 text-center">
+      <div className="mx-auto max-w-2xl px-4 sm:px-6 pt-[calc(0.75rem+env(safe-area-inset-top,0px))] pb-8 text-center">
         <h1 className="mb-6 text-3xl font-bold tracking-tight text-foreground">Notifications</h1>
         <div className="rounded-2xl border border-destructive/20 bg-destructive/5 p-6 text-center">
           <p className="text-sm text-destructive font-medium">Failed to load notifications.</p>
@@ -85,7 +85,7 @@ export default function NotificationsScreen() {
 
   return (
     <>
-      <div className="mx-auto w-full max-w-2xl px-4 sm:px-6 py-8 pb-32">
+      <div className="mx-auto w-full max-w-2xl px-4 sm:px-6 pt-[calc(0.75rem+env(safe-area-inset-top,0px))] pb-8">
         <div className="mb-6 flex items-center justify-between gap-3">
           <div className="flex items-center gap-3 min-w-0">
             <h1 className="text-3xl font-bold tracking-tight text-foreground truncate">

@@ -40,7 +40,7 @@ export default function ExploreScreen() {
 
   if (isLoading) {
     return (
-      <main className="mx-auto max-w-2xl px-5 py-8 pb-32">
+      <main className="mx-auto max-w-2xl px-4 sm:px-6 pt-[calc(0.75rem+env(safe-area-inset-top,0px))] pb-8">
         <div className="mb-6 flex items-center justify-between">
           <div className="h-10 w-36 bg-white/10 rounded-2xl animate-pulse" />
           <div className="h-10 w-10 bg-white/10 rounded-2xl animate-pulse" />
@@ -61,7 +61,7 @@ export default function ExploreScreen() {
 
   if (isError) {
     return (
-      <main className="mx-auto max-w-2xl px-5 py-16 text-center">
+      <main className="mx-auto max-w-2xl px-4 sm:px-6 pt-[calc(2rem+env(safe-area-inset-top,0px))] pb-8 text-center">
         <h2 className="text-xl font-bold text-foreground">Failed to load outings</h2>
         <p className="mt-2 text-sm text-destructive">{(error as Error).message}</p>
         <button
@@ -77,9 +77,9 @@ export default function ExploreScreen() {
 
   return (
     <>
-      <main className="mx-auto max-w-2xl px-5 py-8 pb-32">
+      <main className="mx-auto max-w-2xl px-4 sm:px-6 pt-[calc(0.75rem+env(safe-area-inset-top,0px))] pb-8">
         <div className="mb-6 flex items-center justify-between">
-          <h1 className="text-4xl font-bold">Explore</h1>
+          <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-foreground">Explore</h1>
 
           <FilterButton onClick={() => setFilterOpen(true)} />
         </div>

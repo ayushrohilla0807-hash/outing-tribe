@@ -12,21 +12,21 @@ export default function Header({ location }: HeaderProps) {
   const { unreadCount } = useNotifications();
 
   return (
-    <div className="flex items-start justify-between">
-      <div>
-        <div className="flex items-center gap-1.5 text-primary text-xs font-medium">
-          <MapPin size={15} />
-          <span>{location}</span>
+    <div className="flex items-start justify-between gap-3">
+      <div className="min-w-0 flex-1">
+        <div className="flex items-center gap-1.5 text-primary text-xs font-medium truncate">
+          <MapPin size={14} className="shrink-0" />
+          <span className="truncate">{location}</span>
         </div>
 
-        <h1 className="mt-2 text-2xl font-bold tracking-tight sm:text-3xl text-foreground">
+        <h1 className="mt-1.5 text-2xl font-bold tracking-tight sm:text-3xl text-foreground break-words leading-tight">
           Never <span className="text-primary">Cancel Plans</span> Again
         </h1>
       </div>
 
       <button
         onClick={() => navigate({ to: "/notifications" })}
-        className="relative flex h-11 w-11 items-center justify-center rounded-2xl bg-surface border border-white/10 hover:border-primary/40 hover:bg-surface-elevated transition cursor-pointer"
+        className="relative flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-surface border border-white/10 hover:border-primary/40 hover:bg-surface-elevated active:scale-95 transition cursor-pointer"
         aria-label="Notifications"
       >
         <Bell size={18} className="text-foreground" />

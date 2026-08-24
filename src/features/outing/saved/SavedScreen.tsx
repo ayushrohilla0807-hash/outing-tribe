@@ -5,7 +5,7 @@ export default function SavedScreen() {
   const { savedOutings } = useSaved();
 
   return (
-    <main className="mx-auto max-w-xl px-5 py-6 pb-28">
+    <main className="mx-auto max-w-xl px-4 sm:px-6 pt-[calc(0.75rem+env(safe-area-inset-top,0px))] pb-8">
       <h1 className="mb-6 text-3xl font-bold">❤️ Saved Outings</h1>
 
       {savedOutings.length === 0 ? (

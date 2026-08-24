@@ -77,7 +77,7 @@ export default function ProfileScreen() {
 
   if (loading) {
     return (
-      <div className="flex h-screen flex-col items-center justify-center gap-3">
+      <div className="flex min-h-[100dvh] flex-col items-center justify-center gap-3">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
         <p className="text-sm text-muted-foreground">Loading profile...</p>
       </div>
@@ -86,7 +86,7 @@ export default function ProfileScreen() {
 
   if (!profile) {
     return (
-      <div className="flex h-screen flex-col items-center justify-center gap-4 text-center px-6">
+      <div className="flex min-h-[100dvh] flex-col items-center justify-center gap-4 text-center px-6">
         <p className="text-muted-foreground">Could not load profile.</p>
         <button
           onClick={loadProfile}
@@ -100,7 +100,7 @@ export default function ProfileScreen() {
 
   return (
     <>
-      <main className="mx-auto max-w-xl px-5 py-6 pb-32">
+      <main className="mx-auto max-w-xl px-4 sm:px-6 pt-[calc(0.75rem+env(safe-area-inset-top,0px))] pb-8">
         <Header onSettingsClick={() => setDrawerOpen(true)} />
 
         <ProfileCard profile={profile} />

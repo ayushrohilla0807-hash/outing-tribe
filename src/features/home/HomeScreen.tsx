@@ -42,7 +42,7 @@ export default function HomeScreen() {
   };
 
   return (
-    <main className="mx-auto max-w-3xl px-5 py-6 pb-32">
+    <main className="mx-auto max-w-3xl px-4 sm:px-6 pt-[calc(0.75rem+env(safe-area-inset-top,0px))] pb-8">
       <Header
         userName={profile?.name || "Friend"}
         location={profile?.city ? `${profile.city}, India` : "Explore nearby"}

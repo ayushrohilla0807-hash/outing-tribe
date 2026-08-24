@@ -131,7 +131,7 @@ function OutingDetailsPage() {
 
   if (outingLoading) {
     return (
-      <div className="flex h-screen flex-col items-center justify-center gap-3">
+      <div className="flex min-h-[100dvh] flex-col items-center justify-center gap-3">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
         <p className="text-sm font-medium text-slate-200">Loading outing details...</p>
       </div>
@@ -175,8 +175,8 @@ function OutingDetailsPage() {
         {/* Cinematic Gradient Vignette */}
         <div className="absolute inset-0 bg-gradient-to-t from-background via-background/25 to-black/60" />
 
-        {/* Floating Top Navigation */}
-        <div className="absolute top-4 inset-x-4 flex items-center justify-between z-10">
+        {/* Floating Top Navigation with safe area */}
+        <div className="absolute top-[calc(1rem+env(safe-area-inset-top,0px))] inset-x-4 flex items-center justify-between z-10">
           <button
             type="button"
             onClick={() => navigate({ to: "/explore" })}

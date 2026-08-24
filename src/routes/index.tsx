@@ -100,8 +100,8 @@ function Nav() {
     { href: "#faq", label: "FAQ" },
   ];
   return (
-    <header className="sticky top-0 z-50 border-b border-white/5 backdrop-blur-xl bg-background/60">
-      <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-6 py-4">
+    <header className="sticky top-0 z-50 border-b border-white/5 backdrop-blur-xl bg-background/60 pt-[env(safe-area-inset-top,0px)]">
+      <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 sm:px-6 py-3.5 sm:py-4">
         <a href="#" className="flex items-center gap-2">
           <div className="grid h-9 w-9 place-items-center rounded-xl bg-gradient-to-br from-primary to-primary-glow shadow-glow">
             <Compass className="h-4 w-4 text-white" />
