@@ -11,6 +11,7 @@ import {
   getMessages,
   sendMessage,
   subscribeMessages,
+  setChatLastRead,
 } from "./services/chatService";
 
 import ChatHeader from "./widgets/ChatHeader";
@@ -51,11 +52,15 @@ export default function ChatScreen() {
         }));
 
         setMessages(formatted);
+
+        // Mark as read for this conversation
+        setChatLastRead(myId, outingId, userId);
+        queryClient.invalidateQueries({ queryKey: ["accepted-chats"] });
       } catch (err) {
         console.error(err);
       }
     },
-    [outingId, userId],
+    [outingId, userId, queryClient],
   );
 
   const loadChat = useCallback(async () => {

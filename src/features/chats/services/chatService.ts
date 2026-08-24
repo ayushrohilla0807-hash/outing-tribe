@@ -108,6 +108,27 @@ export async function canAccessChat(outingId: string): Promise<boolean> {
   return !!participant;
 }
 
+const CHAT_LAST_READ_KEY_PREFIX = "outsy_chat_last_read_";
+
+export function getChatLastReadMap(userId: string): Record<string, string> {
+  try {
+    const raw = localStorage.getItem(`${CHAT_LAST_READ_KEY_PREFIX}${userId}`);
+    return raw ? JSON.parse(raw) : {};
+  } catch {
+    return {};
+  }
+}
+
+export function setChatLastRead(userId: string, outingId: string, otherUserId: string): void {
+  try {
+    const map = getChatLastReadMap(userId);
+    map[`${outingId}_${otherUserId}`] = new Date().toISOString();
+    localStorage.setItem(`${CHAT_LAST_READ_KEY_PREFIX}${userId}`, JSON.stringify(map));
+  } catch (err) {
+    console.error("Error setting chat last read:", err);
+  }
+}
+
 export async function getAcceptedChats(): Promise<Chat[]> {
   const {
     data: { user },
@@ -218,10 +239,14 @@ export async function getAcceptedChats(): Promise<Chat[]> {
     ]),
   );
 
+  const lastReadMap = getChatLastReadMap(user.id);
+
   // 4. Fetch latest message and count for each conversation
   const chatList: Chat[] = await Promise.all(
     targets.map(async (t) => {
       const profile = profileMap.get(t.otherUserId);
+      const conversationKey = `${t.outingId}_${t.otherUserId}`;
+      const lastReadIso = lastReadMap[conversationKey];
 
       const { data: latestMsgs } = await supabase
         .from("messages")
@@ -232,6 +257,27 @@ export async function getAcceptedChats(): Promise<Chat[]> {
         )
         .order("created_at", { ascending: false })
         .limit(1);
+
+      // Count unread incoming messages sent by otherUser to currentUser after lastReadIso
+      let unreadCount = 0;
+      if (lastReadIso) {
+        const { count } = await supabase
+          .from("messages")
+          .select("*", { count: "exact", head: true })
+          .eq("outing_id", t.outingId)
+          .eq("sender_id", t.otherUserId)
+          .eq("receiver_id", user.id)
+          .gt("created_at", lastReadIso);
+        unreadCount = count ?? 0;
+      } else {
+        const { count } = await supabase
+          .from("messages")
+          .select("*", { count: "exact", head: true })
+          .eq("outing_id", t.outingId)
+          .eq("sender_id", t.otherUserId)
+          .eq("receiver_id", user.id);
+        unreadCount = count ?? 0;
+      }
 
       const lastMsg = latestMsgs?.[0];
 
@@ -262,7 +308,7 @@ export async function getAcceptedChats(): Promise<Chat[]> {
         otherUserAvatar: profile?.avatarUrl ?? null,
         lastMessage: lastMessagePreview,
         lastMessageTime: formattedTime,
-        unreadCount: 0,
+        unreadCount,
         participants: 2,
       };
     }),

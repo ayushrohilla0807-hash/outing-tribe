@@ -34,18 +34,29 @@ export default function ChatCard({ chat, onClick }: Props) {
 
         <div className="min-w-0 flex-1">
           <div className="flex items-center justify-between gap-2">
-            <h3 className="truncate text-base font-semibold text-foreground">
+            <h3
+              className={`truncate text-base ${chat.unreadCount ? "font-bold text-foreground" : "font-semibold text-foreground"}`}
+            >
               {chat.otherUserName ? `${chat.otherUserName}` : chat.outingName}
             </h3>
 
-            {chat.lastMessageTime && (
-              <span className="shrink-0 text-xs text-muted-foreground">{chat.lastMessageTime}</span>
-            )}
+            <div className="flex items-center gap-2 shrink-0">
+              {chat.lastMessageTime && (
+                <span className="text-xs text-muted-foreground">{chat.lastMessageTime}</span>
+              )}
+              {chat.unreadCount && chat.unreadCount > 0 ? (
+                <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-primary px-1.5 text-xs font-bold text-primary-foreground shadow-sm">
+                  {chat.unreadCount}
+                </span>
+              ) : null}
+            </div>
           </div>
 
           <p className="text-xs text-primary font-medium truncate mt-0.5">{chat.outingName}</p>
 
-          <p className="mt-1 truncate text-sm text-muted-foreground">
+          <p
+            className={`mt-1 truncate text-sm ${chat.unreadCount ? "font-medium text-foreground" : "text-muted-foreground"}`}
+          >
             {chat.lastMessage || "Start chatting..."}
           </p>
         </div>

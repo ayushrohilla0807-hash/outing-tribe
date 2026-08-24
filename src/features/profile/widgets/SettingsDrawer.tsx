@@ -1,5 +1,7 @@
 import { Switch } from "@/components/ui/switch";
 import { Moon, Bell, User, MapPin, Shield, LogOut, X } from "lucide-react";
+import { useNavigate } from "@tanstack/react-router";
+import { useNotifications } from "@/features/notifications/hooks/useNotifications";
 
 type Props = {
   open: boolean;
@@ -24,11 +26,11 @@ function Row({
   return (
     <button
       onClick={onClick}
-      className="flex w-full items-center justify-between rounded-xl p-4 hover:bg-muted"
+      className="flex w-full items-center justify-between rounded-xl p-4 hover:bg-muted cursor-pointer transition text-foreground"
     >
       <div className="flex items-center gap-3">
         {icon}
-        <span>{title}</span>
+        <span className="text-sm font-medium">{title}</span>
       </div>
 
       {right}
@@ -44,6 +46,9 @@ export default function SettingsDrawer({
   onEditProfile,
   onLogout,
 }: Props) {
+  const navigate = useNavigate();
+  const { unreadCount } = useNotifications();
+
   return (
     <>
       {open && <div onClick={onClose} className="fixed inset-0 z-40 bg-black/40" />}
@@ -53,16 +58,19 @@ export default function SettingsDrawer({
           open ? "translate-x-0" : "translate-x-full"
         }`}
       >
-        <div className="flex items-center justify-between border-b p-5">
-          <h2 className="text-xl font-bold">Settings</h2>
+        <div className="flex items-center justify-between border-b border-white/10 p-5">
+          <h2 className="text-xl font-bold text-foreground">Settings</h2>
 
-          <button onClick={onClose}>
-            <X />
+          <button
+            onClick={onClose}
+            className="text-muted-foreground hover:text-foreground cursor-pointer"
+          >
+            <X size={20} />
           </button>
         </div>
 
         <div className="space-y-2 p-4">
-          <Row icon={<User />} title="Edit Profile" onClick={onEditProfile} />
+          <Row icon={<User className="h-5 w-5" />} title="Edit Profile" onClick={onEditProfile} />
 
           <Row
             icon={<Moon className="h-5 w-5" />}
@@ -73,14 +81,28 @@ export default function SettingsDrawer({
           <Row
             icon={<Bell className="h-5 w-5" />}
             title="Notifications"
-            right={<Switch checked={true} onCheckedChange={() => {}} />}
+            right={
+              unreadCount > 0 ? (
+                <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-primary px-1.5 text-xs font-semibold text-primary-foreground">
+                  {unreadCount}
+                </span>
+              ) : null
+            }
+            onClick={() => {
+              onClose();
+              navigate({ to: "/notifications" });
+            }}
           />
 
-          <Row icon={<MapPin />} title="Location" />
+          <Row icon={<MapPin className="h-5 w-5" />} title="Location" />
 
-          <Row icon={<Shield />} title="Privacy Policy" />
+          <Row icon={<Shield className="h-5 w-5" />} title="Privacy Policy" />
 
-          <Row icon={<LogOut />} title="Logout" onClick={onLogout} />
+          <Row
+            icon={<LogOut className="h-5 w-5 text-destructive" />}
+            title="Logout"
+            onClick={onLogout}
+          />
         </div>
       </aside>
     </>

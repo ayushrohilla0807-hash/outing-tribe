@@ -1,5 +1,6 @@
 import { Bell, MapPin } from "lucide-react";
 import { useNavigate } from "@tanstack/react-router";
+import { useNotifications } from "@/features/notifications/hooks/useNotifications";
 
 type HeaderProps = {
   userName?: string;
@@ -8,6 +9,7 @@ type HeaderProps = {
 
 export default function Header({ location }: HeaderProps) {
   const navigate = useNavigate();
+  const { unreadCount } = useNotifications();
 
   return (
     <div className="flex items-start justify-between">
@@ -24,10 +26,13 @@ export default function Header({ location }: HeaderProps) {
 
       <button
         onClick={() => navigate({ to: "/notifications" })}
-        className="flex h-11 w-11 items-center justify-center rounded-2xl bg-surface border border-white/10 hover:border-primary/40 hover:bg-surface-elevated transition cursor-pointer"
+        className="relative flex h-11 w-11 items-center justify-center rounded-2xl bg-surface border border-white/10 hover:border-primary/40 hover:bg-surface-elevated transition cursor-pointer"
         aria-label="Notifications"
       >
         <Bell size={18} className="text-foreground" />
+        {unreadCount > 0 && (
+          <span className="absolute top-2.5 right-2.5 h-2.5 w-2.5 rounded-full bg-red-500 ring-2 ring-background animate-pulse" />
+        )}
       </button>
     </div>
   );
