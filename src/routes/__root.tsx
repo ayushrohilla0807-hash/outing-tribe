@@ -77,7 +77,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
   head: () => ({
     meta: [
       { charSet: "utf-8" },
-      { name: "viewport", content: "width=device-width, initial-scale=1" },
+      { name: "viewport", content: "width=device-width, initial-scale=1, viewport-fit=cover" },
       { title: "Outsy — Never Cancel Plans Again" },
       {
         name: "description",
@@ -85,6 +85,12 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
           "Outsy helps you find nearby companions for movies, cafés, sports, trips and more. Activity-first, safe, and built for real-life connections.",
       },
       { name: "author", content: "Outsy" },
+      { name: "theme-color", content: "#09090b" },
+      { name: "mobile-web-app-capable", content: "yes" },
+      { name: "apple-mobile-web-app-capable", content: "yes" },
+      { name: "apple-mobile-web-app-status-bar-style", content: "black-translucent" },
+      { name: "apple-mobile-web-app-title", content: "Outsy" },
+      { name: "application-name", content: "Outsy" },
       { property: "og:title", content: "Outsy — Never Cancel Plans Again" },
       {
         property: "og:description",
@@ -98,8 +104,11 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     ],
     links: [
       { rel: "stylesheet", href: appCss },
+      { rel: "manifest", href: "/manifest.webmanifest" },
       { rel: "icon", href: "/favicon.ico", type: "image/x-icon" },
       { rel: "icon", href: "/favicon.png", type: "image/png", sizes: "64x64" },
+      { rel: "icon", href: "/favicon-32x32.png", type: "image/png", sizes: "32x32" },
+      { rel: "icon", href: "/favicon-16x16.png", type: "image/png", sizes: "16x16" },
       { rel: "apple-touch-icon", href: "/apple-touch-icon.png", sizes: "180x180" },
       { rel: "preconnect", href: "https://fonts.googleapis.com" },
       { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
@@ -134,6 +143,22 @@ function RootShell({ children }: { children: ReactNode }) {
 
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
+
+  // Register PWA service worker in browser
+  useEffect(() => {
+    if (typeof window !== "undefined" && "serviceWorker" in navigator) {
+      window.addEventListener("load", () => {
+        navigator.serviceWorker
+          .register("/sw.js", { scope: "/" })
+          .then((registration) => {
+            console.log("PWA Service Worker registered with scope:", registration.scope);
+          })
+          .catch((err) => {
+            console.error("Service Worker registration failed:", err);
+          });
+      });
+    }
+  }, []);
 
   return (
     <QueryClientProvider client={queryClient}>

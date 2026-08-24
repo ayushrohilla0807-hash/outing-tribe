@@ -1,7 +1,8 @@
 import { Switch } from "@/components/ui/switch";
-import { Moon, Bell, User, MapPin, Shield, LogOut, X } from "lucide-react";
+import { Moon, Bell, User, MapPin, Shield, LogOut, X, Download } from "lucide-react";
 import { useNavigate } from "@tanstack/react-router";
 import { useNotifications } from "@/features/notifications/hooks/useNotifications";
+import { usePwaInstall } from "@/hooks/usePwaInstall";
 
 type Props = {
   open: boolean;
@@ -48,6 +49,7 @@ export default function SettingsDrawer({
 }: Props) {
   const navigate = useNavigate();
   const { unreadCount } = useNotifications();
+  const { canInstall, installApp } = usePwaInstall();
 
   return (
     <>
@@ -71,6 +73,22 @@ export default function SettingsDrawer({
 
         <div className="space-y-2 p-4">
           <Row icon={<User className="h-5 w-5" />} title="Edit Profile" onClick={onEditProfile} />
+
+          {canInstall && (
+            <Row
+              icon={<Download className="h-5 w-5 text-primary" />}
+              title="Install App"
+              right={
+                <span className="rounded-full bg-primary/20 border border-primary/40 px-2 py-0.5 text-xs font-semibold text-primary">
+                  Install
+                </span>
+              }
+              onClick={async () => {
+                const installed = await installApp();
+                if (installed) onClose();
+              }}
+            />
+          )}
 
           <Row
             icon={<Moon className="h-5 w-5" />}
