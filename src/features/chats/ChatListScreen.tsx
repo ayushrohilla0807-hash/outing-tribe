@@ -4,8 +4,8 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 
-import { getAcceptedChats } from "./services/chatService";
-import ChatCard from "./widgets/ChatCard";
+import { getOutingGroupChats } from "./services/groupChatService";
+import GroupChatCard from "./widgets/GroupChatCard";
 import EmptyState from "./widgets/EmptyState";
 
 export default function ChatListScreen() {
@@ -13,23 +13,26 @@ export default function ChatListScreen() {
   const queryClient = useQueryClient();
 
   const {
-    data: chats = [],
+    data: groupChats = [],
     isLoading,
     isError,
   } = useQuery({
-    queryKey: ["accepted-chats"],
-    queryFn: getAcceptedChats,
+    queryKey: ["group-chats"],
+    queryFn: getOutingGroupChats,
   });
 
   useEffect(() => {
-    // Listen for new messages & participant updates to keep chat list reactive
+    // Listen for new messages, group memberships & participant updates to keep list reactive
     const channel = supabase
-      .channel("chat-list-realtime")
+      .channel("chat-list-realtime-groups")
       .on("postgres_changes", { event: "*", schema: "public", table: "messages" }, () => {
-        queryClient.invalidateQueries({ queryKey: ["accepted-chats"] });
+        queryClient.invalidateQueries({ queryKey: ["group-chats"] });
       })
       .on("postgres_changes", { event: "*", schema: "public", table: "participants" }, () => {
-        queryClient.invalidateQueries({ queryKey: ["accepted-chats"] });
+        queryClient.invalidateQueries({ queryKey: ["group-chats"] });
+      })
+      .on("postgres_changes", { event: "*", schema: "public", table: "group_members" }, () => {
+        queryClient.invalidateQueries({ queryKey: ["group-chats"] });
       })
       .subscribe();
 
@@ -40,7 +43,7 @@ export default function ChatListScreen() {
 
   if (isLoading) {
     return (
-      <div className="w-full max-w-3xl mx-auto px-4 sm:px-6 pt-[calc(0.75rem+env(safe-area-inset-top,0px))] pb-8">
+      <div className="w-full max-w-3xl mx-auto px-4 sm:px-6 pt-[calc(0.75rem+env(safe-area-inset-top,0px))] pb-28">
         <h1 className="mb-6 text-3xl sm:text-4xl font-bold tracking-tight text-foreground">
           Chats
         </h1>
@@ -54,7 +57,7 @@ export default function ChatListScreen() {
 
   if (isError) {
     return (
-      <div className="w-full max-w-3xl mx-auto px-4 sm:px-6 pt-[calc(0.75rem+env(safe-area-inset-top,0px))] pb-8">
+      <div className="w-full max-w-3xl mx-auto px-4 sm:px-6 pt-[calc(0.75rem+env(safe-area-inset-top,0px))] pb-28">
         <h1 className="mb-6 text-3xl sm:text-4xl font-bold tracking-tight text-foreground">
           Chats
         </h1>
@@ -64,23 +67,29 @@ export default function ChatListScreen() {
   }
 
   return (
-    <div className="w-full max-w-3xl mx-auto px-4 sm:px-6 pt-[calc(0.75rem+env(safe-area-inset-top,0px))] pb-8">
-      <h1 className="mb-6 text-3xl sm:text-4xl font-bold tracking-tight text-foreground">Chats</h1>
+    <div className="w-full max-w-3xl mx-auto px-4 sm:px-6 pt-[calc(0.75rem+env(safe-area-inset-top,0px))] pb-28">
+      <div className="mb-6 flex items-center justify-between">
+        <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-foreground">Chats</h1>
+        {groupChats.length > 0 && (
+          <span className="rounded-full bg-primary/10 border border-primary/20 px-3 py-1 text-xs font-bold text-primary">
+            {groupChats.length} outing{groupChats.length !== 1 ? "s" : ""}
+          </span>
+        )}
+      </div>
 
-      {chats.length === 0 ? (
+      {groupChats.length === 0 ? (
         <EmptyState />
       ) : (
         <div className="w-full space-y-3.5">
-          {chats.map((chat) => (
-            <ChatCard
-              key={`${chat.outingId}-${chat.otherUserId}`}
-              chat={chat}
+          {groupChats.map((group) => (
+            <GroupChatCard
+              key={`group-${group.outingId}`}
+              chat={group}
               onClick={() =>
                 navigate({
-                  to: "/chats/$outingId/$userId",
+                  to: "/chats/$outingId/group",
                   params: {
-                    outingId: chat.outingId,
-                    userId: chat.otherUserId,
+                    outingId: group.outingId,
                   },
                 })
               }

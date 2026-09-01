@@ -56,7 +56,27 @@ export async function leaveOuting(outingId: string) {
   if (error) {
     throw error;
   }
+
+  // Remove from group_members if present
+  try {
+    const { data: group } = await supabase
+      .from("group_conversations")
+      .select("id")
+      .eq("outing_id", outingId)
+      .maybeSingle();
+
+    if (group?.id) {
+      await supabase
+        .from("group_members")
+        .delete()
+        .eq("group_id", group.id)
+        .eq("user_id", user.id);
+    }
+  } catch (err) {
+    console.error("[leaveOuting] Group member cleanup error:", err);
+  }
 }
+
 
 export async function getJoinStatus(outingId: string): Promise<JoinStatus> {
   const {

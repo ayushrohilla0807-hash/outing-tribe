@@ -1,4 +1,4 @@
-import { MapPin, Star, MessageCircle, Check, X, Trash2, Loader2 } from "lucide-react";
+import { MapPin, Star, Check, X, Trash2, Loader2 } from "lucide-react";
 import type { Participant } from "../models/participant";
 
 type ParticipantCardProps = {
@@ -6,7 +6,6 @@ type ParticipantCardProps = {
   loading?: boolean;
   onAccept?: (id: string) => void;
   onReject?: (id: string) => void;
-  onChat?: (userId: string) => void;
   onRemove?: (id: string) => void;
 };
 
@@ -15,7 +14,6 @@ export default function ParticipantCard({
   loading = false,
   onAccept,
   onReject,
-  onChat,
   onRemove,
 }: ParticipantCardProps) {
   return (
@@ -91,15 +89,7 @@ export default function ParticipantCard({
           </button>
         </div>
       ) : (
-        <div className="mt-4 flex gap-3">
-          <button
-            type="button"
-            onClick={() => onChat?.(participant.userId)}
-            className="flex-1 inline-flex items-center justify-center gap-2 rounded-xl bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground shadow-glow hover:opacity-90 transition"
-          >
-            <MessageCircle className="h-4 w-4" /> Chat
-          </button>
-
+        <div className="mt-4 flex justify-end">
           <button
             type="button"
             disabled={loading}
@@ -111,7 +101,7 @@ export default function ParticipantCard({
             ) : (
               <Trash2 className="h-4 w-4" />
             )}{" "}
-            Remove
+            Remove from Outing
           </button>
         </div>
       )}

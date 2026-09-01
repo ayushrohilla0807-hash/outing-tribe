@@ -112,8 +112,44 @@ export async function acceptParticipant(participantId: string, outingId: string)
     throw new Error(errorMsg);
   }
 
-  console.log("[acceptParticipant] Success:", data[0]);
-  return data[0];
+  const updatedParticipant = data[0];
+
+  // Sync to group_members: ensure group exists and add participant
+  try {
+    const { data: group } = await supabase
+      .from("group_conversations")
+      .select("id")
+      .eq("outing_id", outingId)
+      .maybeSingle();
+
+    let groupId = group?.id;
+    if (!groupId) {
+      const { data: newGroup } = await supabase
+        .from("group_conversations")
+        .insert({ outing_id: outingId })
+        .select("id")
+        .maybeSingle();
+      groupId = newGroup?.id;
+    }
+
+    if (groupId && updatedParticipant.user_id) {
+      await supabase
+        .from("group_members")
+        .upsert(
+          {
+            group_id: groupId,
+            user_id: updatedParticipant.user_id,
+            role: "member",
+          },
+          { onConflict: "group_id,user_id", ignoreDuplicates: true },
+        );
+    }
+  } catch (err) {
+    console.error("[acceptParticipant] Group sync fallback error:", err);
+  }
+
+  console.log("[acceptParticipant] Success:", updatedParticipant);
+  return updatedParticipant;
 }
 
 /* =========================
@@ -154,8 +190,29 @@ export async function rejectParticipant(participantId: string, outingId: string)
     throw new Error(errorMsg);
   }
 
-  console.log("[rejectParticipant] Success:", data[0]);
-  return data[0];
+  const deletedParticipant = data[0];
+
+  // Remove from group_members if present
+  try {
+    const { data: group } = await supabase
+      .from("group_conversations")
+      .select("id")
+      .eq("outing_id", outingId)
+      .maybeSingle();
+
+    if (group?.id && deletedParticipant.user_id) {
+      await supabase
+        .from("group_members")
+        .delete()
+        .eq("group_id", group.id)
+        .eq("user_id", deletedParticipant.user_id);
+    }
+  } catch (err) {
+    console.error("[rejectParticipant] Group removal fallback error:", err);
+  }
+
+  console.log("[rejectParticipant] Success:", deletedParticipant);
+  return deletedParticipant;
 }
 
 /* =========================
@@ -196,6 +253,28 @@ export async function removeParticipant(participantId: string, outingId: string)
     throw new Error(errorMsg);
   }
 
-  console.log("[removeParticipant] Success:", data[0]);
-  return data[0];
+  const removedParticipant = data[0];
+
+  // Remove from group_members without touching previous messages
+  try {
+    const { data: group } = await supabase
+      .from("group_conversations")
+      .select("id")
+      .eq("outing_id", outingId)
+      .maybeSingle();
+
+    if (group?.id && removedParticipant.user_id) {
+      await supabase
+        .from("group_members")
+        .delete()
+        .eq("group_id", group.id)
+        .eq("user_id", removedParticipant.user_id);
+    }
+  } catch (err) {
+    console.error("[removeParticipant] Group removal fallback error:", err);
+  }
+
+  console.log("[removeParticipant] Success:", removedParticipant);
+  return removedParticipant;
 }
+

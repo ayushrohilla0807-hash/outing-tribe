@@ -1,25 +1,28 @@
 import { useEffect } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { getAcceptedChats } from "../services/chatService";
+import { getOutingGroupChats } from "../services/groupChatService";
 
 export function useUnreadChatCount() {
   const queryClient = useQueryClient();
 
-  const { data: chats = [] } = useQuery({
-    queryKey: ["accepted-chats"],
-    queryFn: getAcceptedChats,
+  const { data: groupChats = [] } = useQuery({
+    queryKey: ["group-chats"],
+    queryFn: getOutingGroupChats,
     staleTime: 1000 * 15,
   });
 
   useEffect(() => {
     const channel = supabase
-      .channel("unread-chats-realtime")
+      .channel("unread-group-chats-realtime-badge")
       .on("postgres_changes", { event: "*", schema: "public", table: "messages" }, () => {
-        queryClient.invalidateQueries({ queryKey: ["accepted-chats"] });
+        queryClient.invalidateQueries({ queryKey: ["group-chats"] });
       })
       .on("postgres_changes", { event: "*", schema: "public", table: "participants" }, () => {
-        queryClient.invalidateQueries({ queryKey: ["accepted-chats"] });
+        queryClient.invalidateQueries({ queryKey: ["group-chats"] });
+      })
+      .on("postgres_changes", { event: "*", schema: "public", table: "group_members" }, () => {
+        queryClient.invalidateQueries({ queryKey: ["group-chats"] });
       })
       .subscribe();
 
@@ -28,7 +31,7 @@ export function useUnreadChatCount() {
     };
   }, [queryClient]);
 
-  const unreadChatCount = chats.reduce((acc, chat) => acc + (chat.unreadCount || 0), 0);
+  const unreadChatCount = groupChats.reduce((acc, chat) => acc + (chat.unreadCount || 0), 0);
 
-  return { unreadChatCount, chats };
+  return { unreadChatCount, groupChats };
 }

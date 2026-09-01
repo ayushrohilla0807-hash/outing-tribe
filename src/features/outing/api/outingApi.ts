@@ -1,4 +1,5 @@
 import { supabase } from "@/integrations/supabase/client";
+import { ensureOutingGroup } from "@/features/chats/services/groupChatService";
 
 export async function fetchOutings() {
   const { data, error } = await supabase
@@ -47,5 +48,15 @@ export async function createOuting(payload: {
 
   if (error) throw error;
 
+  // Initialize group chat for this outing with host as initial member
+  if (data?.id) {
+    try {
+      await ensureOutingGroup(data.id, user.id);
+    } catch (err) {
+      console.error("Failed to initialize outing group chat:", err);
+    }
+  }
+
   return data;
 }
+

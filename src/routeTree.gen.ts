@@ -26,6 +26,7 @@ import { Route as AuthenticatedChatsIndexRouteImport } from './routes/_authentic
 import { Route as AuthenticatedParticipantsOutingIdRouteImport } from './routes/_authenticated/participants/$outingId'
 import { Route as AuthenticatedOutingIdRouteImport } from './routes/_authenticated/outing.$id'
 import { Route as AuthenticatedHostDashboardEditOutingIdRouteImport } from './routes/_authenticated/host-dashboard-edit.$outingId'
+import { Route as AuthenticatedChatsOutingIdGroupRouteImport } from './routes/_authenticated/chats/$outingId/group'
 import { Route as AuthenticatedChatsOutingIdUserIdRouteImport } from './routes/_authenticated/chats/$outingId/$userId'
 
 const ProfileSetupRoute = ProfileSetupRouteImport.update({
@@ -116,6 +117,12 @@ const AuthenticatedHostDashboardEditOutingIdRoute =
     path: '/host-dashboard-edit/$outingId',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedChatsOutingIdGroupRoute =
+  AuthenticatedChatsOutingIdGroupRouteImport.update({
+    id: '/$outingId/group',
+    path: '/$outingId/group',
+    getParentRoute: () => AuthenticatedChatsRoute,
+  } as any)
 const AuthenticatedChatsOutingIdUserIdRoute =
   AuthenticatedChatsOutingIdUserIdRouteImport.update({
     id: '/$outingId/$userId',
@@ -141,6 +148,7 @@ export interface FileRoutesByFullPath {
   '/participants/$outingId': typeof AuthenticatedParticipantsOutingIdRoute
   '/chats/': typeof AuthenticatedChatsIndexRoute
   '/chats/$outingId/$userId': typeof AuthenticatedChatsOutingIdUserIdRoute
+  '/chats/$outingId/group': typeof AuthenticatedChatsOutingIdGroupRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -159,6 +167,7 @@ export interface FileRoutesByTo {
   '/participants/$outingId': typeof AuthenticatedParticipantsOutingIdRoute
   '/chats': typeof AuthenticatedChatsIndexRoute
   '/chats/$outingId/$userId': typeof AuthenticatedChatsOutingIdUserIdRoute
+  '/chats/$outingId/group': typeof AuthenticatedChatsOutingIdGroupRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -180,6 +189,7 @@ export interface FileRoutesById {
   '/_authenticated/participants/$outingId': typeof AuthenticatedParticipantsOutingIdRoute
   '/_authenticated/chats/': typeof AuthenticatedChatsIndexRoute
   '/_authenticated/chats/$outingId/$userId': typeof AuthenticatedChatsOutingIdUserIdRoute
+  '/_authenticated/chats/$outingId/group': typeof AuthenticatedChatsOutingIdGroupRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -201,6 +211,7 @@ export interface FileRouteTypes {
     | '/participants/$outingId'
     | '/chats/'
     | '/chats/$outingId/$userId'
+    | '/chats/$outingId/group'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -219,6 +230,7 @@ export interface FileRouteTypes {
     | '/participants/$outingId'
     | '/chats'
     | '/chats/$outingId/$userId'
+    | '/chats/$outingId/group'
   id:
     | '__root__'
     | '/'
@@ -239,6 +251,7 @@ export interface FileRouteTypes {
     | '/_authenticated/participants/$outingId'
     | '/_authenticated/chats/'
     | '/_authenticated/chats/$outingId/$userId'
+    | '/_authenticated/chats/$outingId/group'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -369,6 +382,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedHostDashboardEditOutingIdRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/chats/$outingId/group': {
+      id: '/_authenticated/chats/$outingId/group'
+      path: '/$outingId/group'
+      fullPath: '/chats/$outingId/group'
+      preLoaderRoute: typeof AuthenticatedChatsOutingIdGroupRouteImport
+      parentRoute: typeof AuthenticatedChatsRoute
+    }
     '/_authenticated/chats/$outingId/$userId': {
       id: '/_authenticated/chats/$outingId/$userId'
       path: '/$outingId/$userId'
@@ -382,11 +402,13 @@ declare module '@tanstack/react-router' {
 interface AuthenticatedChatsRouteChildren {
   AuthenticatedChatsIndexRoute: typeof AuthenticatedChatsIndexRoute
   AuthenticatedChatsOutingIdUserIdRoute: typeof AuthenticatedChatsOutingIdUserIdRoute
+  AuthenticatedChatsOutingIdGroupRoute: typeof AuthenticatedChatsOutingIdGroupRoute
 }
 
 const AuthenticatedChatsRouteChildren: AuthenticatedChatsRouteChildren = {
   AuthenticatedChatsIndexRoute: AuthenticatedChatsIndexRoute,
   AuthenticatedChatsOutingIdUserIdRoute: AuthenticatedChatsOutingIdUserIdRoute,
+  AuthenticatedChatsOutingIdGroupRoute: AuthenticatedChatsOutingIdGroupRoute,
 }
 
 const AuthenticatedChatsRouteWithChildren =

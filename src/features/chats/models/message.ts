@@ -1,36 +1,48 @@
 export interface Message {
   id: string;
-
   outingId: string;
-
   senderId: string;
-  receiverId: string;
-
+  receiverId?: string | null;
+  groupId?: string | null;
   message: string;
-
   createdAt: string;
-
   isMine: boolean;
+  senderName?: string;
+  senderAvatar?: string | null;
 }
 
 export interface Chat {
   outingId: string;
-
   otherUserId: string;
-
   outingName: string;
-
   outingImage: string | null;
-
   otherUserName: string;
-
   otherUserAvatar: string | null;
-
   lastMessage: string;
-
   lastMessageTime: string;
-
   unreadCount: number;
-
   participants: number;
 }
+
+export interface GroupChat {
+  id: string; // group_conversations.id
+  outingId: string;
+  outingTitle: string;
+  outingImage: string | null;
+  participantCount: number;
+  lastMessage: string;
+  lastMessageTime: string;
+  lastMessageSenderName?: string;
+  unreadCount: number;
+  isHost: boolean;
+}
+
+export interface GroupMember {
+  id: string;
+  userId: string;
+  fullName: string;
+  avatarUrl: string | null;
+  role: "host" | "member";
+  joinedAt: string;
+}
+

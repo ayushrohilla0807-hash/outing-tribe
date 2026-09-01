@@ -8,32 +8,106 @@ export type Database = {
   };
   public: {
     Tables: {
-      messages: {
+      group_conversations: {
         Row: {
           created_at: string | null;
           id: string;
-          message: string;
           outing_id: string;
-          receiver_id: string;
-          sender_id: string;
+          updated_at: string | null;
         };
         Insert: {
           created_at?: string | null;
           id?: string;
-          message: string;
           outing_id: string;
-          receiver_id: string;
-          sender_id: string;
+          updated_at?: string | null;
         };
         Update: {
           created_at?: string | null;
           id?: string;
+          outing_id?: string;
+          updated_at?: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "group_conversations_outing_id_fkey";
+            columns: ["outing_id"];
+            isOneToOne: true;
+            referencedRelation: "outings";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      group_members: {
+        Row: {
+          group_id: string;
+          id: string;
+          joined_at: string | null;
+          last_read_at: string | null;
+          role: string;
+          user_id: string;
+        };
+        Insert: {
+          group_id: string;
+          id?: string;
+          joined_at?: string | null;
+          last_read_at?: string | null;
+          role?: string;
+          user_id: string;
+        };
+        Update: {
+          group_id?: string;
+          id?: string;
+          joined_at?: string | null;
+          last_read_at?: string | null;
+          role?: string;
+          user_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "group_members_group_id_fkey";
+            columns: ["group_id"];
+            isOneToOne: false;
+            referencedRelation: "group_conversations";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      messages: {
+        Row: {
+          created_at: string | null;
+          group_id: string | null;
+          id: string;
+          message: string;
+          outing_id: string;
+          receiver_id: string | null;
+          sender_id: string;
+        };
+        Insert: {
+          created_at?: string | null;
+          group_id?: string | null;
+          id?: string;
+          message: string;
+          outing_id: string;
+          receiver_id?: string | null;
+          sender_id: string;
+        };
+        Update: {
+          created_at?: string | null;
+          group_id?: string | null;
+          id?: string;
           message?: string;
           outing_id?: string;
-          receiver_id?: string;
+          receiver_id?: string | null;
           sender_id?: string;
         };
         Relationships: [
+          {
+            foreignKeyName: "messages_group_id_fkey";
+            columns: ["group_id"];
+            isOneToOne: false;
+            referencedRelation: "group_conversations";
+            referencedColumns: ["id"];
+          },
           {
             foreignKeyName: "messages_outing_id_fkey";
             columns: ["outing_id"];

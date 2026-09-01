@@ -9,7 +9,7 @@ export default function ParticipantsStepper() {
   const participants = watch("participants");
 
   function decrease() {
-    if (participants > 2) {
+    if (participants > 1) {
       setValue("participants", participants - 1, {
         shouldValidate: true,
       });
@@ -48,7 +48,7 @@ export default function ParticipantsStepper() {
         </button>
       </div>
 
-      <p className="text-xs text-muted-foreground">Allowed: 2–50 participants</p>
+      <p className="text-xs text-muted-foreground">Allowed: 1–50 participants</p>
     </div>
   );
 }

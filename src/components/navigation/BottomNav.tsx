@@ -88,8 +88,8 @@ export default function BottomNav() {
     staleTime: 1000 * 60,
   });
 
-  // Hide completely on individual chat conversation screens
-  if (/^\/chats\/[^/]+\/[^/]+/.test(pathname)) {
+  // Hide completely on individual chat conversation screens (group and direct)
+  if (pathname.startsWith("/chats/") && pathname !== "/chats") {
     return null;
   }
 

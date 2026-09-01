@@ -463,16 +463,15 @@ function OutingDetailsPage() {
                       type="button"
                       onClick={() =>
                         navigate({
-                          to: "/chats/$outingId/$userId",
+                          to: "/chats/$outingId/group",
                           params: {
                             outingId: id,
-                            userId: outing.host_id,
                           },
                         })
                       }
                       className="inline-flex items-center justify-center gap-2 rounded-full bg-primary hover:bg-primary-glow px-6 py-3 text-sm font-bold text-primary-foreground shadow-glow active:scale-98 transition cursor-pointer"
                     >
-                      <MessageCircle className="h-4 w-4" /> Open Chat
+                      <MessageCircle className="h-4 w-4" /> Group Chat
                     </button>
                     <button
                       type="button"

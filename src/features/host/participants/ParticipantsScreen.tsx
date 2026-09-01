@@ -210,21 +210,36 @@ export default function ParticipantsScreen() {
 
   return (
     <div className="mx-auto max-w-4xl space-y-8 px-5 py-8 pb-32">
-      <div className="flex items-center gap-3">
-        <button
-          onClick={() => navigate({ to: "/host-dashboard" })}
-          className="grid h-10 w-10 place-items-center rounded-xl border border-white/10 bg-surface hover:bg-surface-elevated transition"
-          aria-label="Back"
-        >
-          <ArrowLeft className="h-5 w-5" />
-        </button>
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight">Manage Participants</h1>
-          <p className="text-sm text-muted-foreground">
-            {outingTitle ? `For "${outingTitle}"` : "Manage outing join requests"} • (
-            {joined.length}/{maxParticipants} Joined)
-          </p>
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div className="flex items-center gap-3">
+          <button
+            onClick={() => navigate({ to: "/host-dashboard" })}
+            className="grid h-10 w-10 place-items-center rounded-xl border border-white/10 bg-surface hover:bg-surface-elevated transition"
+            aria-label="Back"
+          >
+            <ArrowLeft className="h-5 w-5" />
+          </button>
+          <div>
+            <h1 className="text-2xl font-bold tracking-tight">Manage Participants</h1>
+            <p className="text-sm text-muted-foreground">
+              {outingTitle ? `For "${outingTitle}"` : "Manage outing join requests"} • (
+              {joined.length}/{maxParticipants} Joined)
+            </p>
+          </div>
         </div>
+
+        <button
+          type="button"
+          onClick={() =>
+            navigate({
+              to: "/chats/$outingId/group",
+              params: { outingId },
+            })
+          }
+          className="inline-flex items-center justify-center gap-2 rounded-xl bg-primary px-4 py-2.5 text-sm font-bold text-primary-foreground shadow-glow hover:opacity-95 active:scale-95 transition cursor-pointer"
+        >
+          <Users className="h-4 w-4" /> Open Group Chat
+        </button>
       </div>
 
       {/* Pending Requests Section */}
@@ -267,15 +282,6 @@ export default function ParticipantsScreen() {
                 key={participant.id}
                 participant={participant}
                 loading={actionLoadingId === participant.id}
-                onChat={(userId) =>
-                  navigate({
-                    to: "/chats/$outingId/$userId",
-                    params: {
-                      outingId,
-                      userId,
-                    },
-                  })
-                }
                 onRemove={handleRemove}
               />
             ))}
@@ -285,3 +291,4 @@ export default function ParticipantsScreen() {
     </div>
   );
 }
+
