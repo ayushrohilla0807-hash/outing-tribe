@@ -11,7 +11,9 @@ import {
   getGroupMessages,
   sendGroupMessage,
   subscribeGroupMessages,
+  subscribeGroupMessageReads,
   setGroupChatLastRead,
+  markMessagesAsSeen,
 } from "./services/groupChatService";
 import { getCurrentUser } from "./services/chatService";
 
@@ -43,6 +45,39 @@ export default function GroupChatScreen() {
   const [authorized, setAuthorized] = useState<boolean | null>(null);
 
   const bottomRef = useRef<HTMLDivElement>(null);
+  const markedSeenIdsRef = useRef<Set<string>>(new Set());
+
+  const markUnseenMessages = useCallback(async (msgs: Message[], userId: string) => {
+    if (!userId || msgs.length === 0) return;
+
+    const unseenMessageIds: string[] = [];
+
+    for (const msg of msgs) {
+      // Skip own messages and temporary optimistic messages
+      if (msg.isMine || msg.senderId === userId || msg.id.startsWith("temp-")) {
+        continue;
+      }
+
+      // Check if we have already marked it in this session
+      if (markedSeenIdsRef.current.has(msg.id)) {
+        continue;
+      }
+
+      // Check if already seen according to DB reads
+      const alreadySeen = msg.reads?.some((r) => r.userId === userId);
+      if (alreadySeen) {
+        markedSeenIdsRef.current.add(msg.id);
+        continue;
+      }
+
+      unseenMessageIds.push(msg.id);
+    }
+
+    if (unseenMessageIds.length > 0) {
+      unseenMessageIds.forEach((id) => markedSeenIdsRef.current.add(id));
+      await markMessagesAsSeen(unseenMessageIds, userId);
+    }
+  }, []);
 
   const loadMessages = useCallback(async () => {
     try {
@@ -53,11 +88,12 @@ export default function GroupChatScreen() {
       if (currentUserId) {
         setGroupChatLastRead(currentUserId, outingId);
         queryClient.invalidateQueries({ queryKey: ["group-chats"] });
+        markUnseenMessages(msgs, currentUserId);
       }
     } catch (err) {
       console.error("Error loading group messages:", err);
     }
-  }, [outingId, currentUserId, queryClient]);
+  }, [outingId, currentUserId, queryClient, markUnseenMessages]);
 
   const loadChat = useCallback(async () => {
     try {
@@ -122,6 +158,7 @@ export default function GroupChatScreen() {
 
       const msgs = await getGroupMessages(outingId);
       setMessages(msgs);
+      markUnseenMessages(msgs, user.id);
 
       // Ensure group conversation exists asynchronously
       ensureOutingGroup(outingId).then((groupRes) => {
@@ -135,22 +172,27 @@ export default function GroupChatScreen() {
     } finally {
       setLoading(false);
     }
-  }, [outingId, navigate, queryClient]);
+  }, [outingId, navigate, queryClient, markUnseenMessages]);
 
   useEffect(() => {
     loadChat();
   }, [loadChat]);
 
-  // Real-time subscription for new group messages
+  // Real-time subscriptions for new group messages & read receipts
   useEffect(() => {
     if (!currentUserId || !authorized) return;
 
-    const channel = subscribeGroupMessages(outingId, () => {
+    const messageChannel = subscribeGroupMessages(outingId, () => {
+      loadMessages();
+    });
+
+    const readChannel = subscribeGroupMessageReads(outingId, () => {
       loadMessages();
     });
 
     return () => {
-      supabase.removeChannel(channel);
+      supabase.removeChannel(messageChannel);
+      supabase.removeChannel(readChannel);
     };
   }, [outingId, currentUserId, authorized, loadMessages]);
 

@@ -8,11 +8,7 @@
   "orientation": "portrait",
   "theme_color": "#09090b",
   "background_color": "#09090b",
-  "categories": [
-    "social",
-    "lifestyle",
-    "travel"
-  ],
+  "categories": ["social", "lifestyle", "travel"],
   "icons": [
     {
       "src": "/icon-192.png",

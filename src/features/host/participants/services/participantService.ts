@@ -133,16 +133,14 @@ export async function acceptParticipant(participantId: string, outingId: string)
     }
 
     if (groupId && updatedParticipant.user_id) {
-      await supabase
-        .from("group_members")
-        .upsert(
-          {
-            group_id: groupId,
-            user_id: updatedParticipant.user_id,
-            role: "member",
-          },
-          { onConflict: "group_id,user_id", ignoreDuplicates: true },
-        );
+      await supabase.from("group_members").upsert(
+        {
+          group_id: groupId,
+          user_id: updatedParticipant.user_id,
+          role: "member",
+        },
+        { onConflict: "group_id,user_id", ignoreDuplicates: true },
+      );
     }
   } catch (err) {
     console.error("[acceptParticipant] Group sync fallback error:", err);
@@ -277,4 +275,3 @@ export async function removeParticipant(participantId: string, outingId: string)
   console.log("[removeParticipant] Success:", removedParticipant);
   return removedParticipant;
 }
-

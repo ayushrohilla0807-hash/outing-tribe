@@ -1,5 +1,5 @@
 import { supabase } from "@/integrations/supabase/client";
-import type { GroupChat, GroupMember, Message } from "../models/message";
+import type { GroupChat, GroupMember, Message, MessageReadReceipt } from "../models/message";
 
 const CHAT_LAST_READ_KEY_PREFIX = "outsy_chat_last_read_";
 
@@ -77,16 +77,14 @@ export async function ensureOutingGroup(
     }
 
     if (resolvedHostId) {
-      await supabase
-        .from("group_members")
-        .upsert(
-          {
-            group_id: groupId,
-            user_id: resolvedHostId,
-            role: "host",
-          },
-          { onConflict: "group_id,user_id", ignoreDuplicates: true },
-        );
+      await supabase.from("group_members").upsert(
+        {
+          group_id: groupId,
+          user_id: resolvedHostId,
+          role: "host",
+        },
+        { onConflict: "group_id,user_id", ignoreDuplicates: true },
+      );
     }
 
     // 4. Ensure all currently joined participants are in group_members
@@ -186,7 +184,13 @@ export async function getOutingGroupChats(): Promise<GroupChat[]> {
   // Combine and deduplicate outings
   const outingMap = new Map<
     string,
-    { id: string; title: string; cover_image: string | null; host_id: string; created_at: string | null }
+    {
+      id: string;
+      title: string;
+      cover_image: string | null;
+      host_id: string;
+      created_at: string | null;
+    }
   >();
 
   for (const o of hostedOutings ?? []) {
@@ -325,12 +329,90 @@ export async function getOutingGroupChats(): Promise<GroupChat[]> {
 }
 
 /**
- * Fetch messages for an outing group chat, including sender profile info.
+ * Batch fetch read receipts for a list of message IDs.
  */
-export async function getGroupMessages(
-  outingId: string,
-  _groupId?: string,
-): Promise<Message[]> {
+export async function getMessageReads(
+  messageIds: string[],
+): Promise<Map<string, MessageReadReceipt[]>> {
+  const readMap = new Map<string, MessageReadReceipt[]>();
+  if (!messageIds.length) return readMap;
+
+  try {
+    const { data: readRows, error } = await supabase
+      .from("message_reads")
+      .select("id, message_id, user_id, seen_at")
+      .in("message_id", messageIds);
+
+    if (error || !readRows || readRows.length === 0) {
+      return readMap;
+    }
+
+    // Batch fetch reader profiles
+    const readerUserIds = Array.from(new Set(readRows.map((r) => r.user_id)));
+    const { data: profiles } = await supabase
+      .from("profiles")
+      .select("id, full_name, avatar_url")
+      .in("id", readerUserIds);
+
+    const profileMap = new Map((profiles ?? []).map((p) => [p.id, p]));
+
+    for (const r of readRows) {
+      const p = profileMap.get(r.user_id);
+      const receipt: MessageReadReceipt = {
+        id: r.id,
+        messageId: r.message_id,
+        userId: r.user_id,
+        seenAt: r.seen_at,
+        userName: p?.full_name ?? "Member",
+        userAvatar: p?.avatar_url ?? null,
+      };
+
+      if (!readMap.has(r.message_id)) {
+        readMap.set(r.message_id, []);
+      }
+      readMap.get(r.message_id)!.push(receipt);
+    }
+  } catch (err) {
+    console.error("[getMessageReads] Error:", err);
+  }
+
+  return readMap;
+}
+
+/**
+ * Mark messages as seen for the authenticated user.
+ * Idempotent: duplicates are ignored safely via unique constraint.
+ */
+export async function markMessagesAsSeen(messageIds: string[], userId: string): Promise<void> {
+  if (!messageIds.length || !userId) return;
+
+  const validIds = messageIds.filter(Boolean);
+  if (!validIds.length) return;
+
+  try {
+    const readsToInsert = validIds.map((msgId) => ({
+      message_id: msgId,
+      user_id: userId,
+      seen_at: new Date().toISOString(),
+    }));
+
+    // Upsert in batches of 50
+    const chunkSize = 50;
+    for (let i = 0; i < readsToInsert.length; i += chunkSize) {
+      const chunk = readsToInsert.slice(i, i + chunkSize);
+      await supabase
+        .from("message_reads")
+        .upsert(chunk, { onConflict: "message_id,user_id", ignoreDuplicates: true });
+    }
+  } catch (error) {
+    console.error("[markMessagesAsSeen] Error marking messages as read:", error);
+  }
+}
+
+/**
+ * Fetch messages for an outing group chat, including sender profile info and read receipts.
+ */
+export async function getGroupMessages(outingId: string, _groupId?: string): Promise<Message[]> {
   const {
     data: { user },
   } = await supabase.auth.getUser();
@@ -359,8 +441,15 @@ export async function getGroupMessages(
 
   const profileMap = new Map((profiles ?? []).map((p) => [p.id, p]));
 
+  // Batch fetch read receipts for all messages
+  const messageIds = msgRows.map((m) => m.id);
+  const readMap = await getMessageReads(messageIds);
+
   return msgRows.map((m) => {
     const profile = profileMap.get(m.sender_id);
+    // Exclude sender from their own read receipts
+    const reads = (readMap.get(m.id) || []).filter((r) => r.userId !== m.sender_id);
+
     return {
       id: m.id,
       outingId: m.outing_id,
@@ -372,6 +461,7 @@ export async function getGroupMessages(
       isMine: m.sender_id === user.id,
       senderName: profile?.full_name ?? "Member",
       senderAvatar: profile?.avatar_url ?? null,
+      reads,
     };
   });
 }
@@ -398,11 +488,7 @@ export async function sendGroupMessage(
     payload.group_id = groupId;
   }
 
-  const { data, error } = await supabase
-    .from("messages")
-    .insert(payload)
-    .select()
-    .single();
+  const { data, error } = await supabase.from("messages").insert(payload).select().single();
 
   if (error) {
     console.error("[sendGroupMessage] Supabase error:", error);
@@ -415,10 +501,7 @@ export async function sendGroupMessage(
 /**
  * Subscribe to real-time messages for an outing group.
  */
-export function subscribeGroupMessages(
-  outingId: string,
-  callback: (payload: any) => void,
-) {
+export function subscribeGroupMessages(outingId: string, callback: (payload: any) => void) {
   return supabase
     .channel(`group-chat-${outingId}`)
     .on(
@@ -428,6 +511,24 @@ export function subscribeGroupMessages(
         schema: "public",
         table: "messages",
         filter: `outing_id=eq.${outingId}`,
+      },
+      callback,
+    )
+    .subscribe();
+}
+
+/**
+ * Subscribe to real-time read receipts for messages in an outing.
+ */
+export function subscribeGroupMessageReads(outingId: string, callback: (payload: any) => void) {
+  return supabase
+    .channel(`group-chat-reads-${outingId}`)
+    .on(
+      "postgres_changes",
+      {
+        event: "INSERT",
+        schema: "public",
+        table: "message_reads",
       },
       callback,
     )

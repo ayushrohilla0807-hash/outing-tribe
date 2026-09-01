@@ -66,17 +66,12 @@ export async function leaveOuting(outingId: string) {
       .maybeSingle();
 
     if (group?.id) {
-      await supabase
-        .from("group_members")
-        .delete()
-        .eq("group_id", group.id)
-        .eq("user_id", user.id);
+      await supabase.from("group_members").delete().eq("group_id", group.id).eq("user_id", user.id);
     }
   } catch (err) {
     console.error("[leaveOuting] Group member cleanup error:", err);
   }
 }
-
 
 export async function getJoinStatus(outingId: string): Promise<JoinStatus> {
   const {

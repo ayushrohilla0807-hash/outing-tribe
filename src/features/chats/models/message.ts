@@ -1,3 +1,12 @@
+export interface MessageReadReceipt {
+  id: string;
+  messageId: string;
+  userId: string;
+  seenAt: string;
+  userName: string;
+  userAvatar: string | null;
+}
+
 export interface Message {
   id: string;
   outingId: string;
@@ -9,6 +18,7 @@ export interface Message {
   isMine: boolean;
   senderName?: string;
   senderAvatar?: string | null;
+  reads?: MessageReadReceipt[];
 }
 
 export interface Chat {
@@ -45,4 +55,3 @@ export interface GroupMember {
   role: "host" | "member";
   joinedAt: string;
 }
-
