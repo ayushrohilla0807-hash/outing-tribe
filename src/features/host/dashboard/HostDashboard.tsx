@@ -11,7 +11,12 @@ import StatCard from "./widgets/StatCard";
 import SearchBar from "./widgets/SearchBar";
 import CategoryFilter from "./widgets/CategoryFilter";
 
-import { cancelOuting, getHostedOutings, markCompleted } from "./services/hostDashboardService";
+import {
+  cancelOuting,
+  deleteOutingPermanently,
+  getHostedOutings,
+  markCompleted,
+} from "./services/hostDashboardService";
 
 import type { HostedOuting, HostedOutingStatus } from "./models/hostedOuting";
 
@@ -102,6 +107,25 @@ export default function HostDashboard() {
     }
   }
 
+  async function handleDelete(id: string) {
+    if (
+      !window.confirm(
+        "Are you sure you want to permanently delete this outing? All messages, records, and cover images will be permanently removed.",
+      )
+    ) {
+      return;
+    }
+
+    try {
+      await deleteOutingPermanently(id, hostId);
+      toast.success("Outing permanently deleted.");
+      await loadOutings();
+    } catch (err: any) {
+      console.error(err);
+      toast.error(err.message || "Failed to delete outing");
+    }
+  }
+
   if (loading) {
     return (
       <div className="flex h-80 flex-col items-center justify-center gap-3">
@@ -164,8 +188,9 @@ export default function HostDashboard() {
                   },
                 })
               }
-              onComplete={handleComplete}
               onCancel={handleCancel}
+              onComplete={handleComplete}
+              onDelete={handleDelete}
             />
           ))}
         </div>

@@ -17,6 +17,7 @@ export default function EditOutingScreen() {
   const { outingId } = Route.useParams();
 
   const [form, setForm] = useState<EditOutingData | null>(null);
+  const [originalCoverImage, setOriginalCoverImage] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [isHost, setIsHost] = useState<boolean | null>(null);
@@ -55,6 +56,7 @@ export default function EditOutingScreen() {
 
         setIsHost(true);
         setForm(data);
+        setOriginalCoverImage(data.image || null);
       } catch (err) {
         console.error(err);
         toast.error("Failed to load outing");
@@ -87,7 +89,7 @@ export default function EditOutingScreen() {
 
     try {
       setSaving(true);
-      await updateOuting(form);
+      await updateOuting(form, originalCoverImage);
       toast.success("Outing updated successfully!");
 
       await Promise.all([

@@ -10,7 +10,7 @@ type Props = {
   open: boolean;
   profile: UserProfile;
   onClose: () => void;
-  onSave: (profile: UserProfile) => void;
+  onSave: (profile: UserProfile, previousAvatarUrl?: string) => void;
 };
 
 const AVAILABLE_INTERESTS = interestGroups.flatMap((g) => g.items);
@@ -236,7 +236,7 @@ export default function EditProfileModal({ open, profile, onClose, onSave }: Pro
             <button
               type="button"
               disabled={uploadingAvatar}
-              onClick={() => onSave(form)}
+              onClick={() => onSave(form, profile.avatarUrl)}
               className="w-full min-h-[48px] rounded-full bg-primary py-3.5 px-4 text-sm font-bold text-primary-foreground shadow-glow hover:opacity-90 active:scale-[0.98] transition cursor-pointer disabled:opacity-50 flex items-center justify-center"
             >
               Save Changes

@@ -61,7 +61,7 @@ export default function GroupMessageBubble({ message }: Props) {
 
   return (
     <>
-      <div className={`mb-3 flex flex-col ${message.isMine ? "items-end" : "items-start"}`}>
+      <div className={`mb-3 flex flex-col w-full ${message.isMine ? "items-end" : "items-start"}`}>
         <div
           className={`flex items-end gap-2 max-w-full ${message.isMine ? "justify-end" : "justify-start"}`}
         >
@@ -77,7 +77,7 @@ export default function GroupMessageBubble({ message }: Props) {
           )}
 
           <div
-            className={`max-w-[78%] md:max-w-[70%] rounded-2xl p-3 shadow-sm transition ${
+            className={`w-fit min-w-[80px] max-w-[85%] sm:max-w-[75%] md:max-w-[70%] rounded-2xl p-3 shadow-sm transition ${
               message.isMine
                 ? "rounded-br-md bg-primary text-primary-foreground"
                 : "rounded-bl-md border border-white/10 bg-card text-foreground"
@@ -85,7 +85,7 @@ export default function GroupMessageBubble({ message }: Props) {
           >
             {/* Sender Name in group for other members */}
             {!message.isMine && (
-              <p className="mb-1 text-xs font-bold text-amber-400">
+              <p className="mb-1 text-xs font-bold text-amber-400 truncate select-none">
                 {message.senderName || "Member"}
               </p>
             )}
@@ -129,12 +129,14 @@ export default function GroupMessageBubble({ message }: Props) {
 
             {/* Message Text */}
             {parsed.text && (
-              <p className="break-words text-sm leading-relaxed px-1">{parsed.text}</p>
+              <p className="text-sm leading-relaxed whitespace-pre-wrap break-words [overflow-wrap:break-word] select-text px-1">
+                {parsed.text}
+              </p>
             )}
 
             {/* Timestamp */}
             <div
-              className={`mt-1.5 text-right text-[10px] px-1 ${
+              className={`mt-1.5 text-right text-[10px] px-1 whitespace-nowrap select-none ${
                 message.isMine ? "text-primary-foreground/70" : "text-muted-foreground"
               }`}
             >

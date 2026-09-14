@@ -1,4 +1,5 @@
 import { supabase } from "@/integrations/supabase/client";
+import { deleteAvatarImages, extractStoragePath } from "@/lib/imageStorageService";
 import type { UserProfile } from "../models/profile";
 import type { HostedOuting } from "@/features/host/dashboard/models/hostedOuting";
 import type { HistoryOuting, HistoryStatus } from "@/features/outing/history/models/history";
@@ -306,7 +307,10 @@ export async function getUserJoinedOutings(userId: string): Promise<HistoryOutin
   });
 }
 
-export async function updateProfile(updates: Partial<UserProfile>): Promise<void> {
+export async function updateProfile(
+  updates: Partial<UserProfile>,
+  previousAvatarUrl?: string | null,
+): Promise<void> {
   const {
     data: { user },
   } = await supabase.auth.getUser();
@@ -355,6 +359,20 @@ export async function updateProfile(updates: Partial<UserProfile>): Promise<void
     await supabase.auth.updateUser({
       data: authMetadataUpdates,
     });
+  }
+
+  // Safe avatar cleanup: Only delete previous avatar images if avatar was updated and DB update succeeded
+  if (previousAvatarUrl && updates.avatarUrl && previousAvatarUrl !== updates.avatarUrl) {
+    const oldPath = extractStoragePath(previousAvatarUrl);
+    const newPath = extractStoragePath(updates.avatarUrl);
+
+    if (oldPath && oldPath !== newPath) {
+      try {
+        await deleteAvatarImages(previousAvatarUrl);
+      } catch (cleanupErr) {
+        console.error("[updateProfile] Failed to clean up old avatar:", cleanupErr);
+      }
+    }
   }
 }
 
@@ -463,5 +481,6 @@ export async function needsProfileSetup(): Promise<boolean> {
 import { uploadOptimizedAvatar } from "@/lib/imageOptimization";
 
 export async function uploadAvatar(file: File, userId?: string): Promise<string> {
-  return uploadOptimizedAvatar(file, userId);
+  const uniqueFolder = userId ? `${userId}-${Date.now()}` : undefined;
+  return uploadOptimizedAvatar(file, uniqueFolder);
 }

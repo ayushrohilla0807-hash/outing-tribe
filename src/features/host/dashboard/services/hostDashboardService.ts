@@ -1,4 +1,5 @@
 import { supabase } from "@/integrations/supabase/client";
+import { deleteOutingImages } from "@/lib/imageStorageService";
 import type { HostedOuting } from "../models/hostedOuting";
 
 export async function getHostedOutings(): Promise<HostedOuting[]> {
@@ -81,4 +82,34 @@ export async function cancelOuting(id: string, hostId: string) {
     .eq("host_id", user.id);
 
   if (error) throw error;
+}
+
+export async function deleteOutingPermanently(id: string, hostId: string) {
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user || user.id !== hostId) throw new Error("Unauthorized");
+
+  // Retrieve current cover_image reference before deletion
+  const { data: outing } = await supabase
+    .from("outings")
+    .select("cover_image")
+    .eq("id", id)
+    .eq("host_id", user.id)
+    .maybeSingle();
+
+  // Delete DB record
+  const { error } = await supabase.from("outings").delete().eq("id", id).eq("host_id", user.id);
+
+  if (error) throw error;
+
+  // Clean up storage images after DB deletion succeeds
+  if (outing?.cover_image) {
+    try {
+      await deleteOutingImages(outing.cover_image);
+    } catch (cleanupErr) {
+      console.error("[deleteOutingPermanently] Storage cleanup error:", cleanupErr);
+    }
+  }
 }

@@ -10,6 +10,7 @@ type HostedOutingCardProps = {
   onEdit?: (id: string) => void;
   onCancel?: (id: string) => void;
   onComplete?: (id: string) => void;
+  onDelete?: (id: string) => void;
 };
 
 const STATUS_STYLE = {
@@ -25,6 +26,7 @@ export default function HostedOutingCard({
   onEdit,
   onCancel,
   onComplete,
+  onDelete,
 }: HostedOutingCardProps) {
   const isUpcoming = outing.status === "upcoming";
   const isCancelled = outing.status === "cancelled";
@@ -106,7 +108,9 @@ export default function HostedOutingCard({
         </button>
 
         {/* Actions */}
-        <div className={`grid gap-2 ${isUpcoming ? "grid-cols-3" : "grid-cols-2"}`}>
+        <div
+          className={`grid gap-2 ${isUpcoming ? "grid-cols-3" : isCancelled ? "grid-cols-2" : "grid-cols-1"}`}
+        >
           {isUpcoming && (
             <button
               onClick={() => onEdit?.(outing.id)}
@@ -139,7 +143,26 @@ export default function HostedOutingCard({
             </>
           )}
 
-          {(isCancelled || isCompleted) && (
+          {isCancelled && (
+            <>
+              <button
+                onClick={() => onEdit?.(outing.id)}
+                className="flex items-center justify-center gap-1.5 rounded-xl border border-white/10 py-2.5 text-xs font-medium transition hover:bg-white/5"
+              >
+                <Edit size={13} />
+                View Details
+              </button>
+              <button
+                onClick={() => onDelete?.(outing.id)}
+                className="flex items-center justify-center gap-1.5 rounded-xl bg-destructive/15 text-destructive border border-destructive/30 py-2.5 text-xs font-semibold hover:bg-destructive/25 transition"
+              >
+                <Trash2 size={13} />
+                Delete
+              </button>
+            </>
+          )}
+
+          {isCompleted && (
             <button
               onClick={() => onEdit?.(outing.id)}
               className="flex items-center justify-center gap-1.5 rounded-xl border border-white/10 py-2.5 text-xs font-medium transition hover:bg-white/5"

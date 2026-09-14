@@ -1,4 +1,6 @@
 import { supabase } from "@/integrations/supabase/client";
+import { uploadOptimizedOutingImages } from "@/lib/imageOptimization";
+import { deleteOutingImages, extractStoragePath } from "@/lib/imageStorageService";
 
 export interface EditOutingData {
   id: string;
@@ -37,13 +39,17 @@ export async function getOuting(id: string): Promise<EditOutingData | null> {
   };
 }
 
-export async function updateOuting(updated: EditOutingData): Promise<void> {
+export async function updateOuting(
+  updated: EditOutingData,
+  previousCoverImage?: string | null,
+): Promise<void> {
   const {
     data: { user },
   } = await supabase.auth.getUser();
 
   if (!user) throw new Error("Not authenticated");
 
+  // 1. Update database record first
   const { error } = await supabase
     .from("outings")
     .update({
@@ -63,11 +69,26 @@ export async function updateOuting(updated: EditOutingData): Promise<void> {
     .eq("host_id", user.id);
 
   if (error) throw error;
+
+  // 2. Only after DB update succeeds, clean up previous image variants if replaced
+  if (previousCoverImage && previousCoverImage !== updated.image) {
+    const oldPath = extractStoragePath(previousCoverImage);
+    const newPath = extractStoragePath(updated.image);
+
+    // Only delete if old image was in our storage and is not the same storage path
+    if (oldPath && oldPath !== newPath) {
+      try {
+        await deleteOutingImages(previousCoverImage);
+      } catch (cleanupErr) {
+        console.error("[updateOuting] Failed to clean up old outing image:", cleanupErr);
+      }
+    }
+  }
 }
 
-import { uploadOptimizedOutingImages } from "@/lib/imageOptimization";
-
 export async function uploadOutingImage(file: File, outingId?: string): Promise<string> {
-  const { canonicalUrl } = await uploadOptimizedOutingImages(file, outingId);
+  // Use unique timestamped folder to guarantee old images are not prematurely overwritten
+  const uniqueFolder = outingId ? `${outingId}-${Date.now()}` : undefined;
+  const { canonicalUrl } = await uploadOptimizedOutingImages(file, uniqueFolder);
   return canonicalUrl;
 }

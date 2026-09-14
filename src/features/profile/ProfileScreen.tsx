@@ -150,9 +150,9 @@ export default function ProfileScreen({ targetUserId }: ProfileScreenProps) {
     }
   };
 
-  const handleSaveProfile = async (updatedProfile: UserProfile) => {
+  const handleSaveProfile = async (updatedProfile: UserProfile, previousAvatarUrl?: string) => {
     try {
-      await updateProfile(updatedProfile);
+      await updateProfile(updatedProfile, previousAvatarUrl);
       setProfile(updatedProfile);
       setEditModalOpen(false);
       toast.success("Profile updated successfully!");
