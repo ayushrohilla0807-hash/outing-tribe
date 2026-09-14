@@ -408,3 +408,30 @@
     margin: 0 auto !important;
   }
 }
+
+/* ─── Chat Message Bubble & Typography Rules ─────────────────────────────── */
+.chat-bubble-container {
+  width: fit-content !important;
+  min-width: 90px !important;
+  max-width: min(80%, 540px) !important;
+  flex-shrink: 0 !important;
+  box-sizing: border-box !important;
+}
+
+.chat-message-text {
+  word-break: normal !important;
+  overflow-wrap: break-word !important;
+  word-wrap: break-word !important;
+  white-space: pre-wrap !important;
+  -webkit-hyphens: none !important;
+  hyphens: none !important;
+  font-size: 0.875rem !important;
+  line-height: 1.45 !important;
+}
+
+.chat-message-timestamp {
+  white-space: nowrap !important;
+  font-size: 10px !important;
+  user-select: none !important;
+}
+
