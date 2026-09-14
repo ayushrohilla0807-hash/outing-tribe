@@ -30,7 +30,7 @@ import {
   Send,
 } from "lucide-react";
 import { useState } from "react";
-import heroImage from "@/assets/hero-illustration.jpg";
+import heroImage from "@/assets/hero-night-friends.jpg";
 import { useTheme } from "@/hooks/use-theme";
 import { PhoneMockup } from "@/components/landing/PhoneMockup";
 import { MobileLanding } from "@/components/landing/MobileLanding";
