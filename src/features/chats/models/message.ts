@@ -45,6 +45,8 @@ export interface GroupChat {
   lastMessageSenderName?: string;
   unreadCount: number;
   isHost: boolean;
+  lastMessageCreatedAt?: string | null;
+  outingCreatedAt?: string | null;
 }
 
 export interface GroupMember {

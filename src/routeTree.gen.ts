@@ -22,7 +22,9 @@ import { Route as AuthenticatedHistoryRouteImport } from './routes/_authenticate
 import { Route as AuthenticatedExploreRouteImport } from './routes/_authenticated/explore'
 import { Route as AuthenticatedCreateRouteImport } from './routes/_authenticated/create'
 import { Route as AuthenticatedChatsRouteImport } from './routes/_authenticated/chats'
+import { Route as AuthenticatedProfileIndexRouteImport } from './routes/_authenticated/profile/index'
 import { Route as AuthenticatedChatsIndexRouteImport } from './routes/_authenticated/chats/index'
+import { Route as AuthenticatedProfileUserIdRouteImport } from './routes/_authenticated/profile/$userId'
 import { Route as AuthenticatedParticipantsOutingIdRouteImport } from './routes/_authenticated/participants/$outingId'
 import { Route as AuthenticatedOutingIdRouteImport } from './routes/_authenticated/outing.$id'
 import { Route as AuthenticatedHostDashboardEditOutingIdRouteImport } from './routes/_authenticated/host-dashboard-edit.$outingId'
@@ -95,11 +97,23 @@ const AuthenticatedChatsRoute = AuthenticatedChatsRouteImport.update({
   path: '/chats',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedProfileIndexRoute =
+  AuthenticatedProfileIndexRouteImport.update({
+    id: '/',
+    path: '/',
+    getParentRoute: () => AuthenticatedProfileRoute,
+  } as any)
 const AuthenticatedChatsIndexRoute = AuthenticatedChatsIndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => AuthenticatedChatsRoute,
 } as any)
+const AuthenticatedProfileUserIdRoute =
+  AuthenticatedProfileUserIdRouteImport.update({
+    id: '/$userId',
+    path: '/$userId',
+    getParentRoute: () => AuthenticatedProfileRoute,
+  } as any)
 const AuthenticatedParticipantsOutingIdRoute =
   AuthenticatedParticipantsOutingIdRouteImport.update({
     id: '/participants/$outingId',
@@ -141,12 +155,14 @@ export interface FileRoutesByFullPath {
   '/home': typeof AuthenticatedHomeRoute
   '/host-dashboard': typeof AuthenticatedHostDashboardRoute
   '/notifications': typeof AuthenticatedNotificationsRoute
-  '/profile': typeof AuthenticatedProfileRoute
+  '/profile': typeof AuthenticatedProfileRouteWithChildren
   '/saved': typeof AuthenticatedSavedRoute
   '/host-dashboard-edit/$outingId': typeof AuthenticatedHostDashboardEditOutingIdRoute
   '/outing/$id': typeof AuthenticatedOutingIdRoute
   '/participants/$outingId': typeof AuthenticatedParticipantsOutingIdRoute
+  '/profile/$userId': typeof AuthenticatedProfileUserIdRoute
   '/chats/': typeof AuthenticatedChatsIndexRoute
+  '/profile/': typeof AuthenticatedProfileIndexRoute
   '/chats/$outingId/$userId': typeof AuthenticatedChatsOutingIdUserIdRoute
   '/chats/$outingId/group': typeof AuthenticatedChatsOutingIdGroupRoute
 }
@@ -160,12 +176,13 @@ export interface FileRoutesByTo {
   '/home': typeof AuthenticatedHomeRoute
   '/host-dashboard': typeof AuthenticatedHostDashboardRoute
   '/notifications': typeof AuthenticatedNotificationsRoute
-  '/profile': typeof AuthenticatedProfileRoute
   '/saved': typeof AuthenticatedSavedRoute
   '/host-dashboard-edit/$outingId': typeof AuthenticatedHostDashboardEditOutingIdRoute
   '/outing/$id': typeof AuthenticatedOutingIdRoute
   '/participants/$outingId': typeof AuthenticatedParticipantsOutingIdRoute
+  '/profile/$userId': typeof AuthenticatedProfileUserIdRoute
   '/chats': typeof AuthenticatedChatsIndexRoute
+  '/profile': typeof AuthenticatedProfileIndexRoute
   '/chats/$outingId/$userId': typeof AuthenticatedChatsOutingIdUserIdRoute
   '/chats/$outingId/group': typeof AuthenticatedChatsOutingIdGroupRoute
 }
@@ -182,12 +199,14 @@ export interface FileRoutesById {
   '/_authenticated/home': typeof AuthenticatedHomeRoute
   '/_authenticated/host-dashboard': typeof AuthenticatedHostDashboardRoute
   '/_authenticated/notifications': typeof AuthenticatedNotificationsRoute
-  '/_authenticated/profile': typeof AuthenticatedProfileRoute
+  '/_authenticated/profile': typeof AuthenticatedProfileRouteWithChildren
   '/_authenticated/saved': typeof AuthenticatedSavedRoute
   '/_authenticated/host-dashboard-edit/$outingId': typeof AuthenticatedHostDashboardEditOutingIdRoute
   '/_authenticated/outing/$id': typeof AuthenticatedOutingIdRoute
   '/_authenticated/participants/$outingId': typeof AuthenticatedParticipantsOutingIdRoute
+  '/_authenticated/profile/$userId': typeof AuthenticatedProfileUserIdRoute
   '/_authenticated/chats/': typeof AuthenticatedChatsIndexRoute
+  '/_authenticated/profile/': typeof AuthenticatedProfileIndexRoute
   '/_authenticated/chats/$outingId/$userId': typeof AuthenticatedChatsOutingIdUserIdRoute
   '/_authenticated/chats/$outingId/group': typeof AuthenticatedChatsOutingIdGroupRoute
 }
@@ -209,7 +228,9 @@ export interface FileRouteTypes {
     | '/host-dashboard-edit/$outingId'
     | '/outing/$id'
     | '/participants/$outingId'
+    | '/profile/$userId'
     | '/chats/'
+    | '/profile/'
     | '/chats/$outingId/$userId'
     | '/chats/$outingId/group'
   fileRoutesByTo: FileRoutesByTo
@@ -223,12 +244,13 @@ export interface FileRouteTypes {
     | '/home'
     | '/host-dashboard'
     | '/notifications'
-    | '/profile'
     | '/saved'
     | '/host-dashboard-edit/$outingId'
     | '/outing/$id'
     | '/participants/$outingId'
+    | '/profile/$userId'
     | '/chats'
+    | '/profile'
     | '/chats/$outingId/$userId'
     | '/chats/$outingId/group'
   id:
@@ -249,7 +271,9 @@ export interface FileRouteTypes {
     | '/_authenticated/host-dashboard-edit/$outingId'
     | '/_authenticated/outing/$id'
     | '/_authenticated/participants/$outingId'
+    | '/_authenticated/profile/$userId'
     | '/_authenticated/chats/'
+    | '/_authenticated/profile/'
     | '/_authenticated/chats/$outingId/$userId'
     | '/_authenticated/chats/$outingId/group'
   fileRoutesById: FileRoutesById
@@ -354,12 +378,26 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedChatsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/profile/': {
+      id: '/_authenticated/profile/'
+      path: '/'
+      fullPath: '/profile/'
+      preLoaderRoute: typeof AuthenticatedProfileIndexRouteImport
+      parentRoute: typeof AuthenticatedProfileRoute
+    }
     '/_authenticated/chats/': {
       id: '/_authenticated/chats/'
       path: '/'
       fullPath: '/chats/'
       preLoaderRoute: typeof AuthenticatedChatsIndexRouteImport
       parentRoute: typeof AuthenticatedChatsRoute
+    }
+    '/_authenticated/profile/$userId': {
+      id: '/_authenticated/profile/$userId'
+      path: '/$userId'
+      fullPath: '/profile/$userId'
+      preLoaderRoute: typeof AuthenticatedProfileUserIdRouteImport
+      parentRoute: typeof AuthenticatedProfileRoute
     }
     '/_authenticated/participants/$outingId': {
       id: '/_authenticated/participants/$outingId'
@@ -414,6 +452,19 @@ const AuthenticatedChatsRouteChildren: AuthenticatedChatsRouteChildren = {
 const AuthenticatedChatsRouteWithChildren =
   AuthenticatedChatsRoute._addFileChildren(AuthenticatedChatsRouteChildren)
 
+interface AuthenticatedProfileRouteChildren {
+  AuthenticatedProfileUserIdRoute: typeof AuthenticatedProfileUserIdRoute
+  AuthenticatedProfileIndexRoute: typeof AuthenticatedProfileIndexRoute
+}
+
+const AuthenticatedProfileRouteChildren: AuthenticatedProfileRouteChildren = {
+  AuthenticatedProfileUserIdRoute: AuthenticatedProfileUserIdRoute,
+  AuthenticatedProfileIndexRoute: AuthenticatedProfileIndexRoute,
+}
+
+const AuthenticatedProfileRouteWithChildren =
+  AuthenticatedProfileRoute._addFileChildren(AuthenticatedProfileRouteChildren)
+
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedChatsRoute: typeof AuthenticatedChatsRouteWithChildren
   AuthenticatedCreateRoute: typeof AuthenticatedCreateRoute
@@ -422,7 +473,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedHomeRoute: typeof AuthenticatedHomeRoute
   AuthenticatedHostDashboardRoute: typeof AuthenticatedHostDashboardRoute
   AuthenticatedNotificationsRoute: typeof AuthenticatedNotificationsRoute
-  AuthenticatedProfileRoute: typeof AuthenticatedProfileRoute
+  AuthenticatedProfileRoute: typeof AuthenticatedProfileRouteWithChildren
   AuthenticatedSavedRoute: typeof AuthenticatedSavedRoute
   AuthenticatedHostDashboardEditOutingIdRoute: typeof AuthenticatedHostDashboardEditOutingIdRoute
   AuthenticatedOutingIdRoute: typeof AuthenticatedOutingIdRoute
@@ -437,7 +488,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedHomeRoute: AuthenticatedHomeRoute,
   AuthenticatedHostDashboardRoute: AuthenticatedHostDashboardRoute,
   AuthenticatedNotificationsRoute: AuthenticatedNotificationsRoute,
-  AuthenticatedProfileRoute: AuthenticatedProfileRoute,
+  AuthenticatedProfileRoute: AuthenticatedProfileRouteWithChildren,
   AuthenticatedSavedRoute: AuthenticatedSavedRoute,
   AuthenticatedHostDashboardEditOutingIdRoute:
     AuthenticatedHostDashboardEditOutingIdRoute,

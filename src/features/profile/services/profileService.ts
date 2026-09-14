@@ -1,5 +1,7 @@
 import { supabase } from "@/integrations/supabase/client";
 import type { UserProfile } from "../models/profile";
+import type { HostedOuting } from "@/features/host/dashboard/models/hostedOuting";
+import type { HistoryOuting, HistoryStatus } from "@/features/outing/history/models/history";
 
 function getLocalSavedCount(): number {
   if (typeof window === "undefined") return 0;
@@ -112,6 +114,196 @@ export async function getProfile(): Promise<UserProfile> {
     savedCount,
     verified: true,
   };
+}
+
+/**
+ * Fetches a public user profile by userId.
+ * Strictly excludes private fields like email, phone, authentication metadata.
+ */
+export async function getPublicProfile(userId: string): Promise<UserProfile> {
+  if (!userId) {
+    throw new Error("User ID is required");
+  }
+
+  const { data: profile, error } = await supabase
+    .from("profiles")
+    .select("id, full_name, avatar_url, bio, city, gender, date_of_birth, interests")
+    .eq("id", userId)
+    .maybeSingle();
+
+  if (error) {
+    console.error("Error fetching public profile:", error);
+    throw error;
+  }
+
+  if (!profile) {
+    throw new Error("Profile not found");
+  }
+
+  // Calculate age from date_of_birth
+  let age = 0;
+  if (profile.date_of_birth) {
+    const dob = new Date(profile.date_of_birth);
+    const today = new Date();
+
+    age = today.getFullYear() - dob.getFullYear();
+    const month = today.getMonth() - dob.getMonth();
+
+    if (month < 0 || (month === 0 && today.getDate() < dob.getDate())) {
+      age--;
+    }
+  }
+
+  // Real hosted count
+  const { count: hostedCount } = await supabase
+    .from("outings")
+    .select("id", { count: "exact", head: true })
+    .eq("host_id", userId)
+    .neq("status", "cancelled");
+
+  // Real joined count
+  const { count: joinedCount } = await supabase
+    .from("participants")
+    .select("id", { count: "exact", head: true })
+    .eq("user_id", userId)
+    .eq("status", "joined");
+
+  const rawInterests = profile.interests;
+  const interests = Array.isArray(rawInterests) ? rawInterests : [];
+
+  return {
+    id: profile.id,
+    name: profile.full_name || "Outsy Member",
+    email: "", // Excluded for privacy
+    phone: "", // Excluded for privacy
+    age: age > 0 ? age : 0,
+    gender: (profile.gender as UserProfile["gender"]) || "",
+    state: "",
+    city: profile.city || "",
+    bio: profile.bio || "",
+    avatarUrl:
+      profile.avatar_url ||
+      "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=200&auto=format&fit=crop&q=80",
+    interests,
+    hostRating: 5.0,
+    hostedCount: hostedCount || 0,
+    joinedCount: joinedCount || 0,
+    savedCount: 0, // Saved outings are private to each user
+    verified: true,
+  };
+}
+
+/**
+ * Fetches public hosted outings for a specific user ID.
+ */
+export async function getUserHostedOutings(userId: string): Promise<HostedOuting[]> {
+  if (!userId) return [];
+
+  const { data, error } = await supabase
+    .from("outings")
+    .select(
+      `
+      *,
+      participants (
+        id,
+        status
+      )
+    `,
+    )
+    .eq("host_id", userId)
+    .neq("status", "cancelled")
+    .order("created_at", {
+      ascending: false,
+    });
+
+  if (error) {
+    console.error("Error fetching user hosted outings:", error);
+    return [];
+  }
+
+  return (
+    data?.map((item: any) => {
+      const participants = (item.participants as any[]) || [];
+      const joinedCount = participants.filter((p) => p.status === "joined").length;
+      const pendingCount = participants.filter((p) => p.status === "pending").length;
+
+      return {
+        id: item.id,
+        title: item.title,
+        category: item.category,
+        image: item.cover_image ?? "",
+        location: item.location,
+        date: item.outing_date,
+        time: item.start_time,
+        joined: joinedCount,
+        pending: pendingCount,
+        capacity: item.max_participants,
+        status: item.status,
+      };
+    }) ?? []
+  );
+}
+
+/**
+ * Fetches public joined outings for a specific user ID.
+ */
+export async function getUserJoinedOutings(userId: string): Promise<HistoryOuting[]> {
+  if (!userId) return [];
+
+  const { data: participations, error: partError } = await supabase
+    .from("participants")
+    .select("outing_id, status")
+    .eq("user_id", userId)
+    .eq("status", "joined");
+
+  if (partError || !participations || participations.length === 0) {
+    return [];
+  }
+
+  const outingIds = participations.map((p) => p.outing_id);
+
+  const { data: outingsData, error: outingsError } = await supabase
+    .from("outings")
+    .select("*")
+    .in("id", outingIds)
+    .neq("status", "cancelled")
+    .order("outing_date", { ascending: false });
+
+  if (outingsError || !outingsData || outingsData.length === 0) {
+    return [];
+  }
+
+  // Batch fetch host profiles
+  const allHostIds = Array.from(new Set(outingsData.map((o) => o.host_id).filter(Boolean)));
+  let profileMap = new Map<string, string>();
+  if (allHostIds.length > 0) {
+    const { data: profiles } = await supabase
+      .from("profiles")
+      .select("id, full_name")
+      .in("id", allHostIds);
+
+    if (profiles) {
+      profileMap = new Map(profiles.map((p) => [p.id, p.full_name || "Host"]));
+    }
+  }
+
+  return outingsData.map((outing) => {
+    let status: HistoryStatus = "joined";
+    if (outing.status === "completed") status = "completed";
+
+    return {
+      id: outing.id,
+      title: outing.title,
+      location: outing.location,
+      date: `${outing.outing_date} • ${outing.start_time}`,
+      host: profileMap.get(outing.host_id) || "Host",
+      image:
+        outing.cover_image ||
+        "https://images.unsplash.com/photo-1517457373958-b7bdd4587205?w=500&auto=format&fit=crop&q=80",
+      status,
+      participants: 0,
+    };
+  });
 }
 
 export async function updateProfile(updates: Partial<UserProfile>): Promise<void> {

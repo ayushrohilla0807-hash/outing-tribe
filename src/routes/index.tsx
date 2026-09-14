@@ -33,6 +33,7 @@ import { useState } from "react";
 import heroImage from "@/assets/hero-illustration.jpg";
 import { useTheme } from "@/hooks/use-theme";
 import { PhoneMockup } from "@/components/landing/PhoneMockup";
+import { MobileLanding } from "@/components/landing/MobileLanding";
 import {
   MockHome,
   MockCreate,
@@ -780,19 +781,27 @@ function Footer() {
 
 function Landing() {
   return (
-    <div className="relative min-h-screen overflow-hidden bg-background text-foreground">
-      <Nav />
-      <Hero />
-      <Problem />
-      <HowItWorks />
-      <Features />
-      <AppPreview />
-      <Safety />
-      <Compare />
-      <Testimonials />
-      <FAQ />
-      <CTA />
-      <Footer />
-    </div>
+    <>
+      {/* Dedicated Mobile-First Experience for iPhone & Android screens */}
+      <div className="block md:hidden w-full">
+        <MobileLanding />
+      </div>
+
+      {/* Existing Full Desktop Experience for Tablets and Desktops */}
+      <div className="hidden md:block relative min-h-screen overflow-hidden bg-background text-foreground">
+        <Nav />
+        <Hero />
+        <Problem />
+        <HowItWorks />
+        <Features />
+        <AppPreview />
+        <Safety />
+        <Compare />
+        <Testimonials />
+        <FAQ />
+        <CTA />
+        <Footer />
+      </div>
+    </>
   );
 }

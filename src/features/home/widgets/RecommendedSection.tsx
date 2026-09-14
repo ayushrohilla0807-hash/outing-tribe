@@ -1,3 +1,4 @@
+import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 
@@ -5,13 +6,28 @@ import OutingCard from "@/components/cards/OutingCard";
 import { useSaved } from "@/features/outing/saved/context/SavedContext";
 import { getExploreOutings } from "@/features/explore/services/exploreService";
 import type { ExploreOuting } from "@/features/explore/models/outing";
+import { isOutingActive } from "@/lib/outingDate";
 
 export default function RecommendedSection() {
   const navigate = useNavigate();
-  const { data: outings = [], isLoading } = useQuery({
+  const [now, setNow] = useState(() => new Date());
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setNow(new Date());
+    }, 15000);
+    return () => clearInterval(interval);
+  }, []);
+
+  const { data: rawOutings = [], isLoading } = useQuery({
     queryKey: ["explore-outings"],
     queryFn: getExploreOutings,
+    refetchInterval: 30000,
   });
+
+  const outings = useMemo(() => {
+    return rawOutings.filter((o) => isOutingActive(o, now));
+  }, [rawOutings, now]);
 
   if (isLoading) {
     return (

@@ -259,6 +259,8 @@ export type Database = {
           full_name: string | null;
           gender: string | null;
           id: string;
+          interests: string[] | null;
+          profile_setup_complete: boolean | null;
           updated_at: string;
           username: string | null;
         };
@@ -272,6 +274,8 @@ export type Database = {
           full_name?: string | null;
           gender?: string | null;
           id: string;
+          interests?: string[] | null;
+          profile_setup_complete?: boolean | null;
           updated_at?: string;
           username?: string | null;
         };
@@ -285,6 +289,8 @@ export type Database = {
           full_name?: string | null;
           gender?: string | null;
           id?: string;
+          interests?: string[] | null;
+          profile_setup_complete?: boolean | null;
           updated_at?: string;
           username?: string | null;
         };

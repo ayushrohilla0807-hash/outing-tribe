@@ -1,4 +1,4 @@
-import { Users } from "lucide-react";
+import { Users, Crown, Sparkles } from "lucide-react";
 import type { GroupChat } from "../models/message";
 
 type Props = {
@@ -7,75 +7,112 @@ type Props = {
 };
 
 export default function GroupChatCard({ chat, onClick }: Props) {
+  const hasUnread = chat.unreadCount > 0;
+
   return (
     <button
+      type="button"
       onClick={onClick}
-      className="w-full rounded-2xl border border-white/10 bg-card p-4 text-left transition-all hover:border-primary/40 hover:bg-surface-elevated hover:shadow-md cursor-pointer"
+      className={`group w-full rounded-2xl sm:rounded-3xl border p-3.5 sm:p-4 text-left transition-all duration-200 cursor-pointer select-none active:scale-[0.99] ${
+        hasUnread
+          ? "border-primary/35 bg-surface/90 shadow-md ring-1 ring-primary/20"
+          : "border-white/10 bg-card/60 hover:bg-card hover:border-white/20 hover:shadow-sm"
+      }`}
     >
-      <div className="flex items-start gap-4">
+      <div className="flex items-center gap-3.5">
+        {/* Outing Cover Avatar */}
         <div className="relative shrink-0">
-          <img
-            src={
-              chat.outingImage ||
-              "https://images.unsplash.com/photo-1517457373958-b7bdd4587205?w=1200&auto=format&fit=crop&q=80"
-            }
-            alt={chat.outingTitle}
-            className="h-14 w-14 rounded-2xl object-cover border border-white/10"
-          />
+          <div
+            className={`rounded-2xl p-[2px] transition-all duration-200 ${
+              hasUnread
+                ? "bg-gradient-to-tr from-amber-500 via-rose-500 to-primary"
+                : "bg-white/10 group-hover:bg-white/20"
+            }`}
+          >
+            <img
+              src={
+                chat.outingImage ||
+                "https://images.unsplash.com/photo-1517457373958-b7bdd4587205?w=600&auto=format&fit=crop&q=80"
+              }
+              alt={chat.outingTitle}
+              className="h-13 w-13 sm:h-14 sm:w-14 rounded-[14px] object-cover"
+            />
+          </div>
+
+          {/* Host Tag */}
           {chat.isHost && (
-            <span className="absolute -bottom-1.5 -right-1 rounded-md bg-primary px-1.5 py-0.5 text-[9px] font-extrabold text-primary-foreground shadow border border-background">
-              HOST
+            <span className="absolute -bottom-1 -right-1 flex items-center gap-0.5 rounded-full bg-amber-500/90 text-amber-950 font-black px-1.5 py-0.2 text-[8.5px] uppercase tracking-wider shadow-sm border border-background">
+              <Crown className="h-2 w-2 fill-amber-950" /> Host
             </span>
           )}
         </div>
 
-        <div className="min-w-0 flex-1">
+        {/* Info & Message Preview */}
+        <div className="min-w-0 flex-1 space-y-1">
+          {/* Top Line: Title + Time */}
           <div className="flex items-center justify-between gap-2">
             <h3
-              className={`truncate text-base ${
-                chat.unreadCount ? "font-bold text-foreground" : "font-semibold text-foreground"
+              className={`truncate text-sm sm:text-base tracking-tight ${
+                hasUnread
+                  ? "font-bold text-foreground"
+                  : "font-semibold text-foreground/90 group-hover:text-foreground"
               }`}
             >
               {chat.outingTitle}
             </h3>
 
-            <div className="flex items-center gap-2 shrink-0">
-              {chat.lastMessageTime && (
-                <span className="text-xs text-muted-foreground">{chat.lastMessageTime}</span>
+            <span
+              className={`shrink-0 text-[11px] font-medium transition-colors ${
+                hasUnread ? "text-primary font-bold" : "text-muted-foreground/70"
+              }`}
+            >
+              {chat.lastMessageTime || "New"}
+            </span>
+          </div>
+
+          {/* Second Line: Participant count & Last Message */}
+          <div className="flex items-center justify-between gap-2">
+            <p
+              className={`truncate text-xs sm:text-sm leading-relaxed ${
+                hasUnread ? "font-medium text-foreground" : "text-muted-foreground"
+              }`}
+            >
+              {chat.lastMessageSenderName && chat.lastMessage ? (
+                <span>
+                  <span
+                    className={
+                      chat.lastMessageSenderName === "You"
+                        ? "text-muted-foreground font-semibold"
+                        : "text-amber-400 font-semibold"
+                    }
+                  >
+                    {chat.lastMessageSenderName}:{" "}
+                  </span>
+                  <span>{chat.lastMessage}</span>
+                </span>
+              ) : chat.lastMessage ? (
+                <span>{chat.lastMessage}</span>
+              ) : (
+                <span className="italic text-muted-foreground/60 flex items-center gap-1">
+                  <Sparkles className="h-3 w-3 inline text-primary" /> Start planning the outing!
+                </span>
               )}
-              {chat.unreadCount > 0 && (
-                <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-primary px-1.5 text-xs font-bold text-primary-foreground shadow-sm">
+            </p>
+
+            {/* Unread Badge / Participant pill */}
+            <div className="flex items-center gap-1.5 shrink-0">
+              {hasUnread ? (
+                <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-primary px-1.5 text-[11px] font-black text-primary-foreground shadow-glow animate-pulse">
                   {chat.unreadCount}
+                </span>
+              ) : (
+                <span className="hidden sm:inline-flex items-center gap-1 text-[11px] text-muted-foreground/60">
+                  <Users className="h-3 w-3" />
+                  {chat.participantCount}
                 </span>
               )}
             </div>
           </div>
-
-          <div className="flex items-center gap-1.5 text-xs text-primary font-medium mt-0.5">
-            <Users className="h-3 w-3" />
-            <span>
-              {chat.participantCount} participant{chat.participantCount !== 1 ? "s" : ""}
-            </span>
-          </div>
-
-          <p
-            className={`mt-1 truncate text-sm ${
-              chat.unreadCount ? "font-medium text-foreground" : "text-muted-foreground"
-            }`}
-          >
-            {chat.lastMessageSenderName && chat.lastMessage ? (
-              <span>
-                <span className="font-semibold text-foreground/80">
-                  {chat.lastMessageSenderName}:{" "}
-                </span>
-                {chat.lastMessage}
-              </span>
-            ) : chat.lastMessage ? (
-              chat.lastMessage
-            ) : (
-              "Start the group conversation..."
-            )}
-          </p>
         </div>
       </div>
     </button>

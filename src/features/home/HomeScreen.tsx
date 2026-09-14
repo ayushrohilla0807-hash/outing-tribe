@@ -21,6 +21,7 @@ export default function HomeScreen() {
   const { data: outings = [] } = useQuery({
     queryKey: ["explore-outings"],
     queryFn: getExploreOutings,
+    refetchInterval: 30000,
   });
 
   const handleSurprise = () => {

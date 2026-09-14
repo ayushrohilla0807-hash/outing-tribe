@@ -1,5 +1,6 @@
-import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useEffect, useState } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 
 import SearchBar from "./widgets/SearchBar";
 import CategoryFilter from "./widgets/CategoryFilter";
@@ -12,6 +13,7 @@ import { getExploreOutings } from "./services/exploreService";
 import { useExploreFilters } from "./hooks/useExploreFilters";
 
 export default function ExploreScreen() {
+  const queryClient = useQueryClient();
   const {
     data: outings = [],
     isLoading,
@@ -20,7 +22,25 @@ export default function ExploreScreen() {
   } = useQuery({
     queryKey: ["explore-outings"],
     queryFn: getExploreOutings,
+    refetchInterval: 30000,
   });
+
+  useEffect(() => {
+    const channel = supabase
+      .channel("explore-outings-realtime")
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "outings" },
+        () => {
+          queryClient.invalidateQueries({ queryKey: ["explore-outings"] });
+        },
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [queryClient]);
 
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState("All");

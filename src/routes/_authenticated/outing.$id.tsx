@@ -16,6 +16,7 @@ import {
   Bookmark,
   Sparkles,
   Check,
+  ChevronRight,
 } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
@@ -355,10 +356,42 @@ function OutingDetailsPage() {
         </div>
 
         {/* Organizer Card */}
-        <div className="rounded-3xl border border-white/15 bg-card p-5 shadow-lg">
-          <p className="text-xs font-bold uppercase tracking-wider text-slate-300 mb-3">
-            Organized By
-          </p>
+        <div
+          role="button"
+          tabIndex={0}
+          onClick={() => {
+            const hostUserId = outing.host.id || outing.host_id;
+            if (hostUserId) {
+              navigate({
+                to: "/profile/$userId",
+                params: { userId: hostUserId },
+              });
+            }
+          }}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" || e.key === " ") {
+              e.preventDefault();
+              const hostUserId = outing.host.id || outing.host_id;
+              if (hostUserId) {
+                navigate({
+                  to: "/profile/$userId",
+                  params: { userId: hostUserId },
+                });
+              }
+            }
+          }}
+          className="group rounded-3xl border border-white/15 bg-card p-5 shadow-lg hover:border-primary/50 hover:bg-card/90 active:scale-[0.99] transition-all duration-200 cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary/50"
+          aria-label={`View ${outing.host.full_name}'s public profile`}
+        >
+          <div className="flex items-center justify-between mb-3">
+            <p className="text-xs font-bold uppercase tracking-wider text-slate-300">
+              Organized By
+            </p>
+            <span className="text-[11px] font-semibold text-primary group-hover:underline flex items-center gap-1 transition">
+              View Profile <ChevronRight className="h-3.5 w-3.5 group-hover:translate-x-0.5 transition-transform" />
+            </span>
+          </div>
+
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3.5">
               <img
@@ -367,11 +400,13 @@ function OutingDetailsPage() {
                   "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100&auto=format&fit=crop&q=80"
                 }
                 alt={outing.host.full_name}
-                className="h-13 w-13 rounded-full object-cover border-2 border-primary shadow-sm"
+                className="h-13 w-13 rounded-full object-cover border-2 border-primary shadow-sm group-hover:scale-105 transition-transform duration-200"
               />
               <div>
                 <div className="flex items-center gap-2">
-                  <h4 className="text-base font-extrabold text-white">{outing.host.full_name}</h4>
+                  <h4 className="text-base font-extrabold text-white group-hover:text-primary transition-colors">
+                    {outing.host.full_name}
+                  </h4>
                   <span className="rounded-full bg-primary/30 border border-primary/50 px-2.5 py-0.5 text-[10px] font-bold text-amber-100">
                     HOST
                   </span>

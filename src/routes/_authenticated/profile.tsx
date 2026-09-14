@@ -1,6 +1,9 @@
-import { createFileRoute } from "@tanstack/react-router";
-import ProfileScreen from "@/features/profile/ProfileScreen";
+import { createFileRoute, Outlet } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/_authenticated/profile")({
-  component: ProfileScreen,
+  component: ProfileLayout,
 });
+
+function ProfileLayout() {
+  return <Outlet />;
+}

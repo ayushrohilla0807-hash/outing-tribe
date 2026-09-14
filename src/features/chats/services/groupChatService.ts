@@ -148,7 +148,49 @@ export async function canAccessGroupChat(outingId: string): Promise<boolean> {
 }
 
 /**
- * Fetch all outing group chats for the current user.
+ * Format timestamp for chat preview (Instagram/social messenger style)
+ */
+export function formatChatTimestamp(isoString?: string | null): string {
+  if (!isoString) return "";
+  const date = new Date(isoString);
+  if (isNaN(date.getTime())) return "";
+
+  const now = new Date();
+  const isToday =
+    date.getDate() === now.getDate() &&
+    date.getMonth() === now.getMonth() &&
+    date.getFullYear() === now.getFullYear();
+
+  if (isToday) {
+    return date.toLocaleTimeString([], {
+      hour: "numeric",
+      minute: "2-digit",
+      hour12: true,
+    });
+  }
+
+  const yesterday = new Date(now);
+  yesterday.setDate(now.getDate() - 1);
+  const isYesterday =
+    date.getDate() === yesterday.getDate() &&
+    date.getMonth() === yesterday.getMonth() &&
+    date.getFullYear() === yesterday.getFullYear();
+
+  if (isYesterday) {
+    return "Yesterday";
+  }
+
+  const diffMs = now.getTime() - date.getTime();
+  const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+  if (diffDays < 7) {
+    return date.toLocaleDateString([], { weekday: "short" });
+  }
+
+  return date.toLocaleDateString([], { month: "short", day: "numeric" });
+}
+
+/**
+ * Fetch all outing group chats for the current user, strictly sorted by latest message timestamp DESC.
  */
 export async function getOutingGroupChats(): Promise<GroupChat[]> {
   const {
@@ -228,7 +270,7 @@ export async function getOutingGroupChats(): Promise<GroupChat[]> {
     }),
   );
 
-  // 4. Batch fetch participant counts for each outing
+  // 4. Batch fetch participant counts for each outing in ONE query
   const { data: participantRows } = await supabase
     .from("participants")
     .select("outing_id")
@@ -242,88 +284,122 @@ export async function getOutingGroupChats(): Promise<GroupChat[]> {
 
   const lastReadMap = getChatLastReadMap(user.id);
 
-  // 5. Build GroupChat items with latest message and unread count
-  const groupChats: GroupChat[] = await Promise.all(
-    allOutings.map(async (outing) => {
-      const groupId = groupConversationMap.get(outing.id);
-      const isHost = outing.host_id === user.id;
-      // Total count includes host + accepted participants
-      const totalParticipants = (participantCounts.get(outing.id) || 0) + 1;
+  // 5. Batch fetch ALL messages for all outings in ONE query ordered by created_at DESC
+  const { data: allMessages } = await supabase
+    .from("messages")
+    .select("id, outing_id, message, created_at, sender_id")
+    .in("outing_id", allOutingIds)
+    .order("created_at", { ascending: false });
 
-      // Fetch latest message for this outing
-      const { data: latestMsgs } = await supabase
-        .from("messages")
-        .select("id, message, created_at, sender_id")
-        .eq("outing_id", outing.id)
-        .order("created_at", { ascending: false })
-        .limit(1);
+  // Map the latest message and calculate unread counts per outing
+  const latestMessageMap = new Map<
+    string,
+    { id: string; message: string; created_at: string; sender_id: string }
+  >();
+  const unreadCountMap = new Map<string, number>();
 
-      const lastMsg = latestMsgs?.[0];
+  for (const msg of allMessages ?? []) {
+    if (!latestMessageMap.has(msg.outing_id)) {
+      latestMessageMap.set(msg.outing_id, {
+        id: msg.id,
+        message: msg.message,
+        created_at: msg.created_at ?? "",
+        sender_id: msg.sender_id,
+      });
+    }
 
-      // Fetch sender name if last message exists
-      let senderName = "";
-      if (lastMsg?.sender_id) {
-        if (lastMsg.sender_id === user.id) {
-          senderName = "You";
-        } else {
-          const { data: senderProfile } = await supabase
-            .from("profiles")
-            .select("full_name")
-            .eq("id", lastMsg.sender_id)
-            .maybeSingle();
-          senderName = senderProfile?.full_name?.split(" ")[0] || "Member";
-        }
-      }
-
-      // Count unread group messages
-      const conversationKey = `group_${outing.id}`;
+    if (msg.sender_id !== user.id) {
+      const conversationKey = `group_${msg.outing_id}`;
       const lastReadIso = lastReadMap[conversationKey];
-
-      let unreadQuery = supabase
-        .from("messages")
-        .select("*", { count: "exact", head: true })
-        .eq("outing_id", outing.id)
-        .neq("sender_id", user.id);
-
-      if (lastReadIso) {
-        unreadQuery = unreadQuery.gt("created_at", lastReadIso);
+      if (
+        !lastReadIso ||
+        (msg.created_at && new Date(msg.created_at).getTime() > new Date(lastReadIso).getTime())
+      ) {
+        unreadCountMap.set(msg.outing_id, (unreadCountMap.get(msg.outing_id) || 0) + 1);
       }
+    }
+  }
 
-      const { count } = await unreadQuery;
-      const unreadCount = count ?? 0;
-
-      let formattedTime = "";
-      if (lastMsg?.created_at) {
-        const d = new Date(lastMsg.created_at);
-        formattedTime = d.toLocaleTimeString([], {
-          hour: "2-digit",
-          minute: "2-digit",
-        });
-      }
-
-      let lastMessagePreview = lastMsg?.message || "";
-      if (lastMessagePreview.startsWith("[image:")) {
-        const afterTag = lastMessagePreview.replace(/^\[image:[^\]]+\]\s*/, "");
-        lastMessagePreview = afterTag ? `📷 ${afterTag}` : "📷 Photo";
-      } else if (lastMessagePreview.startsWith("[file:")) {
-        const afterTag = lastMessagePreview.replace(/^\[file:[^\]]+\]\s*/, "");
-        lastMessagePreview = afterTag ? `📎 ${afterTag}` : "📎 Attachment";
-      }
-
-      return {
-        id: groupId || outing.id,
-        outingId: outing.id,
-        outingTitle: outing.title,
-        outingImage: outing.cover_image,
-        participantCount: totalParticipants,
-        lastMessage: lastMessagePreview,
-        lastMessageTime: formattedTime,
-        lastMessageSenderName: senderName,
-        unreadCount,
-        isHost,
-      };
-    }),
+  // 6. Batch fetch sender profile names in ONE query
+  const senderIds = Array.from(
+    new Set(
+      Array.from(latestMessageMap.values())
+        .map((m) => m.sender_id)
+        .filter(Boolean),
+    ),
   );
+
+  const profileNameMap = new Map<string, string>();
+  if (senderIds.length > 0) {
+    const { data: profiles } = await supabase
+      .from("profiles")
+      .select("id, full_name")
+      .in("id", senderIds);
+
+    for (const p of profiles ?? []) {
+      if (p.full_name) {
+        profileNameMap.set(p.id, p.full_name.split(" ")[0]);
+      }
+    }
+  }
+
+  // 7. Build GroupChat items
+  const groupChats: GroupChat[] = allOutings.map((outing) => {
+    const groupId = groupConversationMap.get(outing.id);
+    const isHost = outing.host_id === user.id;
+    const totalParticipants = (participantCounts.get(outing.id) || 0) + 1;
+    const lastMsg = latestMessageMap.get(outing.id);
+
+    let senderName = "";
+    if (lastMsg?.sender_id) {
+      if (lastMsg.sender_id === user.id) {
+        senderName = "You";
+      } else {
+        senderName = profileNameMap.get(lastMsg.sender_id) || "Member";
+      }
+    }
+
+    let lastMessagePreview = lastMsg?.message || "";
+    if (lastMessagePreview.startsWith("[image:")) {
+      const afterTag = lastMessagePreview.replace(/^\[image:[^\]]+\]\s*/, "");
+      lastMessagePreview = afterTag ? `📷 ${afterTag}` : "📷 Photo";
+    } else if (lastMessagePreview.startsWith("[file:")) {
+      const afterTag = lastMessagePreview.replace(/^\[file:[^\]]+\]\s*/, "");
+      lastMessagePreview = afterTag ? `📎 ${afterTag}` : "📎 Attachment";
+    }
+
+    return {
+      id: groupId || outing.id,
+      outingId: outing.id,
+      outingTitle: outing.title,
+      outingImage: outing.cover_image,
+      participantCount: totalParticipants,
+      lastMessage: lastMessagePreview,
+      lastMessageTime: formatChatTimestamp(lastMsg?.created_at),
+      lastMessageSenderName: senderName,
+      unreadCount: unreadCountMap.get(outing.id) || 0,
+      isHost,
+      lastMessageCreatedAt: lastMsg?.created_at || null,
+      outingCreatedAt: outing.created_at || null,
+    };
+  });
+
+  // 8. STRICT SORTING: Always place most recently active chat at the TOP
+  groupChats.sort((a, b) => {
+    const timeA = a.lastMessageCreatedAt ? new Date(a.lastMessageCreatedAt).getTime() : 0;
+    const timeB = b.lastMessageCreatedAt ? new Date(b.lastMessageCreatedAt).getTime() : 0;
+
+    if (timeA > 0 || timeB > 0) {
+      if (timeA !== timeB) {
+        return timeB - timeA; // Most recent message first
+      }
+    }
+
+    // Tie-break / fallback: outings created more recently first
+    const fallbackA = a.outingCreatedAt ? new Date(a.outingCreatedAt).getTime() : 0;
+    const fallbackB = b.outingCreatedAt ? new Date(b.outingCreatedAt).getTime() : 0;
+    return fallbackB - fallbackA;
+  });
 
   return groupChats;
 }

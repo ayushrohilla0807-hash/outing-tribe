@@ -1,5 +1,5 @@
-import { useMemo } from "react";
-
+import { useEffect, useMemo, useState } from "react";
+import { isOutingActive } from "@/lib/outingDate";
 import type { ExploreOuting } from "../models/outing";
 
 type Props = {
@@ -11,8 +11,23 @@ type Props = {
 };
 
 export function useExploreFilters({ outings, search, category, city, sortBy }: Props) {
+  // Live ticker ensures outings that pass their end time while viewing the page disappear in real-time
+  const [now, setNow] = useState(() => new Date());
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setNow(new Date());
+    }, 15000);
+    return () => clearInterval(interval);
+  }, []);
+
   return useMemo(() => {
     let result = outings.filter((outing) => {
+      // Must not be expired (end_datetime > now)
+      if (!isOutingActive(outing, now)) {
+        return false;
+      }
+
       const categoryMatch = category === "All" || outing.category === category;
 
       const cityMatch =
@@ -39,5 +54,5 @@ export function useExploreFilters({ outings, search, category, city, sortBy }: P
     }
 
     return result;
-  }, [outings, search, category, city, sortBy]);
+  }, [outings, search, category, city, sortBy, now]);
 }

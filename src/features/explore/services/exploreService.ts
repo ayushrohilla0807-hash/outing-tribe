@@ -1,4 +1,5 @@
 import { supabase } from "@/integrations/supabase/client";
+import { isOutingActive } from "@/lib/outingDate";
 import type { ExploreOuting } from "../models/outing";
 
 export async function getExploreOutings(): Promise<ExploreOuting[]> {
@@ -20,6 +21,14 @@ export async function getExploreOutings(): Promise<ExploreOuting[]> {
     }
   }
 
+  // Database-level query: Exclude outings older than yesterday (allowing for overnight outings ending today)
+  const now = new Date();
+  const yesterday = new Date(now.getTime() - 24 * 60 * 60 * 1000);
+  const yYear = yesterday.getFullYear();
+  const yMonth = String(yesterday.getMonth() + 1).padStart(2, "0");
+  const yDay = String(yesterday.getDate()).padStart(2, "0");
+  const yesterdayIsoStr = `${yYear}-${yMonth}-${yDay}`;
+
   let query = supabase
     .from("outings")
     .select(
@@ -32,7 +41,10 @@ export async function getExploreOutings(): Promise<ExploreOuting[]> {
     `,
     )
     .neq("status", "cancelled")
-    .order("created_at", { ascending: false });
+    .neq("status", "completed")
+    .gte("outing_date", yesterdayIsoStr)
+    .order("outing_date", { ascending: true })
+    .order("start_time", { ascending: true });
 
   // Exclude outings created by the current user at the data-query level
   if (user) {
@@ -48,9 +60,12 @@ export async function getExploreOutings(): Promise<ExploreOuting[]> {
 
   if (!outings || outings.length === 0) return [];
 
-  // Exclude outings where the current user is pending/joined or host
+  // Exclude outings where current user is host/pending/joined, and strictly filter out any outings whose end time has passed
   const visibleOutings = outings.filter(
-    (item) => (!user || item.host_id !== user.id) && !excludedOutingIds.has(item.id),
+    (item) =>
+      (!user || item.host_id !== user.id) &&
+      !excludedOutingIds.has(item.id) &&
+      isOutingActive(item, now),
   );
 
   if (visibleOutings.length === 0) return [];
