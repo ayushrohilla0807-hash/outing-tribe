@@ -1,5 +1,6 @@
 import { MapPin, Star, Check, X, Trash2, Loader2 } from "lucide-react";
 import type { Participant } from "../models/participant";
+import { getOptimizedImageUrl } from "@/lib/imageOptimization";
 
 type ParticipantCardProps = {
   participant: Participant;
@@ -16,16 +17,18 @@ export default function ParticipantCard({
   onReject,
   onRemove,
 }: ParticipantCardProps) {
+  const avatarSrc = participant.avatar?.trim()
+    ? getOptimizedImageUrl(participant.avatar.trim(), "thumb")
+    : "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100&auto=format&fit=crop&q=80";
+
   return (
     <div className="rounded-2xl border border-white/10 bg-card p-5 shadow-sm transition-all hover:border-primary/30">
       <div className="flex items-start gap-4">
         <img
-          src={
-            participant.avatar?.trim()
-              ? participant.avatar
-              : "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100&auto=format&fit=crop&q=80"
-          }
+          src={avatarSrc}
           alt={participant.name}
+          loading="lazy"
+          decoding="async"
           className="h-14 w-14 rounded-full object-cover border border-white/10"
         />
 

@@ -1,5 +1,6 @@
 import { Users, Crown, Sparkles } from "lucide-react";
 import type { GroupChat } from "../models/message";
+import { getOptimizedImageUrl } from "@/lib/imageOptimization";
 
 type Props = {
   chat: GroupChat;
@@ -31,10 +32,13 @@ export default function GroupChatCard({ chat, onClick }: Props) {
           >
             <img
               src={
-                chat.outingImage ||
-                "https://images.unsplash.com/photo-1517457373958-b7bdd4587205?w=600&auto=format&fit=crop&q=80"
+                chat.outingImage
+                  ? getOptimizedImageUrl(chat.outingImage, "thumb")
+                  : "https://images.unsplash.com/photo-1517457373958-b7bdd4587205?w=600&auto=format&fit=crop&q=80"
               }
               alt={chat.outingTitle}
+              loading="lazy"
+              decoding="async"
               className="h-13 w-13 sm:h-14 sm:w-14 rounded-[14px] object-cover"
             />
           </div>

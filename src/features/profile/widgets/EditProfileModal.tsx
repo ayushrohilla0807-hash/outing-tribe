@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { X, Camera, Loader2 } from "lucide-react";
 import type { UserProfile } from "../models/profile";
 import { uploadAvatar } from "../services/profileService";
+import { validateImageFile } from "@/lib/imageOptimization";
 import { toast } from "sonner";
 import { interests as interestGroups } from "@/lib/interests";
 
@@ -28,11 +29,17 @@ export default function EditProfileModal({ open, profile, onClose, onSave }: Pro
     const file = e.target.files?.[0];
     if (!file) return;
 
+    const validation = validateImageFile(file);
+    if (!validation.valid) {
+      toast.error(validation.error || "Please select a valid image file.");
+      return;
+    }
+
     try {
       setUploadingAvatar(true);
-      const url = await uploadAvatar(file);
+      const url = await uploadAvatar(file, profile.id);
       setForm((prev) => ({ ...prev, avatarUrl: url }));
-      toast.success("Avatar uploaded!");
+      toast.success("Avatar optimized & uploaded!");
     } catch (err: any) {
       console.error(err);
       toast.error(err.message || "Failed to upload avatar");

@@ -460,15 +460,8 @@ export async function needsProfileSetup(): Promise<boolean> {
   return !(hasCity && hasInterests);
 }
 
-export async function uploadAvatar(file: File): Promise<string> {
-  const fileExt = file.name.split(".").pop();
-  const fileName = `avatar-${crypto.randomUUID()}.${fileExt}`;
+import { uploadOptimizedAvatar } from "@/lib/imageOptimization";
 
-  const { error: uploadError } = await supabase.storage.from("outing-image").upload(fileName, file);
-
-  if (uploadError) throw uploadError;
-
-  const { data } = supabase.storage.from("outing-image").getPublicUrl(fileName);
-
-  return data.publicUrl;
+export async function uploadAvatar(file: File, userId?: string): Promise<string> {
+  return uploadOptimizedAvatar(file, userId);
 }

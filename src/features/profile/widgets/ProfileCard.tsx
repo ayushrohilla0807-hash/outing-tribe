@@ -1,5 +1,6 @@
 import { MapPin, Star, LayoutDashboard, UserCheck, Sparkles } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { getOptimizedImageUrl } from "@/lib/imageOptimization";
 import type { UserProfile } from "../models/profile";
 
 type Props = {
@@ -37,7 +38,13 @@ export default function ProfileCard({
           <div className="p-[2.5px] rounded-full bg-gradient-to-tr from-amber-500 via-rose-500 to-primary shadow-sm hover:scale-105 transition-transform duration-200 cursor-pointer">
             <div className="p-0.5 rounded-full bg-background">
               <Avatar className="h-20 w-20 sm:h-22 sm:w-22 rounded-full border border-black/20">
-                <AvatarImage src={profile.avatarUrl} alt={profile.name} className="object-cover" />
+                <AvatarImage
+                  src={
+                    profile.avatarUrl ? getOptimizedImageUrl(profile.avatarUrl, "card") : undefined
+                  }
+                  alt={profile.name}
+                  className="object-cover"
+                />
                 <AvatarFallback className="bg-primary/20 text-xl font-bold text-primary">
                   {initials}
                 </AvatarFallback>

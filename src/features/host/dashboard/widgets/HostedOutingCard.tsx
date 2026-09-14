@@ -1,6 +1,7 @@
 import { Calendar, CheckCircle, Edit, MapPin, Trash2, Users, Clock } from "lucide-react";
 
 import type { HostedOuting } from "../models/hostedOuting";
+import { getOptimizedImageUrl } from "@/lib/imageOptimization";
 
 type HostedOutingCardProps = {
   outing: HostedOuting;
@@ -35,11 +36,14 @@ export default function HostedOutingCard({
       <div className="relative h-48 overflow-hidden">
         <img
           src={
-            outing.image ||
-            "https://images.unsplash.com/photo-1517457373958-b7bdd4587205?w=600&auto=format&fit=crop&q=80"
+            outing.image
+              ? getOptimizedImageUrl(outing.image, "card")
+              : "https://images.unsplash.com/photo-1517457373958-b7bdd4587205?w=600&auto=format&fit=crop&q=80"
           }
           alt={outing.title}
           className="h-full w-full object-cover"
+          loading="lazy"
+          decoding="async"
         />
 
         <span className="absolute left-3 top-3 rounded-full bg-black/50 px-2.5 py-1 text-[10px] font-semibold text-white backdrop-blur">

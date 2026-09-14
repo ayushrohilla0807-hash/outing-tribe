@@ -1,5 +1,6 @@
 import type { HistoryOuting } from "../models/history";
 import StatusBadge from "./StatusBadge";
+import { getOptimizedImageUrl } from "@/lib/imageOptimization";
 
 type Props = {
   outing: HistoryOuting;
@@ -8,7 +9,13 @@ type Props = {
 export default function HistoryCard({ outing }: Props) {
   return (
     <div className="overflow-hidden rounded-2xl border bg-card shadow-sm transition hover:shadow-md">
-      <img src={outing.image} alt={outing.title} className="h-44 w-full object-cover" />
+      <img
+        src={getOptimizedImageUrl(outing.image, "card")}
+        alt={outing.title}
+        className="h-44 w-full object-cover"
+        loading="lazy"
+        decoding="async"
+      />
 
       <div className="space-y-3 p-5">
         <div className="flex items-start justify-between gap-3">

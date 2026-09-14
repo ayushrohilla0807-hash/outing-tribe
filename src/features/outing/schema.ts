@@ -62,17 +62,17 @@ export const createOutingSchema = z
     acceptedGuidelines: z.boolean().optional(),
   })
   .superRefine((data, ctx) => {
-    // 1. Image validation: Compulsory and strictly < 1 MB
+    // 1. Image validation: Compulsory and max 10 MB (will be compressed to WebP on client)
     if (!data.image || !(data.image instanceof File)) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
         message: "Please upload an image for your outing.",
         path: ["image"],
       });
-    } else if (data.image.size >= 1024 * 1024) {
+    } else if (data.image.size > 10 * 1024 * 1024) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
-        message: "Image size must be less than 1 MB.",
+        message: "Image size must be less than 10 MB.",
         path: ["image"],
       });
     }

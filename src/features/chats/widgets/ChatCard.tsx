@@ -1,5 +1,6 @@
 import { Users, MessageSquare } from "lucide-react";
 import type { Chat } from "../models/message";
+import { getOptimizedImageUrl } from "@/lib/imageOptimization";
 
 type Props = {
   chat: Chat;
@@ -7,6 +8,12 @@ type Props = {
 };
 
 export default function ChatCard({ chat, onClick }: Props) {
+  const avatarSrc = chat.otherUserAvatar
+    ? getOptimizedImageUrl(chat.otherUserAvatar, "thumb")
+    : chat.outingImage
+      ? getOptimizedImageUrl(chat.outingImage, "thumb")
+      : "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100&auto=format&fit=crop&q=80";
+
   return (
     <button
       onClick={onClick}
@@ -15,18 +22,18 @@ export default function ChatCard({ chat, onClick }: Props) {
       <div className="flex items-start gap-4">
         <div className="relative">
           <img
-            src={
-              chat.otherUserAvatar ||
-              chat.outingImage ||
-              "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100&auto=format&fit=crop&q=80"
-            }
+            src={avatarSrc}
             alt={chat.otherUserName || chat.outingName}
+            loading="lazy"
+            decoding="async"
             className="h-14 w-14 rounded-2xl object-cover border border-white/10"
           />
           {chat.otherUserAvatar && chat.outingImage && (
             <img
-              src={chat.outingImage}
+              src={getOptimizedImageUrl(chat.outingImage, "thumb")}
               alt=""
+              loading="lazy"
+              decoding="async"
               className="absolute -bottom-1 -right-1 h-6 w-6 rounded-md object-cover border border-background shadow"
             />
           )}

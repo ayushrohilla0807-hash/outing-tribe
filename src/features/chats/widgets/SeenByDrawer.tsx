@@ -1,6 +1,7 @@
 import { useMemo } from "react";
 import { X, CheckCheck } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { getOptimizedImageUrl } from "@/lib/imageOptimization";
 import type { MessageReadReceipt } from "../models/message";
 
 interface SeenByDrawerProps {
@@ -118,7 +119,10 @@ export default function SeenByDrawer({ open, onClose, reads }: SeenByDrawerProps
                   <div className="flex items-center gap-3 min-w-0">
                     <Avatar className="h-10 w-10 border border-white/15 shrink-0 shadow-sm">
                       {read.userAvatar ? (
-                        <AvatarImage src={read.userAvatar} alt={read.userName} />
+                        <AvatarImage
+                          src={getOptimizedImageUrl(read.userAvatar, "thumb")}
+                          alt={read.userName}
+                        />
                       ) : null}
                       <AvatarFallback className="bg-primary/20 text-xs font-bold text-primary">
                         {initials}

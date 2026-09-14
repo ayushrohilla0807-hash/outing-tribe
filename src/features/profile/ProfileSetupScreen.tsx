@@ -16,8 +16,8 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
-import { interests as interestGroups } from "@/lib/interests";
 import { completeProfileSetup, uploadAvatar } from "./services/profileService";
+import { validateImageFile } from "@/lib/imageOptimization";
 
 // Flat list of all interests for the dropdown
 const ALL_INTERESTS = interestGroups.flatMap((g) => g.items);
@@ -107,12 +107,19 @@ export default function ProfileSetupScreen() {
   async function handleFileUpload(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (!file) return;
+
+    const validation = validateImageFile(file);
+    if (!validation.valid) {
+      toast.error(validation.error || "Please select a valid image file.");
+      return;
+    }
+
     try {
       setUploadingAvatar(true);
       const url = await uploadAvatar(file);
       setAvatarUrl(url);
       setShowAvatarPicker(false);
-      toast.success("Photo uploaded!");
+      toast.success("Photo optimized & uploaded!");
     } catch (err: any) {
       toast.error(err.message || "Upload failed");
     } finally {

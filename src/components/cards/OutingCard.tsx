@@ -1,5 +1,6 @@
 import { Calendar, MapPin, Bookmark } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { getOptimizedImageUrl } from "@/lib/imageOptimization";
 
 const FALLBACK_COVER =
   "https://images.unsplash.com/photo-1517457373958-b7bdd4587205?w=800&auto=format&fit=crop&q=80";
@@ -35,7 +36,11 @@ export default function OutingCard({
   onCardClick,
   onSave,
 }: Props) {
-  const [imgSrc, setImgSrc] = useState(image || FALLBACK_COVER);
+  const [imgSrc, setImgSrc] = useState(() => getOptimizedImageUrl(image, "card") || FALLBACK_COVER);
+
+  useEffect(() => {
+    setImgSrc(getOptimizedImageUrl(image, "card") || FALLBACK_COVER);
+  }, [image]);
 
   return (
     <div
@@ -58,6 +63,7 @@ export default function OutingCard({
           onError={() => setImgSrc(FALLBACK_COVER)}
           className="h-full w-full object-cover group-hover:scale-105 transition-transform duration-500"
           loading="lazy"
+          decoding="async"
         />
 
         {/* Subtle Bottom Gradient on Image for contrast */}

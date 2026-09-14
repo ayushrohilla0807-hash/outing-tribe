@@ -29,6 +29,7 @@ import {
   type JoinStatus,
 } from "@/features/outing/join/services/participantService";
 import { useSaved } from "@/features/outing/saved/context/SavedContext";
+import { getOptimizedImageUrl } from "@/lib/imageOptimization";
 
 export const Route = createFileRoute("/_authenticated/outing/$id")({
   component: OutingDetailsPage,
@@ -106,12 +107,14 @@ function OutingDetailsPage() {
   }
 
   const FALLBACK_COVER =
-    "https://images.unsplash.com/photo-1517457373958-b7bdd4587205?w=1200&auto=format&fit=crop&q=80";
-  const [coverSrc, setCoverSrc] = useState(FALLBACK_COVER);
+    "https://images.unsplash.com/photo-1517457373958-b7bdd4587205?w=1600&auto=format&fit=crop&q=80";
+  const [coverSrc, setCoverSrc] = useState(() =>
+    outing?.cover_image ? getOptimizedImageUrl(outing.cover_image, "hero") : FALLBACK_COVER,
+  );
 
   useEffect(() => {
     if (outing?.cover_image) {
-      setCoverSrc(outing.cover_image);
+      setCoverSrc(getOptimizedImageUrl(outing.cover_image, "hero"));
     }
   }, [outing?.cover_image]);
 
@@ -171,6 +174,7 @@ function OutingDetailsPage() {
           alt={outing.title}
           onError={() => setCoverSrc(FALLBACK_COVER)}
           className="h-full w-full object-cover"
+          decoding="async"
         />
 
         {/* Cinematic Gradient Vignette */}
@@ -341,10 +345,13 @@ function OutingDetailsPage() {
                   >
                     <img
                       src={
-                        member.avatar ||
-                        "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100&auto=format&fit=crop&q=80"
+                        member.avatar
+                          ? getOptimizedImageUrl(member.avatar, "thumb")
+                          : "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100&auto=format&fit=crop&q=80"
                       }
                       alt={member.name}
+                      loading="lazy"
+                      decoding="async"
                       className="h-6 w-6 rounded-full object-cover"
                     />
                     <span className="text-xs font-semibold text-white">{member.name}</span>
@@ -388,7 +395,8 @@ function OutingDetailsPage() {
               Organized By
             </p>
             <span className="text-[11px] font-semibold text-primary group-hover:underline flex items-center gap-1 transition">
-              View Profile <ChevronRight className="h-3.5 w-3.5 group-hover:translate-x-0.5 transition-transform" />
+              View Profile{" "}
+              <ChevronRight className="h-3.5 w-3.5 group-hover:translate-x-0.5 transition-transform" />
             </span>
           </div>
 
@@ -396,10 +404,13 @@ function OutingDetailsPage() {
             <div className="flex items-center gap-3.5">
               <img
                 src={
-                  outing.host.avatar_url ||
-                  "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100&auto=format&fit=crop&q=80"
+                  outing.host.avatar_url
+                    ? getOptimizedImageUrl(outing.host.avatar_url, "thumb")
+                    : "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100&auto=format&fit=crop&q=80"
                 }
                 alt={outing.host.full_name}
+                loading="lazy"
+                decoding="async"
                 className="h-13 w-13 rounded-full object-cover border-2 border-primary shadow-sm group-hover:scale-105 transition-transform duration-200"
               />
               <div>

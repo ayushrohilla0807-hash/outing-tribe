@@ -57,9 +57,7 @@ export function getOutingEndDateTime(outing: OutingTimeFields): Date | null {
   }
 
   // 2. Helper to parse time string into 24-hour { hours, minutes }
-  const parseTimeString = (
-    timeStr?: string | null,
-  ): { hours: number; minutes: number } | null => {
+  const parseTimeString = (timeStr?: string | null): { hours: number; minutes: number } | null => {
     if (!timeStr || typeof timeStr !== "string") return null;
     const trimmed = timeStr.trim();
     if (!trimmed) return null;
@@ -146,10 +144,7 @@ export function getOutingEndDateTime(outing: OutingTimeFields): Date | null {
  * - status is not 'cancelled' or 'completed'
  * - end datetime is strictly in the future (end_datetime > referenceNow)
  */
-export function isOutingActive(
-  outing: OutingTimeFields,
-  referenceNow: Date = new Date(),
-): boolean {
+export function isOutingActive(outing: OutingTimeFields, referenceNow: Date = new Date()): boolean {
   if (outing.status === "cancelled" || outing.status === "completed") {
     return false;
   }
@@ -166,9 +161,6 @@ export function isOutingActive(
 /**
  * Checks whether an outing has ended (end_datetime <= referenceNow).
  */
-export function isOutingEnded(
-  outing: OutingTimeFields,
-  referenceNow: Date = new Date(),
-): boolean {
+export function isOutingEnded(outing: OutingTimeFields, referenceNow: Date = new Date()): boolean {
   return !isOutingActive(outing, referenceNow);
 }

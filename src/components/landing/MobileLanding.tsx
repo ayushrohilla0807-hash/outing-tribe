@@ -5,6 +5,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useSession } from "@/hooks/use-session";
 import { useTheme } from "@/hooks/use-theme";
 import { getExploreOutings } from "@/features/explore/services/exploreService";
+import { getOptimizedImageUrl } from "@/lib/imageOptimization";
 import heroIllustration from "@/assets/hero-night-friends.jpg";
 import {
   Compass,
@@ -260,7 +261,10 @@ export function MobileLanding() {
               className="space-y-1.5"
             >
               <h1 className="text-[32px] xs:text-[36px] font-extrabold tracking-tight leading-[1.08] text-white">
-                Never <span className="bg-gradient-to-r from-[#D99A7C] via-[#E2A88D] to-[#F5E8E2] bg-clip-text text-transparent">Cancel Plans</span>
+                Never{" "}
+                <span className="bg-gradient-to-r from-[#D99A7C] via-[#E2A88D] to-[#F5E8E2] bg-clip-text text-transparent">
+                  Cancel Plans
+                </span>
                 <br /> Again.
               </h1>
               <p className="text-xs xs:text-sm text-white/80 leading-snug max-w-xs font-normal">
@@ -368,10 +372,11 @@ export function MobileLanding() {
               {/* Card Image with Floating Category & Avatar Chips */}
               <div className="relative aspect-[16/10] w-full overflow-hidden bg-black/40">
                 <img
-                  src={item.image}
+                  src={getOptimizedImageUrl(item.image, "card")}
                   alt={item.title}
                   className="h-full w-full object-cover group-hover:scale-105 transition-transform duration-500"
                   loading="lazy"
+                  decoding="async"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-[#0F3040] via-transparent to-black/40" />
 

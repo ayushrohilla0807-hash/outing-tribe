@@ -4,6 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { HomeIcon, ExploreIcon, CreateIcon, ChatsIcon, ProfileIcon } from "./NavIcons";
 import { useUnreadChatCount } from "@/features/chats/hooks/useUnreadChatCount";
 import { getProfile } from "@/features/profile/services/profileService";
+import { getOptimizedImageUrl } from "@/lib/imageOptimization";
 
 const items = [
   {
@@ -59,12 +60,15 @@ function ProfileNavAvatar({
     );
   }
 
+  const optimizedSrc = getOptimizedImageUrl(avatarUrl, "thumb");
+
   return (
     <div className="relative flex items-center justify-center">
       <img
-        src={avatarUrl}
+        src={optimizedSrc}
         alt={name || "Profile"}
         onError={() => setError(true)}
+        decoding="async"
         className={`h-[30px] w-[30px] rounded-full object-cover border-2 transition-all duration-200 ${
           active
             ? "border-primary scale-110 shadow-sm shadow-primary/30"

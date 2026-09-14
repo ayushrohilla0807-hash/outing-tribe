@@ -4,8 +4,7 @@ import { useFormContext } from "react-hook-form";
 import { toast } from "sonner";
 
 import type { CreateOutingForm } from "../schema";
-
-const MAX_IMAGE_SIZE_BYTES = 1024 * 1024; // Strictly less than 1 MB (1,048,576 bytes)
+import { validateImageFile, MAX_UPLOAD_FILE_SIZE_BYTES } from "@/lib/imageOptimization";
 
 export default function CoverUploader() {
   const {
@@ -36,14 +35,9 @@ export default function CoverUploader() {
   function handleFile(file: File | null) {
     if (!file) return;
 
-    if (!file.type.startsWith("image/")) {
-      toast.error("Please select a valid image file (JPG, PNG, WEBP).");
-      if (fileInputRef.current) fileInputRef.current.value = "";
-      return;
-    }
-
-    if (file.size >= MAX_IMAGE_SIZE_BYTES) {
-      toast.error("Image size must be less than 1 MB.");
+    const validation = validateImageFile(file, MAX_UPLOAD_FILE_SIZE_BYTES);
+    if (!validation.valid) {
+      toast.error(validation.error || "Please select a valid image file.");
       if (fileInputRef.current) fileInputRef.current.value = "";
       setValue("image", undefined as any, {
         shouldValidate: true,
@@ -71,7 +65,7 @@ export default function CoverUploader() {
         <label className="text-sm font-semibold text-foreground">
           Cover Image <span className="text-primary">*</span>
         </label>
-        <span className="text-xs text-muted-foreground">Compulsory • Max 1 MB</span>
+        <span className="text-xs text-muted-foreground">Compulsory • Max 10 MB</span>
       </div>
 
       {preview ? (
@@ -103,7 +97,7 @@ export default function CoverUploader() {
           <span className="font-semibold text-foreground">Upload Cover Image *</span>
 
           <span className="mt-1 text-xs text-muted-foreground">
-            JPG, PNG, or WEBP (strictly under 1 MB)
+            JPG, PNG, or WEBP (up to 10 MB, auto-optimized)
           </span>
 
           <input

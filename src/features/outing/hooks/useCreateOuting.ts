@@ -8,7 +8,7 @@ import { toast } from "sonner";
 import { createOutingSchema, type CreateOutingForm } from "../schema";
 
 import { createOuting } from "../services/outingService";
-import { supabase } from "@/integrations/supabase/client";
+import { validateImageFile, uploadOptimizedOutingImages } from "@/lib/imageOptimization";
 
 export function useCreateOuting() {
   const navigate = useNavigate();
@@ -42,36 +42,16 @@ export function useCreateOuting() {
     try {
       setLoading(true);
 
-      // Strict validation before upload
-      if (!values.image || !(values.image instanceof File)) {
-        toast.error("Please upload an image for your outing.");
+      const validation = validateImageFile(values.image);
+      if (!validation.valid) {
+        toast.error(validation.error || "Invalid image selected.");
         setLoading(false);
         return;
       }
 
-      if (values.image.size >= 1024 * 1024) {
-        toast.error("Image size must be less than 1 MB.");
-        setLoading(false);
-        return;
-      }
-
-      let imageUrl = "";
-
-      // Upload image to Supabase Storage
-      const fileExt = values.image.name.split(".").pop();
-      const fileName = `${crypto.randomUUID()}.${fileExt}`;
-
-      const { error: uploadError } = await supabase.storage
-        .from("outing-image")
-        .upload(fileName, values.image);
-
-      if (uploadError) {
-        throw uploadError;
-      }
-
-      const { data } = supabase.storage.from("outing-image").getPublicUrl(fileName);
-
-      imageUrl = data.publicUrl;
+      // Generate and upload optimized WebP variants (hero, card, thumb) to Supabase Storage
+      const { canonicalUrl } = await uploadOptimizedOutingImages(values.image);
+      const imageUrl = canonicalUrl;
 
       await createOuting({
         title: values.title,

@@ -2,6 +2,7 @@ import { Paperclip, Send, Smile, X, Loader2, FileText, Image as ImageIcon } from
 import { useState, useRef } from "react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import { uploadOptimizedChatImage } from "@/lib/imageOptimization";
 import EmojiPicker from "./EmojiPicker";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 
@@ -77,23 +78,20 @@ export default function ChatInput({ onSend }: Props) {
     if (pendingAttachment) {
       try {
         setUploading(true);
-        const fileExt = pendingAttachment.name.split(".").pop() || "bin";
-        const fileName = `${crypto.randomUUID()}.${fileExt}`;
-
-        const { error: uploadError } = await supabase.storage
-          .from("outing-image")
-          .upload(fileName, pendingAttachment.file);
-
         let fileUrl = "";
-        if (!uploadError) {
+        if (pendingAttachment.type === "image") {
+          fileUrl = await uploadOptimizedChatImage(pendingAttachment.file);
+        } else {
+          const fileExt = pendingAttachment.name.split(".").pop() || "bin";
+          const fileName = `files/${crypto.randomUUID()}.${fileExt}`;
+
+          const { error: uploadError } = await supabase.storage
+            .from("outing-image")
+            .upload(fileName, pendingAttachment.file);
+
+          if (uploadError) throw uploadError;
           const { data } = supabase.storage.from("outing-image").getPublicUrl(fileName);
           fileUrl = data.publicUrl;
-        } else {
-          console.warn("Storage upload failed, fallback to direct message text:", uploadError);
-          // If storage bucket is unavailable, fallback to base64 for images
-          if (pendingAttachment.type === "image") {
-            fileUrl = await fileToBase64(pendingAttachment.file);
-          }
         }
 
         if (fileUrl) {

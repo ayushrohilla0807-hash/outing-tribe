@@ -28,13 +28,9 @@ export default function ExploreScreen() {
   useEffect(() => {
     const channel = supabase
       .channel("explore-outings-realtime")
-      .on(
-        "postgres_changes",
-        { event: "*", schema: "public", table: "outings" },
-        () => {
-          queryClient.invalidateQueries({ queryKey: ["explore-outings"] });
-        },
-      )
+      .on("postgres_changes", { event: "*", schema: "public", table: "outings" }, () => {
+        queryClient.invalidateQueries({ queryKey: ["explore-outings"] });
+      })
       .subscribe();
 
     return () => {

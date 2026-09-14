@@ -1,4 +1,5 @@
 import { ArrowLeft, Users } from "lucide-react";
+import { getOptimizedImageUrl } from "@/lib/imageOptimization";
 
 type Props = {
   title: string;
@@ -8,6 +9,10 @@ type Props = {
 };
 
 export default function ChatHeader({ title, image, participants = 0, onBack }: Props) {
+  const imgSrc = image
+    ? getOptimizedImageUrl(image, "thumb")
+    : "https://placehold.co/100x100?text=Outing";
+
   return (
     <header className="sticky top-0 z-20 shrink-0 border-b border-white/10 bg-background/95 backdrop-blur-md pt-[env(safe-area-inset-top,0px)]">
       <div className="flex items-center gap-3.5 px-4 py-3">
@@ -21,8 +26,9 @@ export default function ChatHeader({ title, image, participants = 0, onBack }: P
         </button>
 
         <img
-          src={image ?? "https://placehold.co/100x100?text=Outing"}
+          src={imgSrc}
           alt={title}
+          decoding="async"
           className="h-11 w-11 rounded-full object-cover border border-white/15"
         />
 

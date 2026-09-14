@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Upload, Image as ImageIcon, Loader2 } from "lucide-react";
 import { uploadOutingImage } from "../services/editOutingService";
+import { validateImageFile } from "@/lib/imageOptimization";
 import { toast } from "sonner";
 
 interface ImageUploaderProps {
@@ -15,11 +16,17 @@ export default function ImageUploader({ image, onChange }: ImageUploaderProps) {
     const file = e.target.files?.[0];
     if (!file) return;
 
+    const validation = validateImageFile(file);
+    if (!validation.valid) {
+      toast.error(validation.error || "Please select a valid image file.");
+      return;
+    }
+
     try {
       setUploading(true);
       const url = await uploadOutingImage(file);
       onChange(url);
-      toast.success("Cover image uploaded!");
+      toast.success("Cover image optimized & uploaded!");
     } catch (err: any) {
       console.error(err);
       toast.error(err.message || "Failed to upload image");

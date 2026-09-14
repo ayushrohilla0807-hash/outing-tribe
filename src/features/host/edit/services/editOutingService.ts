@@ -65,15 +65,9 @@ export async function updateOuting(updated: EditOutingData): Promise<void> {
   if (error) throw error;
 }
 
-export async function uploadOutingImage(file: File): Promise<string> {
-  const fileExt = file.name.split(".").pop();
-  const fileName = `${crypto.randomUUID()}.${fileExt}`;
+import { uploadOptimizedOutingImages } from "@/lib/imageOptimization";
 
-  const { error: uploadError } = await supabase.storage.from("outing-image").upload(fileName, file);
-
-  if (uploadError) throw uploadError;
-
-  const { data } = supabase.storage.from("outing-image").getPublicUrl(fileName);
-
-  return data.publicUrl;
+export async function uploadOutingImage(file: File, outingId?: string): Promise<string> {
+  const { canonicalUrl } = await uploadOptimizedOutingImages(file, outingId);
+  return canonicalUrl;
 }

@@ -3,6 +3,7 @@ import { Download, FileText, X, Check } from "lucide-react";
 import type { Message } from "../models/message";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { getOptimizedImageUrl } from "@/lib/imageOptimization";
 import SeenByDrawer from "./SeenByDrawer";
 
 type Props = {
@@ -54,6 +55,10 @@ export default function GroupMessageBubble({ message }: Props) {
   const displayedReads = reads.slice(0, 3);
   const extraCount = reads.length - displayedReads.length;
 
+  const senderAvatarSrc = message.senderAvatar
+    ? getOptimizedImageUrl(message.senderAvatar, "thumb")
+    : "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100&auto=format&fit=crop&q=80";
+
   return (
     <>
       <div className={`mb-3 flex flex-col ${message.isMine ? "items-end" : "items-start"}`}>
@@ -63,11 +68,10 @@ export default function GroupMessageBubble({ message }: Props) {
           {/* Avatar for other participants */}
           {!message.isMine && (
             <img
-              src={
-                message.senderAvatar ||
-                "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100&auto=format&fit=crop&q=80"
-              }
+              src={senderAvatarSrc}
               alt={message.senderName || "Member"}
+              loading="lazy"
+              decoding="async"
               className="h-8 w-8 rounded-full object-cover border border-white/10 shrink-0 mb-0.5"
             />
           )}
@@ -167,7 +171,7 @@ export default function GroupMessageBubble({ message }: Props) {
                       >
                         {r.userAvatar ? (
                           <AvatarImage
-                            src={r.userAvatar}
+                            src={getOptimizedImageUrl(r.userAvatar, "thumb")}
                             alt={r.userName}
                             className="object-cover"
                           />

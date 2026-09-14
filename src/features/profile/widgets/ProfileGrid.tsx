@@ -1,5 +1,6 @@
 import { LayoutGrid, Users, Bookmark, Calendar, Plus, Compass } from "lucide-react";
 import { useNavigate } from "@tanstack/react-router";
+import { getOptimizedImageUrl } from "@/lib/imageOptimization";
 import type { HostedOuting } from "@/features/host/dashboard/models/hostedOuting";
 import type { HistoryOuting } from "@/features/outing/history/models/history";
 import type { SavedOuting } from "@/features/outing/saved/models/savedOuting";
@@ -113,11 +114,13 @@ export default function ProfileGrid({
                   >
                     <img
                       src={
-                        item.image ||
-                        "https://images.unsplash.com/photo-1517457373958-b7bdd4587205?w=500&auto=format&fit=crop&q=80"
+                        item.image
+                          ? getOptimizedImageUrl(item.image, "thumb")
+                          : "https://images.unsplash.com/photo-1517457373958-b7bdd4587205?w=500&auto=format&fit=crop&q=80"
                       }
                       alt={item.title}
                       loading="lazy"
+                      decoding="async"
                       className="h-full w-full object-cover group-hover:scale-105 transition-transform duration-300"
                     />
 
@@ -184,11 +187,13 @@ export default function ProfileGrid({
                   >
                     <img
                       src={
-                        item.image ||
-                        "https://images.unsplash.com/photo-1517457373958-b7bdd4587205?w=500&auto=format&fit=crop&q=80"
+                        item.image
+                          ? getOptimizedImageUrl(item.image, "thumb")
+                          : "https://images.unsplash.com/photo-1517457373958-b7bdd4587205?w=500&auto=format&fit=crop&q=80"
                       }
                       alt={item.title}
                       loading="lazy"
+                      decoding="async"
                       className="h-full w-full object-cover group-hover:scale-105 transition-transform duration-300"
                     />
 
@@ -259,11 +264,13 @@ export default function ProfileGrid({
                   >
                     <img
                       src={
-                        item.image ||
-                        "https://images.unsplash.com/photo-1517457373958-b7bdd4587205?w=500&auto=format&fit=crop&q=80"
+                        item.image
+                          ? getOptimizedImageUrl(item.image, "thumb")
+                          : "https://images.unsplash.com/photo-1517457373958-b7bdd4587205?w=500&auto=format&fit=crop&q=80"
                       }
                       alt={item.title}
                       loading="lazy"
+                      decoding="async"
                       className="h-full w-full object-cover group-hover:scale-105 transition-transform duration-300"
                     />
 
