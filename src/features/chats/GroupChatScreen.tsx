@@ -14,6 +14,7 @@ import {
   subscribeGroupMessageReads,
   setGroupChatLastRead,
   markMessagesAsSeen,
+  deleteGroupMessage,
 } from "./services/groupChatService";
 import { getCurrentUser } from "./services/chatService";
 
@@ -259,6 +260,24 @@ export default function GroupChatScreen() {
     }
   }
 
+  async function handleDeleteMessage(messageId: string) {
+    if (!currentUserId || !messageId) return;
+
+    // 1. Optimistic update
+    setMessages((prev) =>
+      prev.map((m) => (m.id === messageId ? { ...m, message: "This message was deleted" } : m)),
+    );
+
+    try {
+      await deleteGroupMessage(messageId, currentUserId);
+      toast.success("Message deleted");
+    } catch (err: any) {
+      console.error("[handleDeleteMessage] Error deleting message:", err);
+      toast.error(err.message || "Failed to delete message");
+      loadMessages();
+    }
+  }
+
   if (loading) {
     return (
       <div className="flex h-full flex-1 flex-col items-center justify-center gap-3 bg-background text-foreground">
@@ -301,14 +320,31 @@ export default function GroupChatScreen() {
         }
       />
 
-      <div className="flex-1 min-h-0 overflow-y-auto px-4 py-4 space-y-2 overscroll-contain">
+      <div className="flex-1 min-h-0 overflow-y-auto px-4 py-4 overscroll-contain">
         {messages.length === 0 ? (
           <div className="flex h-full flex-col items-center justify-center text-center p-6 text-muted-foreground">
             <p className="text-sm font-medium">No messages in this group yet.</p>
             <p className="text-xs mt-1">Send a message to start planning with the group!</p>
           </div>
         ) : (
-          messages.map((message) => <GroupMessageBubble key={message.id} message={message} />)
+          messages.map((message, index) => {
+            const nextMessage = messages[index + 1];
+            const prevMessage = messages[index - 1];
+
+            // Grouping by actual senderId (not display name)
+            const isFirstInGroup = !prevMessage || prevMessage.senderId !== message.senderId;
+            const isLastInGroup = !nextMessage || nextMessage.senderId !== message.senderId;
+
+            return (
+              <GroupMessageBubble
+                key={message.id}
+                message={message}
+                isFirstInGroup={isFirstInGroup}
+                isLastInGroup={isLastInGroup}
+                onDelete={handleDeleteMessage}
+              />
+            );
+          })
         )}
 
         <div ref={bottomRef} />

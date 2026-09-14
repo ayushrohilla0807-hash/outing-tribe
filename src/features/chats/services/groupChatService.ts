@@ -575,6 +575,29 @@ export async function sendGroupMessage(
 }
 
 /**
+ * Soft delete a message (replaces content with "This message was deleted").
+ * Strictly enforces that current authenticated user is the sender.
+ */
+export async function deleteGroupMessage(messageId: string, userId: string): Promise<boolean> {
+  if (!messageId || !userId) return false;
+
+  const { data, error } = await supabase
+    .from("messages")
+    .update({ message: "This message was deleted" })
+    .eq("id", messageId)
+    .eq("sender_id", userId)
+    .select("id, message")
+    .maybeSingle();
+
+  if (error) {
+    console.error("[deleteGroupMessage] Error:", error);
+    throw new Error(error.message || "Failed to delete message");
+  }
+
+  return !!data;
+}
+
+/**
  * Subscribe to real-time messages for an outing group.
  */
 export function subscribeGroupMessages(outingId: string, callback: (payload: any) => void) {
@@ -583,7 +606,7 @@ export function subscribeGroupMessages(outingId: string, callback: (payload: any
     .on(
       "postgres_changes",
       {
-        event: "INSERT",
+        event: "*",
         schema: "public",
         table: "messages",
         filter: `outing_id=eq.${outingId}`,

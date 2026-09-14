@@ -18,4 +18,5 @@ export {
   getGroupMembers,
   setGroupChatLastRead,
   getChatLastReadMap,
+  deleteGroupMessage,
 } from "./groupChatService";
