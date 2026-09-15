@@ -7,6 +7,7 @@ import { useTheme } from "@/hooks/use-theme";
 import { getExploreOutings } from "@/features/explore/services/exploreService";
 import { getOptimizedImageUrl } from "@/lib/imageOptimization";
 import heroIllustration from "@/assets/hero-night-friends.jpg";
+import outsyLogo from "@/assets/outsy-logo.png";
 import {
   Compass,
   ArrowRight,
@@ -15,7 +16,6 @@ import {
   Moon,
   MapPin,
   Calendar,
-  Sparkles,
   Users,
   ShieldCheck,
   Star,
@@ -34,7 +34,7 @@ import {
 } from "lucide-react";
 
 const VIBE_CATEGORIES = [
-  { label: "All Vibes", icon: Sparkles, query: "" },
+  { label: "All Vibes", icon: Compass, query: "" },
   { label: "Cafés & Coffee", icon: Coffee, query: "cafe" },
   { label: "Cinema & Shows", icon: Film, query: "cinema" },
   { label: "Turf & Sports", icon: Trophy, query: "sports" },
@@ -132,10 +132,12 @@ export function MobileLanding() {
       {/* ─── 1. MOBILE TOP BRAND BAR ────────────────────────────────────── */}
       <header className="sticky top-0 z-40 w-full border-b border-white/5 bg-[#000000]/80 backdrop-blur-xl pt-[calc(0.5rem+env(safe-area-inset-top,0px))] pb-2.5 px-4">
         <div className="mx-auto flex w-full max-w-md items-center justify-between">
-          <Link to="/" className="flex items-center gap-2 active:scale-95 transition-transform">
-            <div className="grid h-8 w-8 place-items-center rounded-xl bg-gradient-to-br from-[#D99A7C] to-[#A97065] shadow-lg shadow-[#D99A7C]/20">
-              <Compass className="h-4 w-4 text-[#0F3040] stroke-[2.5]" />
-            </div>
+          <Link to="/" className="flex items-center gap-2.5 active:scale-95 transition-transform">
+            <img
+              src={outsyLogo}
+              alt="OutSy"
+              className="h-8 w-8 rounded-full object-cover shadow-lg ring-1 ring-white/20 shadow-[#D99A7C]/20"
+            />
             <span className="font-display text-lg font-extrabold tracking-tight text-[#F5F5F5]">
               OutSy
             </span>
@@ -206,7 +208,6 @@ export function MobileLanding() {
               transition={{ duration: 0.5 }}
               className="inline-flex items-center gap-1.5 rounded-full border border-white/15 bg-black/60 backdrop-blur-md px-3 py-1 text-[11px] font-semibold text-[#D99A7C] shadow-sm"
             >
-              <Sparkles className="h-3 w-3" />
               <span>Activity-First Social</span>
             </motion.div>
 
@@ -430,7 +431,7 @@ export function MobileLanding() {
           {/* Step 1 */}
           <div className="flex items-center gap-3.5 rounded-2xl border border-white/10 bg-[#0F3040]/80 p-3.5 backdrop-blur-sm shadow-md">
             <div className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-[#D99A7C]/20 border border-[#D99A7C]/30 text-[#D99A7C]">
-              <Sparkles className="h-5 w-5" />
+              <Compass className="h-5 w-5" />
             </div>
             <div className="min-w-0 flex-1">
               <div className="flex items-center justify-between">

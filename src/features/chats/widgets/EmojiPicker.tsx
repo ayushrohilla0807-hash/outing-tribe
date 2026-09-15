@@ -1,5 +1,5 @@
 import { useState, useMemo } from "react";
-import { Search, Smile, ThumbsUp, Coffee, Heart, Sparkles } from "lucide-react";
+import { Search, Smile, ThumbsUp, Coffee, Heart, Flame } from "lucide-react";
 
 interface EmojiCategory {
   id: string;
@@ -12,7 +12,7 @@ const EMOJI_CATEGORIES: EmojiCategory[] = [
   {
     id: "popular",
     name: "Popular",
-    icon: <Sparkles size={16} />,
+    icon: <Flame size={16} />,
     emojis: [
       "😂",
       "👍",

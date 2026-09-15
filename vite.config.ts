@@ -8,6 +8,12 @@ import { defineConfig } from "@lovable.dev/vite-tanstack-config";
 import { VitePWA } from "vite-plugin-pwa";
 
 export default defineConfig({
+  nitro: {
+    compatibilityDate: {
+      default: "2024-11-01",
+      cloudflare: "2024-11-01",
+    },
+  },
   plugins: [
     VitePWA({
       registerType: "autoUpdate",

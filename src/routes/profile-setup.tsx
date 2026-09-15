@@ -1,6 +1,7 @@
 import { createFileRoute, redirect } from "@tanstack/react-router";
 import { supabase } from "@/integrations/supabase/client";
 import { needsProfileSetup } from "@/features/profile/services/profileService";
+import { hasAcceptedCurrentTerms } from "@/config/terms";
 import ProfileSetupScreen from "@/features/profile/ProfileSetupScreen";
 
 export const Route = createFileRoute("/profile-setup")({
@@ -11,6 +12,11 @@ export const Route = createFileRoute("/profile-setup")({
     const { data, error } = await supabase.auth.getUser();
     if (error || !data.user) {
       throw redirect({ to: "/auth" });
+    }
+
+    // Must have accepted current terms
+    if (!hasAcceptedCurrentTerms(data.user)) {
+      throw redirect({ to: "/consent" });
     }
 
     // If they have already completed setup, skip straight to home

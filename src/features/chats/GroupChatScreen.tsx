@@ -80,10 +80,29 @@ export default function GroupChatScreen() {
     }
   }, []);
 
+  function getNormalizedSenderId(msg?: Message | null): string {
+    if (!msg) return "";
+    const id = msg.senderId || (msg as any).sender_id || "";
+    return String(id).trim().toLowerCase();
+  }
+
   const loadMessages = useCallback(async () => {
     try {
       const msgs = await getGroupMessages(outingId);
-      setMessages(msgs);
+      setMessages((prev) => {
+        const tempMsgs = prev.filter((m) => m.id.startsWith("temp-"));
+        if (tempMsgs.length === 0) return msgs;
+
+        const remainingTemps = tempMsgs.filter(
+          (temp) =>
+            !msgs.some(
+              (m) =>
+                getNormalizedSenderId(m) === getNormalizedSenderId(temp) &&
+                m.message === temp.message,
+            ),
+        );
+        return [...msgs, ...remainingTemps];
+      });
 
       // Mark group chat messages as read for this user
       if (currentUserId) {
@@ -331,9 +350,14 @@ export default function GroupChatScreen() {
             const nextMessage = messages[index + 1];
             const prevMessage = messages[index - 1];
 
-            // Grouping by actual senderId (not display name)
-            const isFirstInGroup = !prevMessage || prevMessage.senderId !== message.senderId;
-            const isLastInGroup = !nextMessage || nextMessage.senderId !== message.senderId;
+            const currentSender = getNormalizedSenderId(message);
+            const prevSender = getNormalizedSenderId(prevMessage);
+            const nextSender = getNormalizedSenderId(nextMessage);
+
+            // Grouping strictly by consecutive sender identity only
+            const isFirstInGroup = !prevMessage || prevSender !== currentSender;
+            const isLastInGroup = !nextMessage || nextSender !== currentSender;
+            const isLatestInChat = index === messages.length - 1;
 
             return (
               <GroupMessageBubble
@@ -341,6 +365,7 @@ export default function GroupChatScreen() {
                 message={message}
                 isFirstInGroup={isFirstInGroup}
                 isLastInGroup={isLastInGroup}
+                isLatestInChat={isLatestInChat}
                 onDelete={handleDeleteMessage}
               />
             );

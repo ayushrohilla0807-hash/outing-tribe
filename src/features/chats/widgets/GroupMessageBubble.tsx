@@ -1,6 +1,6 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useMemo } from "react";
 import { Download, FileText, X, Check, Trash2, Ban } from "lucide-react";
-import type { Message } from "../models/message";
+import type { Message, MessageReadReceipt } from "../models/message";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import {
   AlertDialog,
@@ -20,6 +20,7 @@ type Props = {
   message: Message;
   isFirstInGroup?: boolean;
   isLastInGroup?: boolean;
+  isLatestInChat?: boolean;
   onDelete?: (messageId: string) => Promise<void> | void;
 };
 
@@ -63,6 +64,7 @@ export default function GroupMessageBubble({
   message,
   isFirstInGroup = true,
   isLastInGroup = true,
+  isLatestInChat = false,
   onDelete,
 }: Props) {
   const [imageModalOpen, setImageModalOpen] = useState(false);
@@ -75,7 +77,22 @@ export default function GroupMessageBubble({
   const isDeleted = message.message === "This message was deleted";
   const parsed = parseMessageContent(message.message);
 
-  const reads = message.reads ?? [];
+  // Deduplicate and filter read receipts for the message (exclude sender)
+  const reads = useMemo(() => {
+    const rawReads = message.reads ?? [];
+    const seenUserIds = new Set<string>();
+    const deduplicated: MessageReadReceipt[] = [];
+
+    for (const r of rawReads) {
+      if (!r.userId || r.userId === message.senderId) continue;
+      if (!seenUserIds.has(r.userId)) {
+        seenUserIds.add(r.userId);
+        deduplicated.push(r);
+      }
+    }
+    return deduplicated;
+  }, [message.reads, message.senderId]);
+
   const displayedReads = reads.slice(0, 3);
   const extraCount = reads.length - displayedReads.length;
 
@@ -258,8 +275,8 @@ export default function GroupMessageBubble({
           </div>
         </div>
 
-        {/* Read Receipt Indicator for current user's messages (shown on last message in group) */}
-        {message.isMine && isLastInGroup && !isDeleted && (
+        {/* Read Receipt Indicator: Rendered ONLY for the latest message in the entire conversation */}
+        {isLatestInChat && !isDeleted && (
           <div className="mr-1 mt-1">
             {reads.length > 0 ? (
               <button
@@ -267,6 +284,7 @@ export default function GroupMessageBubble({
                 onClick={() => setSeenDrawerOpen(true)}
                 className="flex items-center gap-1.5 py-0.5 px-1 rounded-full text-muted-foreground hover:text-foreground hover:bg-white/5 active:scale-95 transition cursor-pointer group"
                 title="View who saw this message"
+                aria-label="View who saw this message"
               >
                 <div className="flex items-center -space-x-1.5 overflow-hidden">
                   {displayedReads.map((r) => {
@@ -301,12 +319,12 @@ export default function GroupMessageBubble({
                   </span>
                 )}
               </button>
-            ) : (
+            ) : message.isMine ? (
               <div className="flex items-center gap-1 text-[10px] text-muted-foreground/60 select-none px-1">
                 <Check size={11} className="opacity-70" />
                 <span>Sent</span>
               </div>
-            )}
+            ) : null}
           </div>
         )}
       </div>
@@ -364,7 +382,7 @@ export default function GroupMessageBubble({
       )}
 
       {/* Seen By Drawer / Bottom Sheet */}
-      {message.isMine && !isDeleted && (
+      {isLatestInChat && !isDeleted && (
         <SeenByDrawer
           open={seenDrawerOpen}
           onClose={() => setSeenDrawerOpen(false)}

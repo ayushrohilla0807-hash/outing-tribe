@@ -1,11 +1,18 @@
 import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { motion } from "motion/react";
-import { Compass, Loader2, Mail, Lock } from "lucide-react";
+import { Loader2, Mail, Lock } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { needsProfileSetup } from "@/features/profile/services/profileService";
+import { CURRENT_TERMS_VERSION, hasAcceptedCurrentTerms } from "@/config/terms";
+import outsyLogo from "@/assets/outsy-logo.png";
 
 export const Route = createFileRoute("/auth")({
+  validateSearch: (search: Record<string, unknown>): { mode?: "signin" | "signup" } => {
+    return {
+      mode: search.mode === "signup" ? "signup" : "signin",
+    };
+  },
   component: AuthPage,
   head: () => ({
     meta: [
@@ -17,16 +24,23 @@ export const Route = createFileRoute("/auth")({
 
 function AuthPage() {
   const navigate = useNavigate();
-  const [mode, setMode] = useState<"signin" | "signup">("signin");
+  const search = Route.useSearch();
+  const [mode, setMode] = useState<"signin" | "signup">(search.mode || "signin");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [name, setName] = useState("");
+  const [termsAccepted, setTermsAccepted] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     supabase.auth.getSession().then(async ({ data }) => {
-      if (data.session) {
+      if (data.session?.user) {
+        if (!hasAcceptedCurrentTerms(data.session.user)) {
+          navigate({ to: "/consent", replace: true });
+          return;
+        }
         const needs = await needsProfileSetup();
         navigate({ to: needs ? "/profile-setup" : "/home", replace: true });
       }
@@ -37,6 +51,24 @@ function AuthPage() {
     e.preventDefault();
 
     setError(null);
+
+    if (mode === "signup") {
+      if (password.length < 6) {
+        setError("Password must be at least 6 characters.");
+        return;
+      }
+      if (confirmPassword && password !== confirmPassword) {
+        setError("Passwords do not match.");
+        return;
+      }
+      if (!termsAccepted) {
+        setError(
+          "Please confirm that you are 18 or older and agree to the Terms & Conditions and Privacy Policy.",
+        );
+        return;
+      }
+    }
+
     setLoading(true);
 
     try {
@@ -48,6 +80,8 @@ function AuthPage() {
             emailRedirectTo: `${window.location.origin}/explore`,
             data: {
               full_name: name || email.split("@")[0],
+              terms_accepted_at: new Date().toISOString(),
+              terms_version: CURRENT_TERMS_VERSION,
             },
           },
         });
@@ -58,6 +92,8 @@ function AuthPage() {
 
         setMode("signin");
         setPassword("");
+        setConfirmPassword("");
+        setTermsAccepted(false);
         return;
       }
 
@@ -67,6 +103,12 @@ function AuthPage() {
       });
 
       if (error) throw error;
+
+      const { data: userData } = await supabase.auth.getUser();
+      if (userData?.user && !hasAcceptedCurrentTerms(userData.user)) {
+        navigate({ to: "/consent", replace: true });
+        return;
+      }
 
       const needs = await needsProfileSetup();
       navigate({
@@ -82,13 +124,21 @@ function AuthPage() {
 
   const handleGoogle = async () => {
     setError(null);
+
+    if (mode === "signup" && !termsAccepted) {
+      setError(
+        "Please confirm that you are 18 or older and agree to the Terms & Conditions and Privacy Policy.",
+      );
+      return;
+    }
+
     setLoading(true);
 
     try {
       const { error } = await supabase.auth.signInWithOAuth({
         provider: "google",
         options: {
-          redirectTo: `${window.location.origin}/profile-setup`,
+          redirectTo: `${window.location.origin}/auth`,
         },
       });
 
@@ -104,10 +154,12 @@ function AuthPage() {
       <div className="pointer-events-none absolute inset-0 bg-radial-primary opacity-70" />
       <div className="pointer-events-none absolute inset-0 bg-grid opacity-30 [mask-image:radial-gradient(60%_50%_at_50%_30%,#000,transparent)]" />
       <div className="relative mx-auto flex min-h-[100dvh] max-w-md flex-col items-center justify-center px-4 sm:px-6 pt-[calc(2rem+env(safe-area-inset-top,0px))] pb-[calc(2rem+env(safe-area-inset-bottom,0px))]">
-        <Link to="/" className="mb-8 flex items-center gap-2">
-          <div className="grid h-10 w-10 place-items-center rounded-xl bg-gradient-to-br from-primary to-primary-glow shadow-glow">
-            <Compass className="h-4 w-4 text-white" />
-          </div>
+        <Link to="/" className="mb-8 flex items-center gap-2.5">
+          <img
+            src={outsyLogo}
+            alt="Outsy"
+            className="h-10 w-10 rounded-full object-cover shadow-glow ring-1 ring-white/20"
+          />
           <span className="font-display text-xl font-bold tracking-tight">Outsy</span>
         </Link>
 
@@ -116,6 +168,42 @@ function AuthPage() {
           animate={{ opacity: 1, y: 0 }}
           className="w-full rounded-3xl border border-white/10 bg-surface/60 p-8 shadow-card backdrop-blur-xl"
         >
+          {/* Segmented Tab Switcher */}
+          <div className="mb-6 grid grid-cols-2 rounded-2xl bg-white/5 p-1 border border-white/10">
+            <button
+              type="button"
+              onClick={() => {
+                setMode("signin");
+                setError(null);
+                setConfirmPassword("");
+                setTermsAccepted(false);
+              }}
+              className={`rounded-xl py-2.5 text-xs sm:text-sm font-semibold transition-all cursor-pointer ${
+                mode === "signin"
+                  ? "bg-primary text-primary-foreground shadow-md font-bold"
+                  : "text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              Sign In
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setMode("signup");
+                setError(null);
+                setConfirmPassword("");
+                setTermsAccepted(false);
+              }}
+              className={`rounded-xl py-2.5 text-xs sm:text-sm font-semibold transition-all cursor-pointer ${
+                mode === "signup"
+                  ? "bg-primary text-primary-foreground shadow-md font-bold"
+                  : "text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              Create Account
+            </button>
+          </div>
+
           <h1 className="text-2xl font-bold tracking-tight">
             {mode === "signin" ? "Welcome back" : "Create your account"}
           </h1>
@@ -129,7 +217,7 @@ function AuthPage() {
             type="button"
             onClick={handleGoogle}
             disabled={loading}
-            className="mt-6 flex w-full items-center justify-center gap-3 rounded-full border border-white/15 bg-white/5 px-4 py-3 text-sm font-medium transition-colors hover:bg-white/10 disabled:opacity-60"
+            className="mt-6 flex w-full items-center justify-center gap-3 rounded-full border border-white/15 bg-white/5 px-4 py-3 text-sm font-medium transition-colors hover:bg-white/10 disabled:opacity-60 cursor-pointer"
           >
             <GoogleIcon /> Continue with Google
           </button>
@@ -171,10 +259,75 @@ function AuthPage() {
                 minLength={6}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                placeholder="Password (min 6)"
+                placeholder={mode === "signup" ? "Password (min 6 characters)" : "Password (min 6)"}
                 className="w-full bg-transparent text-sm outline-none placeholder:text-muted-foreground"
               />
             </label>
+            {mode === "signup" && (
+              <label className="flex items-center gap-3 rounded-full border border-white/10 bg-white/5 px-4 py-3">
+                <Lock className="h-4 w-4 text-muted-foreground" />
+                <input
+                  type="password"
+                  required
+                  minLength={6}
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  placeholder="Confirm Password"
+                  className="w-full bg-transparent text-sm outline-none placeholder:text-muted-foreground"
+                />
+              </label>
+            )}
+
+            {/* Terms & Privacy Consent Checkbox (Signup only) */}
+            {mode === "signup" && (
+              <div className="flex flex-col gap-1.5 pt-2">
+                <label
+                  htmlFor="terms-consent"
+                  className="flex items-start gap-3 rounded-2xl border border-white/15 bg-white/[0.04] p-3.5 cursor-pointer transition-colors hover:border-white/25"
+                >
+                  <input
+                    type="checkbox"
+                    id="terms-consent"
+                    checked={termsAccepted}
+                    onChange={(e) => {
+                      setTermsAccepted(e.target.checked);
+                      if (e.target.checked && error?.includes("Terms & Conditions")) {
+                        setError(null);
+                      }
+                    }}
+                    className="mt-0.5 h-5 w-5 min-w-5 shrink-0 cursor-pointer rounded border-2 border-white/40 bg-white/10 accent-[#D99A7C] transition-all hover:border-[#D99A7C] focus:ring-2 focus:ring-[#D99A7C] focus:ring-offset-2 focus:ring-offset-background"
+                    aria-required="true"
+                    aria-invalid={
+                      !termsAccepted && error?.includes("Terms & Conditions") ? "true" : "false"
+                    }
+                  />
+                  <span className="select-none text-xs sm:text-[13px] leading-relaxed text-[#F1F5F9]">
+                    I confirm that I am 18 or older and agree to OutSy’s{" "}
+                    <Link
+                      to="/terms"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="font-semibold text-[#D99A7C] underline decoration-[#D99A7C]/60 underline-offset-2 transition-colors hover:text-[#e8b59e]"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      Terms & Conditions
+                    </Link>{" "}
+                    and{" "}
+                    <Link
+                      to="/privacy"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="font-semibold text-[#D99A7C] underline decoration-[#D99A7C]/60 underline-offset-2 transition-colors hover:text-[#e8b59e]"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      Privacy Policy
+                    </Link>
+                    .
+                  </span>
+                </label>
+              </div>
+            )}
+
             {error && (
               <p role="alert" className="text-xs text-destructive">
                 {error}
@@ -183,7 +336,7 @@ function AuthPage() {
             <button
               type="submit"
               disabled={loading}
-              className="mt-2 inline-flex items-center justify-center gap-2 rounded-full bg-primary px-5 py-3 text-sm font-semibold text-primary-foreground shadow-glow transition-transform hover:-translate-y-0.5 disabled:opacity-60"
+              className="mt-2 inline-flex items-center justify-center gap-2 rounded-full bg-primary px-5 py-3 text-sm font-semibold text-primary-foreground shadow-glow transition-transform hover:-translate-y-0.5 disabled:opacity-60 cursor-pointer"
             >
               {loading && <Loader2 className="h-4 w-4 animate-spin" />}
               {mode === "signin" ? "Sign in" : "Create account"}
@@ -197,8 +350,10 @@ function AuthPage() {
               onClick={() => {
                 setMode(mode === "signin" ? "signup" : "signin");
                 setError(null);
+                setConfirmPassword("");
+                setTermsAccepted(false);
               }}
-              className="font-medium text-primary hover:underline"
+              className="font-medium text-primary hover:underline cursor-pointer"
             >
               {mode === "signin" ? "Create one" : "Sign in"}
             </button>

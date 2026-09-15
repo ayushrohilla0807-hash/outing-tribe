@@ -14,7 +14,6 @@ import {
   UserCheck,
   Loader2,
   Bookmark,
-  Sparkles,
   Check,
   ChevronRight,
 } from "lucide-react";
@@ -234,7 +233,6 @@ function OutingDetailsPage() {
         <div className="absolute bottom-5 left-5 right-5 flex items-center justify-between z-10">
           <div className="flex items-center gap-2">
             <span className="inline-flex items-center gap-1.5 rounded-full bg-black/60 backdrop-blur-md border border-white/25 px-4 py-1.5 text-xs font-bold text-amber-200 shadow-md">
-              <Sparkles size={13} className="text-amber-300" />
               {outing.category}
             </span>
 

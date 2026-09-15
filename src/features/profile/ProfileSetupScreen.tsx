@@ -18,6 +18,7 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { completeProfileSetup, uploadAvatar } from "./services/profileService";
 import { validateImageFile } from "@/lib/imageOptimization";
+import outsyLogo from "@/assets/outsy-logo.png";
 
 // Flat list of all interests for the dropdown
 const ALL_INTERESTS = interestGroups.flatMap((g) => g.items);
@@ -88,8 +89,8 @@ export default function ProfileSetupScreen() {
 
     const ageNum = Number(age);
     if (!age) errs.age = "Age is required.";
-    else if (!Number.isInteger(ageNum) || ageNum < 13 || ageNum > 100)
-      errs.age = "Enter a valid age between 13 and 100.";
+    else if (!Number.isInteger(ageNum) || ageNum < 18 || ageNum > 100)
+      errs.age = "You must be 18 or older to join OutSy.";
 
     if (!gender) errs.gender = "Please select your gender.";
 
@@ -184,9 +185,11 @@ export default function ProfileSetupScreen() {
       <div className="relative mx-auto max-w-lg px-4 sm:px-6 pt-[calc(1.5rem+env(safe-area-inset-top,0px))] pb-[calc(2rem+env(safe-area-inset-bottom,0px))]">
         {/* Header */}
         <div className="mb-8 flex flex-col items-center text-center">
-          <div className="mb-4 grid h-12 w-12 place-items-center rounded-2xl bg-gradient-to-br from-primary to-primary-glow shadow-glow">
-            <Compass className="h-5 w-5 text-white" />
-          </div>
+          <img
+            src={outsyLogo}
+            alt="Outsy"
+            className="mb-4 h-14 w-14 rounded-full object-cover shadow-glow ring-2 ring-primary/30"
+          />
           <h1 className="font-display text-3xl font-bold tracking-tight">Set up your profile</h1>
           <p className="mt-2 text-sm text-muted-foreground max-w-xs">
             Tell us a little about yourself so we can find the best outings for you.

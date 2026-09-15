@@ -9,7 +9,10 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as TermsRouteImport } from './routes/terms'
 import { Route as ProfileSetupRouteImport } from './routes/profile-setup'
+import { Route as PrivacyRouteImport } from './routes/privacy'
+import { Route as ConsentRouteImport } from './routes/consent'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as IndexRouteImport } from './routes/index'
@@ -31,9 +34,24 @@ import { Route as AuthenticatedHostDashboardEditOutingIdRouteImport } from './ro
 import { Route as AuthenticatedChatsOutingIdGroupRouteImport } from './routes/_authenticated/chats/$outingId/group'
 import { Route as AuthenticatedChatsOutingIdUserIdRouteImport } from './routes/_authenticated/chats/$outingId/$userId'
 
+const TermsRoute = TermsRouteImport.update({
+  id: '/terms',
+  path: '/terms',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ProfileSetupRoute = ProfileSetupRouteImport.update({
   id: '/profile-setup',
   path: '/profile-setup',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PrivacyRoute = PrivacyRouteImport.update({
+  id: '/privacy',
+  path: '/privacy',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ConsentRoute = ConsentRouteImport.update({
+  id: '/consent',
+  path: '/consent',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthRoute = AuthRouteImport.update({
@@ -147,7 +165,10 @@ const AuthenticatedChatsOutingIdUserIdRoute =
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
+  '/consent': typeof ConsentRoute
+  '/privacy': typeof PrivacyRoute
   '/profile-setup': typeof ProfileSetupRoute
+  '/terms': typeof TermsRoute
   '/chats': typeof AuthenticatedChatsRouteWithChildren
   '/create': typeof AuthenticatedCreateRoute
   '/explore': typeof AuthenticatedExploreRoute
@@ -169,7 +190,10 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
+  '/consent': typeof ConsentRoute
+  '/privacy': typeof PrivacyRoute
   '/profile-setup': typeof ProfileSetupRoute
+  '/terms': typeof TermsRoute
   '/create': typeof AuthenticatedCreateRoute
   '/explore': typeof AuthenticatedExploreRoute
   '/history': typeof AuthenticatedHistoryRoute
@@ -191,7 +215,10 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/auth': typeof AuthRoute
+  '/consent': typeof ConsentRoute
+  '/privacy': typeof PrivacyRoute
   '/profile-setup': typeof ProfileSetupRoute
+  '/terms': typeof TermsRoute
   '/_authenticated/chats': typeof AuthenticatedChatsRouteWithChildren
   '/_authenticated/create': typeof AuthenticatedCreateRoute
   '/_authenticated/explore': typeof AuthenticatedExploreRoute
@@ -215,7 +242,10 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/auth'
+    | '/consent'
+    | '/privacy'
     | '/profile-setup'
+    | '/terms'
     | '/chats'
     | '/create'
     | '/explore'
@@ -237,7 +267,10 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/auth'
+    | '/consent'
+    | '/privacy'
     | '/profile-setup'
+    | '/terms'
     | '/create'
     | '/explore'
     | '/history'
@@ -258,7 +291,10 @@ export interface FileRouteTypes {
     | '/'
     | '/_authenticated'
     | '/auth'
+    | '/consent'
+    | '/privacy'
     | '/profile-setup'
+    | '/terms'
     | '/_authenticated/chats'
     | '/_authenticated/create'
     | '/_authenticated/explore'
@@ -282,16 +318,40 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   AuthRoute: typeof AuthRoute
+  ConsentRoute: typeof ConsentRoute
+  PrivacyRoute: typeof PrivacyRoute
   ProfileSetupRoute: typeof ProfileSetupRoute
+  TermsRoute: typeof TermsRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/terms': {
+      id: '/terms'
+      path: '/terms'
+      fullPath: '/terms'
+      preLoaderRoute: typeof TermsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/profile-setup': {
       id: '/profile-setup'
       path: '/profile-setup'
       fullPath: '/profile-setup'
       preLoaderRoute: typeof ProfileSetupRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/privacy': {
+      id: '/privacy'
+      path: '/privacy'
+      fullPath: '/privacy'
+      preLoaderRoute: typeof PrivacyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/consent': {
+      id: '/consent'
+      path: '/consent'
+      fullPath: '/consent'
+      preLoaderRoute: typeof ConsentRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/auth': {
@@ -504,7 +564,10 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   AuthRoute: AuthRoute,
+  ConsentRoute: ConsentRoute,
+  PrivacyRoute: PrivacyRoute,
   ProfileSetupRoute: ProfileSetupRoute,
+  TermsRoute: TermsRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

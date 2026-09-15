@@ -4,7 +4,6 @@ import { useNavigate } from "@tanstack/react-router";
 import { motion } from "motion/react";
 import {
   ArrowRight,
-  Sparkles,
   Users,
   MapPin,
   MessageCircle,
@@ -22,7 +21,6 @@ import {
   Film,
   Trophy,
   Calendar,
-  Sparkle,
   Menu,
   Twitter,
   Instagram,
@@ -31,6 +29,7 @@ import {
 } from "lucide-react";
 import { useState } from "react";
 import heroImage from "@/assets/hero-night-friends.jpg";
+import outsyLogo from "@/assets/outsy-logo.png";
 import { useTheme } from "@/hooks/use-theme";
 import { PhoneMockup } from "@/components/landing/PhoneMockup";
 import { MobileLanding } from "@/components/landing/MobileLanding";
@@ -78,7 +77,7 @@ function Section({
         >
           {eyebrow && (
             <span className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs font-medium text-muted-foreground">
-              <Sparkle className="h-3 w-3 text-primary" /> {eyebrow}
+              {eyebrow}
             </span>
           )}
           {title && <h2 className="mt-4 text-4xl font-bold tracking-tight sm:text-5xl">{title}</h2>}
@@ -103,10 +102,12 @@ function Nav() {
   return (
     <header className="sticky top-0 z-50 border-b border-white/5 backdrop-blur-xl bg-background/60 pt-[env(safe-area-inset-top,0px)]">
       <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 sm:px-6 py-3.5 sm:py-4">
-        <a href="#" className="flex items-center gap-2">
-          <div className="grid h-9 w-9 place-items-center rounded-xl bg-gradient-to-br from-primary to-primary-glow shadow-glow">
-            <Compass className="h-4 w-4 text-white" />
-          </div>
+        <a href="#" className="flex items-center gap-2.5">
+          <img
+            src={outsyLogo}
+            alt="Outsy"
+            className="h-9 w-9 rounded-full object-cover shadow-glow ring-1 ring-white/20"
+          />
           <span className="font-display text-lg font-bold tracking-tight">Outsy</span>
         </a>
         <nav className="hidden items-center gap-8 md:flex">
@@ -183,7 +184,7 @@ function Hero() {
       <div className="relative mx-auto grid max-w-7xl grid-cols-1 items-center gap-14 px-6 lg:grid-cols-[1.05fr_0.95fr]">
         <motion.div initial="hidden" animate="show" variants={fadeUp}>
           <span className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs font-medium text-muted-foreground">
-            <Sparkles className="h-3 w-3 text-primary" /> Activity-first · Not a dating app
+            Activity-first · Not a dating app
           </span>
           <h1 className="mt-5 text-5xl font-bold leading-[1.05] tracking-tight sm:text-6xl lg:text-7xl">
             Never <span className="gradient-text">Cancel Plans</span>
@@ -335,7 +336,7 @@ function Problem() {
 function HowItWorks() {
   const steps = [
     {
-      icon: Sparkles,
+      icon: Calendar,
       title: "Create an outing",
       body: "Pick an activity — movie, café, cricket, trip — and set a time.",
       accent: "from-fuchsia-500/25 to-purple-500/5",
@@ -397,7 +398,7 @@ function HowItWorks() {
 
 function Features() {
   const features = [
-    { icon: Sparkles, title: "Create outings", body: "One tap to publish. Sensible defaults." },
+    { icon: Calendar, title: "Create outings", body: "One tap to publish. Sensible defaults." },
     {
       icon: Compass,
       title: "Discover nearby",
@@ -536,9 +537,11 @@ function Compare() {
         <div className="grid grid-cols-3 border-b border-white/10 bg-white/5 text-sm font-semibold">
           <div className="p-4 text-muted-foreground">Compare</div>
           <div className="flex items-center gap-2 p-4">
-            <div className="grid h-6 w-6 place-items-center rounded-md bg-gradient-to-br from-primary to-primary-glow">
-              <Compass className="h-3 w-3 text-white" />
-            </div>
+            <img
+              src={outsyLogo}
+              alt="Outsy"
+              className="h-6 w-6 rounded-full object-cover ring-1 ring-white/20"
+            />
             Outsy
           </div>
           <div className="p-4 text-muted-foreground">Traditional social apps</div>
@@ -692,8 +695,7 @@ function CTA() {
         className="relative overflow-hidden rounded-[2.5rem] border border-white/10 bg-gradient-to-br from-primary via-primary-glow to-primary/70 p-10 text-center sm:p-16"
       >
         <div className="pointer-events-none absolute inset-0 bg-grid opacity-10" />
-        <Sparkles className="mx-auto h-8 w-8 text-white" />
-        <h2 className="mt-4 text-4xl font-bold tracking-tight text-white sm:text-6xl">
+        <h2 className="text-4xl font-bold tracking-tight text-white sm:text-6xl">
           Ready to Never Cancel Plans Again?
         </h2>
         <p className="mx-auto mt-4 max-w-xl text-white/85">
@@ -730,10 +732,12 @@ function Footer() {
     <footer className="mt-16 border-t border-white/10 bg-surface/40">
       <div className="mx-auto grid max-w-7xl gap-10 px-6 py-16 md:grid-cols-[1.4fr_1fr_1fr_1fr]">
         <div>
-          <a href="#" className="flex items-center gap-2">
-            <div className="grid h-9 w-9 place-items-center rounded-xl bg-gradient-to-br from-primary to-primary-glow">
-              <Compass className="h-4 w-4 text-white" />
-            </div>
+          <a href="#" className="flex items-center gap-2.5">
+            <img
+              src={outsyLogo}
+              alt="Outsy"
+              className="h-9 w-9 rounded-full object-cover ring-1 ring-white/20"
+            />
             <span className="font-display text-lg font-bold">Outsy</span>
           </a>
           <p className="mt-4 max-w-sm text-sm text-muted-foreground">
@@ -756,13 +760,33 @@ function Footer() {
           <div key={c.title}>
             <p className="text-sm font-semibold">{c.title}</p>
             <ul className="mt-4 space-y-2 text-sm text-muted-foreground">
-              {c.links.map((l) => (
-                <li key={l}>
-                  <a href="#" className="hover:text-foreground">
-                    {l}
-                  </a>
-                </li>
-              ))}
+              {c.links.map((l) => {
+                if (l === "Terms") {
+                  return (
+                    <li key={l}>
+                      <Link to="/terms" className="hover:text-foreground">
+                        {l}
+                      </Link>
+                    </li>
+                  );
+                }
+                if (l === "Privacy Policy") {
+                  return (
+                    <li key={l}>
+                      <Link to="/privacy" className="hover:text-foreground">
+                        {l}
+                      </Link>
+                    </li>
+                  );
+                }
+                return (
+                  <li key={l}>
+                    <a href="#" className="hover:text-foreground">
+                      {l}
+                    </a>
+                  </li>
+                );
+              })}
             </ul>
           </div>
         ))}

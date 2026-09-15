@@ -1,4 +1,4 @@
-import { MapPin, Star, LayoutDashboard, UserCheck, Sparkles } from "lucide-react";
+import { MapPin, Star, LayoutDashboard, UserCheck } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { getOptimizedImageUrl } from "@/lib/imageOptimization";
 import type { UserProfile } from "../models/profile";
@@ -110,9 +110,7 @@ export default function ProfileCard({
         </div>
 
         {/* Subtitle / Category badge */}
-        <p className="text-xs font-semibold text-primary flex items-center gap-1">
-          <Sparkles className="h-3 w-3 inline" /> Outing Host & Community Member
-        </p>
+        <p className="text-xs font-semibold text-primary">Outing Host & Community Member</p>
 
         {/* Bio Text */}
         {profile.bio ? (

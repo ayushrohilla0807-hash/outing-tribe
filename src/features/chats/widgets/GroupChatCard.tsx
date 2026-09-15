@@ -1,4 +1,4 @@
-import { Users, Crown, Sparkles } from "lucide-react";
+import { Users, Crown } from "lucide-react";
 import type { GroupChat } from "../models/message";
 import { getOptimizedImageUrl } from "@/lib/imageOptimization";
 
@@ -97,9 +97,7 @@ export default function GroupChatCard({ chat, onClick }: Props) {
               ) : chat.lastMessage ? (
                 <span>{chat.lastMessage}</span>
               ) : (
-                <span className="italic text-muted-foreground/60 flex items-center gap-1">
-                  <Sparkles className="h-3 w-3 inline text-primary" /> Start planning the outing!
-                </span>
+                <span className="italic text-muted-foreground/60">Start planning the outing!</span>
               )}
             </p>
 

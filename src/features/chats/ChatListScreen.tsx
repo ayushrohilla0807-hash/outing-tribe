@@ -1,7 +1,7 @@
 import { useEffect, useState, useMemo } from "react";
 import { useNavigate } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { Loader2, Search, MessageSquarePlus, Sparkles, Filter } from "lucide-react";
+import { Loader2, Search, MessageSquarePlus, Filter } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 
 import { getOutingGroupChats, formatChatTimestamp } from "./services/groupChatService";

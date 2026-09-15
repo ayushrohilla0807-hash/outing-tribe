@@ -2,6 +2,7 @@ import { createFileRoute, Outlet, redirect, useRouterState } from "@tanstack/rea
 import { supabase } from "@/integrations/supabase/client";
 import BottomNav from "@/components/navigation/BottomNav";
 import { SavedProvider } from "@/features/outing/saved/context/SavedContext";
+import { hasAcceptedCurrentTerms } from "@/config/terms";
 
 export const Route = createFileRoute("/_authenticated")({
   ssr: false,
@@ -11,6 +12,10 @@ export const Route = createFileRoute("/_authenticated")({
 
     if (error || !data.user) {
       throw redirect({ to: "/auth" });
+    }
+
+    if (!hasAcceptedCurrentTerms(data.user)) {
+      throw redirect({ to: "/consent" });
     }
 
     return { user: data.user };

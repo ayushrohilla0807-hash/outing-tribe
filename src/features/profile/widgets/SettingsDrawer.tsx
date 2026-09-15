@@ -1,5 +1,5 @@
 import { Switch } from "@/components/ui/switch";
-import { Moon, Bell, User, MapPin, Shield, LogOut, X, Download } from "lucide-react";
+import { Moon, Bell, User, MapPin, Shield, FileText, LogOut, X, Download } from "lucide-react";
 import { useNavigate } from "@tanstack/react-router";
 import { useNotifications } from "@/features/notifications/hooks/useNotifications";
 import { usePwaInstall } from "@/hooks/usePwaInstall";
@@ -114,7 +114,23 @@ export default function SettingsDrawer({
 
           <Row icon={<MapPin className="h-5 w-5" />} title="Location" />
 
-          <Row icon={<Shield className="h-5 w-5" />} title="Privacy Policy" />
+          <Row
+            icon={<Shield className="h-5 w-5" />}
+            title="Privacy Policy"
+            onClick={() => {
+              onClose();
+              navigate({ to: "/privacy" });
+            }}
+          />
+
+          <Row
+            icon={<FileText className="h-5 w-5" />}
+            title="Terms & Conditions"
+            onClick={() => {
+              onClose();
+              navigate({ to: "/terms" });
+            }}
+          />
 
           <Row
             icon={<LogOut className="h-5 w-5 text-destructive" />}

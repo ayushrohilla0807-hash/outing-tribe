@@ -17,6 +17,7 @@ type Props = {
   message: Message;
   isFirstInGroup?: boolean;
   isLastInGroup?: boolean;
+  isLatestInChat?: boolean;
   onDelete?: (messageId: string) => Promise<void> | void;
 };
 
