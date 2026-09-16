@@ -443,7 +443,14 @@ export default function GroupChatScreen() {
       </div>
 
       <div className="relative z-10 shrink-0 border-t border-white/10 bg-background/80 p-2.5 sm:p-3 pb-[max(0.6rem,env(safe-area-inset-bottom,0px))] backdrop-blur-2xl">
-        <ChatInput onSend={handleSend} />
+        <ChatInput
+          onSend={handleSend}
+          onFocus={() => {
+            setTimeout(() => {
+              bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+            }, 120);
+          }}
+        />
       </div>
 
       {/* Outing Participants Drawer */}

@@ -8,6 +8,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 
 type Props = {
   onSend: (text: string) => void;
+  onFocus?: () => void;
 };
 
 interface PendingAttachment {
@@ -24,7 +25,7 @@ function formatFileSize(bytes: number): string {
   return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
 }
 
-export default function ChatInput({ onSend }: Props) {
+export default function ChatInput({ onSend, onFocus }: Props) {
   const [text, setText] = useState("");
   const [emojiOpen, setEmojiOpen] = useState(false);
   const [pendingAttachment, setPendingAttachment] = useState<PendingAttachment | null>(null);
@@ -227,10 +228,11 @@ export default function ChatInput({ onSend }: Props) {
           ref={inputRef}
           value={text}
           onChange={(e) => setText(e.target.value)}
+          onFocus={onFocus}
           onKeyDown={handleKeyDown}
           placeholder="Type a message..."
           disabled={uploading}
-          className="min-w-0 flex-1 bg-transparent px-2 py-2 text-xs sm:text-sm text-foreground placeholder:text-muted-foreground outline-none border-0"
+          className="min-w-0 flex-1 bg-transparent px-2.5 py-2 text-[16px] sm:text-sm text-foreground placeholder:text-muted-foreground outline-none border-0"
         />
 
         {/* Send Button */}

@@ -409,23 +409,35 @@
   }
 }
 
+/* ─── Mobile Viewport & Input Zoom Prevention ────────────────────────────── */
+@media screen and (max-width: 768px) {
+  input[type="text"],
+  input[type="password"],
+  input[type="email"],
+  input[type="number"],
+  input[type="search"],
+  input[type="tel"],
+  input[type="url"],
+  textarea,
+  select {
+    font-size: 16px !important;
+  }
+}
+
 /* ─── Chat Message Bubble & Typography Rules ─────────────────────────────── */
 .chat-bubble-container {
-  width: fit-content !important;
-  min-width: 90px !important;
-  max-width: min(80%, 540px) !important;
-  flex-shrink: 0 !important;
   box-sizing: border-box !important;
+  max-width: min(82%, 540px) !important;
+  min-width: 75px !important;
 }
 
 .chat-message-text {
   word-break: normal !important;
-  overflow-wrap: break-word !important;
+  overflow-wrap: anywhere !important;
   word-wrap: break-word !important;
   white-space: pre-wrap !important;
   -webkit-hyphens: none !important;
   hyphens: none !important;
-  font-size: 0.875rem !important;
   line-height: 1.45 !important;
 }
 
