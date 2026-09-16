@@ -18,6 +18,7 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { completeProfileSetup, uploadAvatar } from "./services/profileService";
 import { validateImageFile } from "@/lib/imageOptimization";
+import { interests as interestGroups } from "@/lib/interests";
 import outsyLogo from "@/assets/outsy-logo.png";
 
 // Flat list of all interests for the dropdown
