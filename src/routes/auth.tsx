@@ -8,9 +8,12 @@ import { CURRENT_TERMS_VERSION, hasAcceptedCurrentTerms } from "@/config/terms";
 import outsyLogo from "@/assets/outsy-logo.png";
 
 export const Route = createFileRoute("/auth")({
-  validateSearch: (search: Record<string, unknown>): { mode?: "signin" | "signup" } => {
+  validateSearch: (
+    search: Record<string, unknown>,
+  ): { mode?: "signin" | "signup"; redirect?: string } => {
     return {
       mode: search.mode === "signup" ? "signup" : "signin",
+      redirect: typeof search.redirect === "string" ? search.redirect : undefined,
     };
   },
   component: AuthPage,
@@ -21,6 +24,31 @@ export const Route = createFileRoute("/auth")({
     ],
   }),
 });
+
+function getSafeDestination(rawRedirect?: string): string {
+  if (!rawRedirect || typeof rawRedirect !== "string") return "/home";
+  try {
+    if (rawRedirect.startsWith("http://") || rawRedirect.startsWith("https://")) {
+      const url = new URL(rawRedirect);
+      const path = url.pathname + url.search + url.hash;
+      if (path.startsWith("/auth") || path.startsWith("/consent") || path === "/") {
+        return "/home";
+      }
+      return path;
+    }
+  } catch {
+    // Fall through
+  }
+
+  if (
+    rawRedirect.startsWith("/") &&
+    !rawRedirect.startsWith("/auth") &&
+    !rawRedirect.startsWith("/consent")
+  ) {
+    return rawRedirect;
+  }
+  return "/home";
+}
 
 function AuthPage() {
   const navigate = useNavigate();
@@ -42,10 +70,15 @@ function AuthPage() {
           return;
         }
         const needs = await needsProfileSetup();
-        navigate({ to: needs ? "/profile-setup" : "/home", replace: true });
+        if (needs) {
+          navigate({ to: "/profile-setup", replace: true });
+          return;
+        }
+        const target = getSafeDestination(search.redirect);
+        navigate({ to: target as any, replace: true });
       }
     });
-  }, [navigate]);
+  }, [navigate, search.redirect]);
 
   const handleEmail = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -111,8 +144,17 @@ function AuthPage() {
       }
 
       const needs = await needsProfileSetup();
+      if (needs) {
+        navigate({
+          to: "/profile-setup",
+          replace: true,
+        });
+        return;
+      }
+
+      const target = getSafeDestination(search.redirect);
       navigate({
-        to: needs ? "/profile-setup" : "/home",
+        to: target as any,
         replace: true,
       });
     } catch (err) {
@@ -135,10 +177,14 @@ function AuthPage() {
     setLoading(true);
 
     try {
+      const redirectUrl = search.redirect
+        ? `${window.location.origin}/auth?redirect=${encodeURIComponent(search.redirect)}`
+        : `${window.location.origin}/auth`;
+
       const { error } = await supabase.auth.signInWithOAuth({
         provider: "google",
         options: {
-          redirectTo: `${window.location.origin}/auth`,
+          redirectTo: redirectUrl,
         },
       });
 

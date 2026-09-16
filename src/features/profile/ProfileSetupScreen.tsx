@@ -264,14 +264,14 @@ export default function ProfileSetupScreen() {
                 Profile Photo <span className="text-primary">*</span>
               </p>
               <p className="text-[11px] text-muted-foreground">
-                {avatarUrl ? "Tap camera to change photo" : "Upload a photo to complete your profile"}
+                {avatarUrl
+                  ? "Tap camera to change photo"
+                  : "Upload a photo to complete your profile"}
               </p>
             </div>
 
             {errors.avatar && (
-              <p className="text-xs font-medium text-red-400 animate-in fade-in">
-                {errors.avatar}
-              </p>
+              <p className="text-xs font-medium text-red-400 animate-in fade-in">{errors.avatar}</p>
             )}
 
             {/* Avatar picker panel */}

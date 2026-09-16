@@ -16,6 +16,7 @@ import { Route as ConsentRouteImport } from './routes/consent'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticated/settings'
 import { Route as AuthenticatedSavedRouteImport } from './routes/_authenticated/saved'
 import { Route as AuthenticatedProfileRouteImport } from './routes/_authenticated/profile'
 import { Route as AuthenticatedNotificationsRouteImport } from './routes/_authenticated/notifications'
@@ -23,6 +24,7 @@ import { Route as AuthenticatedHostDashboardRouteImport } from './routes/_authen
 import { Route as AuthenticatedHomeRouteImport } from './routes/_authenticated/home'
 import { Route as AuthenticatedHistoryRouteImport } from './routes/_authenticated/history'
 import { Route as AuthenticatedExploreRouteImport } from './routes/_authenticated/explore'
+import { Route as AuthenticatedCreateOutingRouteImport } from './routes/_authenticated/create-outing'
 import { Route as AuthenticatedCreateRouteImport } from './routes/_authenticated/create'
 import { Route as AuthenticatedChatsRouteImport } from './routes/_authenticated/chats'
 import { Route as AuthenticatedProfileIndexRouteImport } from './routes/_authenticated/profile/index'
@@ -68,6 +70,11 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthenticatedSettingsRoute = AuthenticatedSettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedSavedRoute = AuthenticatedSavedRouteImport.update({
   id: '/saved',
   path: '/saved',
@@ -105,6 +112,12 @@ const AuthenticatedExploreRoute = AuthenticatedExploreRouteImport.update({
   path: '/explore',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedCreateOutingRoute =
+  AuthenticatedCreateOutingRouteImport.update({
+    id: '/create-outing',
+    path: '/create-outing',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedCreateRoute = AuthenticatedCreateRouteImport.update({
   id: '/create',
   path: '/create',
@@ -171,6 +184,7 @@ export interface FileRoutesByFullPath {
   '/terms': typeof TermsRoute
   '/chats': typeof AuthenticatedChatsRouteWithChildren
   '/create': typeof AuthenticatedCreateRoute
+  '/create-outing': typeof AuthenticatedCreateOutingRoute
   '/explore': typeof AuthenticatedExploreRoute
   '/history': typeof AuthenticatedHistoryRoute
   '/home': typeof AuthenticatedHomeRoute
@@ -178,6 +192,7 @@ export interface FileRoutesByFullPath {
   '/notifications': typeof AuthenticatedNotificationsRoute
   '/profile': typeof AuthenticatedProfileRouteWithChildren
   '/saved': typeof AuthenticatedSavedRoute
+  '/settings': typeof AuthenticatedSettingsRoute
   '/host-dashboard-edit/$outingId': typeof AuthenticatedHostDashboardEditOutingIdRoute
   '/outing/$id': typeof AuthenticatedOutingIdRoute
   '/participants/$outingId': typeof AuthenticatedParticipantsOutingIdRoute
@@ -195,12 +210,14 @@ export interface FileRoutesByTo {
   '/profile-setup': typeof ProfileSetupRoute
   '/terms': typeof TermsRoute
   '/create': typeof AuthenticatedCreateRoute
+  '/create-outing': typeof AuthenticatedCreateOutingRoute
   '/explore': typeof AuthenticatedExploreRoute
   '/history': typeof AuthenticatedHistoryRoute
   '/home': typeof AuthenticatedHomeRoute
   '/host-dashboard': typeof AuthenticatedHostDashboardRoute
   '/notifications': typeof AuthenticatedNotificationsRoute
   '/saved': typeof AuthenticatedSavedRoute
+  '/settings': typeof AuthenticatedSettingsRoute
   '/host-dashboard-edit/$outingId': typeof AuthenticatedHostDashboardEditOutingIdRoute
   '/outing/$id': typeof AuthenticatedOutingIdRoute
   '/participants/$outingId': typeof AuthenticatedParticipantsOutingIdRoute
@@ -221,6 +238,7 @@ export interface FileRoutesById {
   '/terms': typeof TermsRoute
   '/_authenticated/chats': typeof AuthenticatedChatsRouteWithChildren
   '/_authenticated/create': typeof AuthenticatedCreateRoute
+  '/_authenticated/create-outing': typeof AuthenticatedCreateOutingRoute
   '/_authenticated/explore': typeof AuthenticatedExploreRoute
   '/_authenticated/history': typeof AuthenticatedHistoryRoute
   '/_authenticated/home': typeof AuthenticatedHomeRoute
@@ -228,6 +246,7 @@ export interface FileRoutesById {
   '/_authenticated/notifications': typeof AuthenticatedNotificationsRoute
   '/_authenticated/profile': typeof AuthenticatedProfileRouteWithChildren
   '/_authenticated/saved': typeof AuthenticatedSavedRoute
+  '/_authenticated/settings': typeof AuthenticatedSettingsRoute
   '/_authenticated/host-dashboard-edit/$outingId': typeof AuthenticatedHostDashboardEditOutingIdRoute
   '/_authenticated/outing/$id': typeof AuthenticatedOutingIdRoute
   '/_authenticated/participants/$outingId': typeof AuthenticatedParticipantsOutingIdRoute
@@ -248,6 +267,7 @@ export interface FileRouteTypes {
     | '/terms'
     | '/chats'
     | '/create'
+    | '/create-outing'
     | '/explore'
     | '/history'
     | '/home'
@@ -255,6 +275,7 @@ export interface FileRouteTypes {
     | '/notifications'
     | '/profile'
     | '/saved'
+    | '/settings'
     | '/host-dashboard-edit/$outingId'
     | '/outing/$id'
     | '/participants/$outingId'
@@ -272,12 +293,14 @@ export interface FileRouteTypes {
     | '/profile-setup'
     | '/terms'
     | '/create'
+    | '/create-outing'
     | '/explore'
     | '/history'
     | '/home'
     | '/host-dashboard'
     | '/notifications'
     | '/saved'
+    | '/settings'
     | '/host-dashboard-edit/$outingId'
     | '/outing/$id'
     | '/participants/$outingId'
@@ -297,6 +320,7 @@ export interface FileRouteTypes {
     | '/terms'
     | '/_authenticated/chats'
     | '/_authenticated/create'
+    | '/_authenticated/create-outing'
     | '/_authenticated/explore'
     | '/_authenticated/history'
     | '/_authenticated/home'
@@ -304,6 +328,7 @@ export interface FileRouteTypes {
     | '/_authenticated/notifications'
     | '/_authenticated/profile'
     | '/_authenticated/saved'
+    | '/_authenticated/settings'
     | '/_authenticated/host-dashboard-edit/$outingId'
     | '/_authenticated/outing/$id'
     | '/_authenticated/participants/$outingId'
@@ -375,6 +400,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authenticated/settings': {
+      id: '/_authenticated/settings'
+      path: '/settings'
+      fullPath: '/settings'
+      preLoaderRoute: typeof AuthenticatedSettingsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/saved': {
       id: '/_authenticated/saved'
       path: '/saved'
@@ -422,6 +454,13 @@ declare module '@tanstack/react-router' {
       path: '/explore'
       fullPath: '/explore'
       preLoaderRoute: typeof AuthenticatedExploreRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/create-outing': {
+      id: '/_authenticated/create-outing'
+      path: '/create-outing'
+      fullPath: '/create-outing'
+      preLoaderRoute: typeof AuthenticatedCreateOutingRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/create': {
@@ -528,6 +567,7 @@ const AuthenticatedProfileRouteWithChildren =
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedChatsRoute: typeof AuthenticatedChatsRouteWithChildren
   AuthenticatedCreateRoute: typeof AuthenticatedCreateRoute
+  AuthenticatedCreateOutingRoute: typeof AuthenticatedCreateOutingRoute
   AuthenticatedExploreRoute: typeof AuthenticatedExploreRoute
   AuthenticatedHistoryRoute: typeof AuthenticatedHistoryRoute
   AuthenticatedHomeRoute: typeof AuthenticatedHomeRoute
@@ -535,6 +575,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedNotificationsRoute: typeof AuthenticatedNotificationsRoute
   AuthenticatedProfileRoute: typeof AuthenticatedProfileRouteWithChildren
   AuthenticatedSavedRoute: typeof AuthenticatedSavedRoute
+  AuthenticatedSettingsRoute: typeof AuthenticatedSettingsRoute
   AuthenticatedHostDashboardEditOutingIdRoute: typeof AuthenticatedHostDashboardEditOutingIdRoute
   AuthenticatedOutingIdRoute: typeof AuthenticatedOutingIdRoute
   AuthenticatedParticipantsOutingIdRoute: typeof AuthenticatedParticipantsOutingIdRoute
@@ -543,6 +584,7 @@ interface AuthenticatedRouteRouteChildren {
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedChatsRoute: AuthenticatedChatsRouteWithChildren,
   AuthenticatedCreateRoute: AuthenticatedCreateRoute,
+  AuthenticatedCreateOutingRoute: AuthenticatedCreateOutingRoute,
   AuthenticatedExploreRoute: AuthenticatedExploreRoute,
   AuthenticatedHistoryRoute: AuthenticatedHistoryRoute,
   AuthenticatedHomeRoute: AuthenticatedHomeRoute,
@@ -550,6 +592,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedNotificationsRoute: AuthenticatedNotificationsRoute,
   AuthenticatedProfileRoute: AuthenticatedProfileRouteWithChildren,
   AuthenticatedSavedRoute: AuthenticatedSavedRoute,
+  AuthenticatedSettingsRoute: AuthenticatedSettingsRoute,
   AuthenticatedHostDashboardEditOutingIdRoute:
     AuthenticatedHostDashboardEditOutingIdRoute,
   AuthenticatedOutingIdRoute: AuthenticatedOutingIdRoute,

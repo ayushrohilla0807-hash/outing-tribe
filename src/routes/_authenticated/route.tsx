@@ -3,19 +3,28 @@ import { supabase } from "@/integrations/supabase/client";
 import BottomNav from "@/components/navigation/BottomNav";
 import { SavedProvider } from "@/features/outing/saved/context/SavedContext";
 import { hasAcceptedCurrentTerms } from "@/config/terms";
+import { needsProfileSetup } from "@/features/profile/services/profileService";
 
 export const Route = createFileRoute("/_authenticated")({
   ssr: false,
 
-  beforeLoad: async () => {
+  beforeLoad: async ({ location }) => {
     const { data, error } = await supabase.auth.getUser();
 
     if (error || !data.user) {
-      throw redirect({ to: "/auth" });
+      throw redirect({
+        to: "/auth",
+        search: { redirect: location.href },
+      });
     }
 
     if (!hasAcceptedCurrentTerms(data.user)) {
       throw redirect({ to: "/consent" });
+    }
+
+    const needs = await needsProfileSetup();
+    if (needs) {
+      throw redirect({ to: "/profile-setup" });
     }
 
     return { user: data.user };
