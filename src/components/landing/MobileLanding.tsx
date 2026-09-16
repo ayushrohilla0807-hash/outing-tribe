@@ -28,9 +28,6 @@ import {
   Car,
   Music,
   Gamepad2,
-  Home,
-  MessageSquare,
-  User,
 } from "lucide-react";
 
 const VIBE_CATEGORIES = [
@@ -128,7 +125,7 @@ export function MobileLanding() {
   };
 
   return (
-    <div className="min-h-[100dvh] w-full max-w-full overflow-x-hidden bg-[#000000] text-[#F5F5F5] flex flex-col justify-between pb-[calc(4.5rem+env(safe-area-inset-bottom,0px))]">
+    <div className="min-h-[100dvh] w-full max-w-full overflow-x-hidden bg-[#000000] text-[#F5F5F5] flex flex-col justify-between pb-[calc(2rem+env(safe-area-inset-bottom,0px))]">
       {/* ─── 1. MOBILE TOP BRAND BAR ────────────────────────────────────── */}
       <header className="sticky top-0 z-40 w-full border-b border-white/5 bg-[#000000]/80 backdrop-blur-xl pt-[calc(0.5rem+env(safe-area-inset-top,0px))] pb-2.5 px-4">
         <div className="mx-auto flex w-full max-w-md items-center justify-between">
@@ -524,66 +521,6 @@ export function MobileLanding() {
           </button>
         </div>
       </section>
-
-      {/* ─── 8. NATIVE MOBILE BOTTOM NAVIGATION BAR ────────────────────── */}
-      <nav className="fixed bottom-0 left-0 right-0 z-50 border-t border-white/10 bg-[#000000]/90 backdrop-blur-2xl pb-[env(safe-area-inset-bottom,0px)] shadow-2xl">
-        <div className="mx-auto flex h-16 max-w-md items-center justify-around px-3">
-          {/* Home */}
-          <Link
-            to="/"
-            className="flex flex-col items-center justify-center min-w-[48px] min-h-[48px] gap-1 text-[#D99A7C] active:scale-95 transition"
-            aria-label="Home"
-          >
-            <Home className="h-5 w-5" />
-            <span className="text-[10px] font-bold">Home</span>
-          </Link>
-
-          {/* Explore */}
-          <button
-            type="button"
-            onClick={() => navigate({ to: user ? "/explore" : "/auth" })}
-            className="flex flex-col items-center justify-center min-w-[48px] min-h-[48px] gap-1 text-[#CBD5E1] hover:text-white active:scale-95 transition cursor-pointer"
-            aria-label="Explore"
-          >
-            <Compass className="h-5 w-5" />
-            <span className="text-[10px] font-medium">Explore</span>
-          </button>
-
-          {/* Elevated Create Button */}
-          <button
-            type="button"
-            onClick={() => navigate({ to: user ? "/create" : "/auth" })}
-            className="group relative -translate-y-3 flex items-center justify-center cursor-pointer active:scale-95 transition"
-            aria-label="Create Outing"
-          >
-            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-[#D99A7C] text-[#0F3040] shadow-lg shadow-[#D99A7C]/35 group-hover:scale-105 transition-transform">
-              <Plus className="h-6 w-6 stroke-[3]" />
-            </div>
-          </button>
-
-          {/* Chats */}
-          <button
-            type="button"
-            onClick={() => navigate({ to: user ? "/chats" : "/auth" })}
-            className="flex flex-col items-center justify-center min-w-[48px] min-h-[48px] gap-1 text-[#CBD5E1] hover:text-white active:scale-95 transition cursor-pointer"
-            aria-label="Chats"
-          >
-            <MessageSquare className="h-5 w-5" />
-            <span className="text-[10px] font-medium">Chats</span>
-          </button>
-
-          {/* Profile */}
-          <button
-            type="button"
-            onClick={() => navigate({ to: user ? "/profile" : "/auth" })}
-            className="flex flex-col items-center justify-center min-w-[48px] min-h-[48px] gap-1 text-[#CBD5E1] hover:text-white active:scale-95 transition cursor-pointer"
-            aria-label="Profile"
-          >
-            <User className="h-5 w-5" />
-            <span className="text-[10px] font-medium">Profile</span>
-          </button>
-        </div>
-      </nav>
     </div>
   );
 }
