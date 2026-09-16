@@ -1,4 +1,4 @@
-import { useEffect, useCallback } from "react";
+import { useEffect, useCallback, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import {
@@ -11,6 +11,21 @@ import type { Notification } from "../models/notification";
 
 export function useNotifications() {
   const queryClient = useQueryClient();
+
+  const [enabled, setEnabled] = useState(() => {
+    if (typeof window === "undefined") return true;
+    return localStorage.getItem("outsy_notifications_enabled") !== "false";
+  });
+
+  useEffect(() => {
+    const handleToggle = () => {
+      if (typeof window !== "undefined") {
+        setEnabled(localStorage.getItem("outsy_notifications_enabled") !== "false");
+      }
+    };
+    window.addEventListener("outsy_notifications_toggled", handleToggle);
+    return () => window.removeEventListener("outsy_notifications_toggled", handleToggle);
+  }, []);
 
   const {
     data: notifications = [],
@@ -40,7 +55,7 @@ export function useNotifications() {
     };
   }, [queryClient]);
 
-  const unreadCount = notifications.filter((n) => !n.read).length;
+  const unreadCount = enabled ? notifications.filter((n) => !n.read).length : 0;
 
   const markAsRead = useCallback(
     async (notificationId: string) => {

@@ -1,7 +1,8 @@
+import { useState } from "react";
 import { Switch } from "@/components/ui/switch";
-import { Moon, Bell, User, MapPin, Shield, FileText, LogOut, X, Download } from "lucide-react";
+import { Moon, Bell, User, Shield, FileText, LogOut, X, Download } from "lucide-react";
 import { useNavigate } from "@tanstack/react-router";
-import { useNotifications } from "@/features/notifications/hooks/useNotifications";
+import { toast } from "sonner";
 import { usePwaInstall } from "@/hooks/usePwaInstall";
 
 type Props = {
@@ -24,10 +25,25 @@ function Row({
   right?: React.ReactNode;
   onClick?: () => void;
 }) {
+  const isClickable = !!onClick;
   return (
-    <button
+    <div
       onClick={onClick}
-      className="flex w-full items-center justify-between rounded-xl p-4 hover:bg-muted cursor-pointer transition text-foreground"
+      role={isClickable ? "button" : undefined}
+      tabIndex={isClickable ? 0 : undefined}
+      onKeyDown={
+        isClickable
+          ? (e) => {
+              if (e.key === "Enter" || e.key === " ") {
+                e.preventDefault();
+                onClick?.();
+              }
+            }
+          : undefined
+      }
+      className={`flex w-full items-center justify-between rounded-xl p-4 transition text-foreground ${
+        isClickable ? "hover:bg-muted cursor-pointer" : "hover:bg-muted/50"
+      }`}
     >
       <div className="flex items-center gap-3">
         {icon}
@@ -35,7 +51,7 @@ function Row({
       </div>
 
       {right}
-    </button>
+    </div>
   );
 }
 
@@ -48,8 +64,29 @@ export default function SettingsDrawer({
   onLogout,
 }: Props) {
   const navigate = useNavigate();
-  const { unreadCount } = useNotifications();
   const { canInstall, installApp } = usePwaInstall();
+
+  const [notificationsEnabled, setNotificationsEnabled] = useState(() => {
+    if (typeof window === "undefined") return true;
+    const saved = localStorage.getItem("outsy_notifications_enabled");
+    return saved !== null ? saved === "true" : true;
+  });
+
+  const handleToggleNotifications = (enabled: boolean) => {
+    setNotificationsEnabled(enabled);
+    if (typeof window !== "undefined") {
+      localStorage.setItem("outsy_notifications_enabled", String(enabled));
+      window.dispatchEvent(new Event("outsy_notifications_toggled"));
+      if (enabled) {
+        toast.success("Notifications turned on");
+        if ("Notification" in window && Notification.permission === "default") {
+          Notification.requestPermission();
+        }
+      } else {
+        toast.info("Notifications turned off");
+      }
+    }
+  };
 
   return (
     <>
@@ -100,19 +137,13 @@ export default function SettingsDrawer({
             icon={<Bell className="h-5 w-5" />}
             title="Notifications"
             right={
-              unreadCount > 0 ? (
-                <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-primary px-1.5 text-xs font-semibold text-primary-foreground">
-                  {unreadCount}
-                </span>
-              ) : null
+              <Switch
+                checked={notificationsEnabled}
+                onCheckedChange={handleToggleNotifications}
+                aria-label="Toggle notifications"
+              />
             }
-            onClick={() => {
-              onClose();
-              navigate({ to: "/notifications" });
-            }}
           />
-
-          <Row icon={<MapPin className="h-5 w-5" />} title="Location" />
 
           <Row
             icon={<Shield className="h-5 w-5" />}
