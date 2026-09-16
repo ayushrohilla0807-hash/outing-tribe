@@ -1,4 +1,5 @@
-import { useMemo } from "react";
+import { useMemo, useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 import { X, CheckCheck } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { getOptimizedImageUrl } from "@/lib/imageOptimization";
@@ -46,18 +47,24 @@ function formatSeenTime(dateString: string): string {
 }
 
 export default function SeenByDrawer({ open, onClose, reads }: SeenByDrawerProps) {
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
   // Sort most recently seen first
   const sortedReads = useMemo(() => {
     return [...reads].sort((a, b) => new Date(b.seenAt).getTime() - new Date(a.seenAt).getTime());
   }, [reads]);
 
-  if (!open) return null;
+  if (!open || !mounted) return null;
 
-  return (
-    <>
+  return createPortal(
+    <div className="fixed inset-0 z-[9999] flex flex-col justify-end pointer-events-auto">
       {/* Backdrop */}
       <div
-        className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm transition-opacity animate-in fade-in-0 duration-200"
+        className="fixed inset-0 bg-black/75 backdrop-blur-sm transition-opacity animate-in fade-in duration-200"
         onClick={onClose}
         aria-hidden="true"
       />
@@ -67,15 +74,15 @@ export default function SeenByDrawer({ open, onClose, reads }: SeenByDrawerProps
         role="dialog"
         aria-modal="true"
         aria-labelledby="seen-by-title"
-        className="fixed inset-x-0 bottom-0 z-50 mx-auto w-full max-w-lg rounded-t-3xl border-t border-white/10 bg-background/98 p-5 pb-[calc(1.5rem+env(safe-area-inset-bottom,0px))] shadow-2xl backdrop-blur-2xl transition-transform animate-in slide-in-from-bottom duration-250 ease-out text-foreground"
+        className="relative z-10 mx-auto flex w-full max-w-lg max-h-[85vh] max-h-[85dvh] flex-col rounded-t-3xl border-t border-white/15 bg-zinc-950 p-5 pb-[calc(1.5rem+env(safe-area-inset-bottom,0px))] shadow-2xl backdrop-blur-2xl transition-transform animate-in slide-in-from-bottom duration-250 ease-out text-foreground"
       >
         {/* Drag handle */}
-        <div className="mb-3 flex justify-center">
+        <div className="mb-3 flex justify-center shrink-0">
           <div className="h-1.5 w-12 rounded-full bg-white/20" />
         </div>
 
         {/* Header */}
-        <div className="flex items-center justify-between border-b border-white/10 pb-3.5 mb-3">
+        <div className="flex items-center justify-between border-b border-white/10 pb-3.5 mb-3 shrink-0">
           <div className="flex items-center gap-2">
             <CheckCheck className="h-5 w-5 text-primary" />
             <h2 id="seen-by-title" className="text-lg font-bold tracking-tight text-foreground">
@@ -90,14 +97,14 @@ export default function SeenByDrawer({ open, onClose, reads }: SeenByDrawerProps
             type="button"
             onClick={onClose}
             aria-label="Close"
-            className="flex h-8 w-8 items-center justify-center rounded-full text-muted-foreground hover:text-foreground hover:bg-white/10 transition cursor-pointer"
+            className="flex h-8 w-8 items-center justify-center rounded-full text-muted-foreground hover:text-foreground hover:bg-white/10 transition cursor-pointer shrink-0"
           >
             <X size={18} />
           </button>
         </div>
 
         {/* Viewers List */}
-        <div className="max-h-[60vh] min-h-[140px] overflow-y-auto overscroll-contain space-y-2 pr-1">
+        <div className="flex-1 min-h-0 overflow-y-auto overscroll-contain space-y-2 pr-1">
           {sortedReads.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-8 text-center text-muted-foreground">
               <p className="text-sm font-medium">No one has seen this message yet</p>
@@ -142,6 +149,7 @@ export default function SeenByDrawer({ open, onClose, reads }: SeenByDrawerProps
           )}
         </div>
       </div>
-    </>
+    </div>,
+    document.body,
   );
 }

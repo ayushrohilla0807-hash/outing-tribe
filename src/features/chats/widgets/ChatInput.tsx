@@ -171,7 +171,7 @@ export default function ChatInput({ onSend }: Props) {
       )}
 
       {/* Input Bar */}
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-1.5 sm:gap-2 rounded-full border border-white/15 bg-white/5 p-1 sm:p-1.5 backdrop-blur-xl shadow-inner focus-within:border-primary/50 focus-within:bg-white/10 transition-all">
         {/* Hidden File Input */}
         <input
           type="file"
@@ -186,21 +186,22 @@ export default function ChatInput({ onSend }: Props) {
           <PopoverTrigger asChild>
             <button
               type="button"
-              className={`flex h-10 w-10 items-center justify-center rounded-full transition cursor-pointer ${
+              className={`flex h-9 w-9 sm:h-10 sm:w-10 items-center justify-center rounded-full transition cursor-pointer shrink-0 ${
                 emojiOpen
-                  ? "bg-primary/20 text-accent"
-                  : "text-muted-foreground hover:bg-white/10 hover:text-foreground"
+                  ? "bg-primary/20 text-primary"
+                  : "text-muted-foreground hover:bg-white/10 hover:text-foreground active:scale-95"
               }`}
               title="Add Emoji"
+              aria-label="Add Emoji"
             >
-              <Smile size={20} />
+              <Smile size={19} />
             </button>
           </PopoverTrigger>
           <PopoverContent
             side="top"
             align="start"
             sideOffset={12}
-            className="p-0 border-0 bg-transparent shadow-none w-auto"
+            className="p-0 border-0 bg-transparent shadow-none w-auto z-50"
           >
             <EmojiPicker onSelect={handleEmojiSelect} onClose={() => setEmojiOpen(false)} />
           </PopoverContent>
@@ -210,14 +211,15 @@ export default function ChatInput({ onSend }: Props) {
         <button
           type="button"
           onClick={() => fileInputRef.current?.click()}
-          className={`flex h-10 w-10 items-center justify-center rounded-full transition cursor-pointer ${
+          className={`flex h-9 w-9 sm:h-10 sm:w-10 items-center justify-center rounded-full transition cursor-pointer shrink-0 ${
             pendingAttachment
-              ? "bg-primary/20 text-accent"
-              : "text-muted-foreground hover:bg-white/10 hover:text-foreground"
+              ? "bg-primary/20 text-primary"
+              : "text-muted-foreground hover:bg-white/10 hover:text-foreground active:scale-95"
           }`}
           title="Attach file or photo"
+          aria-label="Attach file or photo"
         >
-          <Paperclip size={20} />
+          <Paperclip size={19} />
         </button>
 
         {/* Text Input */}
@@ -228,7 +230,7 @@ export default function ChatInput({ onSend }: Props) {
           onKeyDown={handleKeyDown}
           placeholder="Type a message..."
           disabled={uploading}
-          className="flex-1 rounded-full border border-white/10 bg-white/5 px-4 py-2.5 text-sm text-foreground placeholder:text-muted-foreground outline-none focus:border-primary/50 focus:bg-white/10 transition"
+          className="min-w-0 flex-1 bg-transparent px-2 py-2 text-xs sm:text-sm text-foreground placeholder:text-muted-foreground outline-none border-0"
         />
 
         {/* Send Button */}
@@ -236,14 +238,15 @@ export default function ChatInput({ onSend }: Props) {
           type="button"
           onClick={send}
           disabled={(!text.trim() && !pendingAttachment) || uploading}
-          className={`flex h-10 w-10 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-glow transition cursor-pointer ${
+          className={`flex h-9 w-9 sm:h-10 sm:w-10 shrink-0 items-center justify-center rounded-full transition-all cursor-pointer ${
             (!text.trim() && !pendingAttachment) || uploading
-              ? "opacity-50 cursor-not-allowed"
-              : "hover:opacity-90 active:scale-95"
+              ? "opacity-30 text-muted-foreground cursor-not-allowed bg-transparent"
+              : "bg-gradient-to-br from-primary via-orange-500 to-amber-500 text-white shadow-glow hover:scale-105 active:scale-95"
           }`}
           title="Send message"
+          aria-label="Send message"
         >
-          {uploading ? <Loader2 size={18} className="animate-spin" /> : <Send size={18} />}
+          {uploading ? <Loader2 size={17} className="animate-spin" /> : <Send size={17} />}
         </button>
       </div>
     </div>

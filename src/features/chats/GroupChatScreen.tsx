@@ -21,6 +21,7 @@ import { getCurrentUser } from "./services/chatService";
 import ChatHeader from "./widgets/ChatHeader";
 import ChatInput from "./widgets/ChatInput";
 import GroupMessageBubble from "./widgets/GroupMessageBubble";
+import ParticipantsDrawer from "./widgets/ParticipantsDrawer";
 
 import type { Message } from "./models/message";
 
@@ -44,6 +45,7 @@ export default function GroupChatScreen() {
   } | null>(null);
   const [loading, setLoading] = useState(true);
   const [authorized, setAuthorized] = useState<boolean | null>(null);
+  const [participantsDrawerOpen, setParticipantsDrawerOpen] = useState(false);
 
   const bottomRef = useRef<HTMLDivElement>(null);
   const markedSeenIdsRef = useRef<Set<string>>(new Set());
@@ -326,12 +328,58 @@ export default function GroupChatScreen() {
     );
   }
 
+  function isSameDay(d1: string, d2: string) {
+    const date1 = new Date(d1);
+    const date2 = new Date(d2);
+    return (
+      date1.getFullYear() === date2.getFullYear() &&
+      date1.getMonth() === date2.getMonth() &&
+      date1.getDate() === date2.getDate()
+    );
+  }
+
+  function formatDateDivider(dateString: string): string {
+    const date = new Date(dateString);
+    const today = new Date();
+    const yesterday = new Date();
+    yesterday.setDate(yesterday.getDate() - 1);
+
+    if (
+      date.getFullYear() === today.getFullYear() &&
+      date.getMonth() === today.getMonth() &&
+      date.getDate() === today.getDate()
+    ) {
+      return "Today";
+    }
+    if (
+      date.getFullYear() === yesterday.getFullYear() &&
+      date.getMonth() === yesterday.getMonth() &&
+      date.getDate() === yesterday.getDate()
+    ) {
+      return "Yesterday";
+    }
+    return date.toLocaleDateString(undefined, {
+      weekday: "short",
+      month: "short",
+      day: "numeric",
+    });
+  }
+
   return (
-    <div className="flex h-full w-full flex-1 flex-col bg-background text-foreground overflow-hidden">
+    <div className="relative flex h-full w-full flex-1 flex-col bg-background text-foreground overflow-hidden">
+      {/* Ambient background glows */}
+      <div className="pointer-events-none absolute inset-0 overflow-hidden opacity-30 select-none">
+        <div className="absolute -top-24 -right-24 h-96 w-96 rounded-full bg-primary/15 blur-3xl" />
+        <div className="absolute top-1/2 -left-32 h-96 w-96 rounded-full bg-amber-500/10 blur-3xl" />
+        <div className="absolute -bottom-24 right-1/4 h-80 w-80 rounded-full bg-primary/10 blur-3xl" />
+      </div>
+
       <ChatHeader
         title={outingTitle || "Outing Group"}
         image={outingImage}
         participants={participantCount}
+        outingId={outingId}
+        onParticipantsClick={() => setParticipantsDrawerOpen(true)}
         onBack={() =>
           navigate({
             to: "/chats",
@@ -339,35 +387,54 @@ export default function GroupChatScreen() {
         }
       />
 
-      <div className="flex-1 min-h-0 overflow-y-auto px-4 py-4 overscroll-contain">
+      <div className="relative z-10 flex-1 min-h-0 overflow-y-auto px-3 sm:px-4 py-4 overscroll-contain space-y-1">
         {messages.length === 0 ? (
           <div className="flex h-full flex-col items-center justify-center text-center p-6 text-muted-foreground">
-            <p className="text-sm font-medium">No messages in this group yet.</p>
-            <p className="text-xs mt-1">Send a message to start planning with the group!</p>
+            <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-white/5 border border-white/10 mb-3 shadow-inner">
+              <span className="text-2xl">💬</span>
+            </div>
+            <p className="text-base font-bold text-foreground">No messages yet</p>
+            <p className="text-xs text-muted-foreground mt-1 max-w-xs">
+              Say hello and start planning the outing with your tribe!
+            </p>
           </div>
         ) : (
           messages.map((message, index) => {
             const nextMessage = messages[index + 1];
             const prevMessage = messages[index - 1];
 
+            const showDateDivider =
+              !prevMessage || !isSameDay(prevMessage.createdAt, message.createdAt);
+
             const currentSender = getNormalizedSenderId(message);
             const prevSender = getNormalizedSenderId(prevMessage);
             const nextSender = getNormalizedSenderId(nextMessage);
 
-            // Grouping strictly by consecutive sender identity only
-            const isFirstInGroup = !prevMessage || prevSender !== currentSender;
-            const isLastInGroup = !nextMessage || nextSender !== currentSender;
+            // Grouping strictly by consecutive sender identity on the same calendar day
+            const isFirstInGroup = showDateDivider || !prevMessage || prevSender !== currentSender;
+            const isLastInGroup =
+              !nextMessage ||
+              !isSameDay(message.createdAt, nextMessage.createdAt) ||
+              nextSender !== currentSender;
             const isLatestInChat = index === messages.length - 1;
 
             return (
-              <GroupMessageBubble
-                key={message.id}
-                message={message}
-                isFirstInGroup={isFirstInGroup}
-                isLastInGroup={isLastInGroup}
-                isLatestInChat={isLatestInChat}
-                onDelete={handleDeleteMessage}
-              />
+              <div key={message.id} className="w-full">
+                {showDateDivider && (
+                  <div className="my-3.5 flex items-center justify-center">
+                    <span className="rounded-full border border-white/10 bg-white/5 backdrop-blur-md px-3.5 py-1 text-[11px] font-medium text-muted-foreground shadow-sm">
+                      {formatDateDivider(message.createdAt)}
+                    </span>
+                  </div>
+                )}
+                <GroupMessageBubble
+                  message={message}
+                  isFirstInGroup={isFirstInGroup}
+                  isLastInGroup={isLastInGroup}
+                  isLatestInChat={isLatestInChat}
+                  onDelete={handleDeleteMessage}
+                />
+              </div>
             );
           })
         )}
@@ -375,9 +442,18 @@ export default function GroupChatScreen() {
         <div ref={bottomRef} />
       </div>
 
-      <div className="shrink-0 border-t border-white/10 bg-surface/95 p-3 sm:p-4 pb-[max(0.75rem,env(safe-area-inset-bottom,0px))] backdrop-blur-xl">
+      <div className="relative z-10 shrink-0 border-t border-white/10 bg-background/80 p-2.5 sm:p-3 pb-[max(0.6rem,env(safe-area-inset-bottom,0px))] backdrop-blur-2xl">
         <ChatInput onSend={handleSend} />
       </div>
+
+      {/* Outing Participants Drawer */}
+      <ParticipantsDrawer
+        open={participantsDrawerOpen}
+        onClose={() => setParticipantsDrawerOpen(false)}
+        outingId={outingId}
+        outingTitle={outingTitle}
+        currentUserId={currentUserId}
+      />
     </div>
   );
 }

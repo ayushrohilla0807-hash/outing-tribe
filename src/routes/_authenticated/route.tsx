@@ -38,21 +38,21 @@ function AuthenticatedLayout() {
     select: (state) => state.location.pathname,
   });
 
-  // Check if current route is an individual chat screen: /chats/:outingId/:userId
-  const isIndividualChat = /^\/chats\/[^/]+\/[^/]+/.test(pathname);
+  // Check if current route is an active chat room: /chats/:outingId/...
+  const isChatScreen = /^\/chats\/.+/.test(pathname);
 
   return (
     <SavedProvider>
       <div
         className={
-          isIndividualChat
+          isChatScreen
             ? "h-[100dvh] max-h-[100dvh] flex flex-col overflow-hidden bg-background text-foreground"
             : "min-h-[100dvh] flex flex-col bg-background text-foreground"
         }
       >
         <main
           className={
-            isIndividualChat
+            isChatScreen
               ? "flex-1 min-h-0 flex flex-col overflow-hidden"
               : "flex-1 pb-[calc(5rem+env(safe-area-inset-bottom,0px))]"
           }
@@ -60,7 +60,7 @@ function AuthenticatedLayout() {
           <Outlet />
         </main>
 
-        {!isIndividualChat && <BottomNav />}
+        {!isChatScreen && <BottomNav />}
       </div>
     </SavedProvider>
   );

@@ -95,12 +95,12 @@ export default function MessageBubble({ message, isLastInGroup = true, onDelete 
   return (
     <>
       <div
-        className={`flex flex-col w-full transition-all ${
-          isLastInGroup ? "mb-3" : "mb-1"
+        className={`flex flex-col w-full min-w-0 transition-all ${
+          isLastInGroup ? "mb-2.5" : "mb-1"
         } ${message.isMine ? "items-end" : "items-start"}`}
       >
         <div
-          className={`group/row relative flex items-end gap-2 w-full ${
+          className={`group/row relative flex items-end gap-2 max-w-full min-w-0 ${
             message.isMine ? "justify-end" : "justify-start"
           }`}
         >
@@ -121,23 +121,17 @@ export default function MessageBubble({ message, isLastInGroup = true, onDelete 
             onTouchStart={handleTouchStart}
             onTouchEnd={handleTouchEnd}
             onTouchMove={handleTouchEnd}
-            className={`chat-bubble-container rounded-2xl p-3 shadow-sm transition ${
+            className={`chat-bubble-container relative rounded-2xl px-3.5 py-2.5 shadow-sm transition-all select-text min-w-[75px] max-w-[82%] sm:max-w-[72%] md:max-w-[62%] break-words ${
               isDeleted
-                ? "border border-white/10 bg-card/60 text-muted-foreground/80"
+                ? "border border-dashed border-white/15 bg-white/[0.03] text-muted-foreground/80 backdrop-blur-sm"
                 : message.isMine
-                  ? "rounded-br-md bg-primary text-primary-foreground"
-                  : "rounded-bl-md border border-white/10 bg-card text-foreground"
+                  ? "rounded-br-xs bg-primary/20 border border-primary/35 text-zinc-100 backdrop-blur-sm shadow-black/20"
+                  : "rounded-bl-xs border border-white/10 bg-white/[0.06] dark:bg-white/[0.07] text-zinc-100 backdrop-blur-sm shadow-black/20"
             }`}
-            style={{
-              width: "fit-content",
-              minWidth: "90px",
-              maxWidth: "min(80%, 540px)",
-              flexShrink: 0,
-            }}
           >
             {/* Deleted Message State */}
             {isDeleted ? (
-              <div className="flex items-center gap-1.5 py-0.5 px-1 text-xs italic text-muted-foreground/80 select-none">
+              <div className="flex items-center gap-1.5 py-0.5 text-xs italic text-muted-foreground/80 select-none">
                 <Ban size={13} className="opacity-70 shrink-0" />
                 <span>This message was deleted</span>
               </div>
@@ -165,7 +159,7 @@ export default function MessageBubble({ message, isLastInGroup = true, onDelete 
                     rel="noopener noreferrer"
                     className={`mb-2 flex items-center gap-3 rounded-xl p-2.5 transition ${
                       message.isMine
-                        ? "bg-white/15 hover:bg-white/25 text-primary-foreground"
+                        ? "bg-white/10 hover:bg-white/15 text-zinc-100"
                         : "bg-white/5 hover:bg-white/10 text-foreground"
                     }`}
                   >
@@ -182,15 +176,7 @@ export default function MessageBubble({ message, isLastInGroup = true, onDelete 
 
                 {/* Message Text */}
                 {parsed.text && (
-                  <p
-                    className="chat-message-text select-text px-1"
-                    style={{
-                      wordBreak: "normal",
-                      overflowWrap: "break-word",
-                      whiteSpace: "pre-wrap",
-                      hyphens: "none",
-                    }}
-                  >
+                  <p className="chat-message-text select-text text-[13.5px] sm:text-sm leading-relaxed [overflow-wrap:anywhere] [word-break:break-word] whitespace-pre-wrap">
                     {parsed.text}
                   </p>
                 )}
@@ -199,19 +185,20 @@ export default function MessageBubble({ message, isLastInGroup = true, onDelete 
 
             {/* Timestamp */}
             <div
-              className={`chat-message-timestamp mt-1.5 text-right px-1 select-none ${
+              className={`mt-1 flex items-center justify-end gap-1 text-[10px] tracking-tight select-none ${
                 isDeleted
                   ? "text-muted-foreground/60"
                   : message.isMine
-                    ? "text-primary-foreground/70"
-                    : "text-muted-foreground"
+                    ? "text-zinc-400"
+                    : "text-zinc-400"
               }`}
-              style={{ whiteSpace: "nowrap" }}
             >
-              {new Date(message.createdAt).toLocaleTimeString([], {
-                hour: "2-digit",
-                minute: "2-digit",
-              })}
+              <span>
+                {new Date(message.createdAt).toLocaleTimeString([], {
+                  hour: "2-digit",
+                  minute: "2-digit",
+                })}
+              </span>
             </div>
           </div>
         </div>
