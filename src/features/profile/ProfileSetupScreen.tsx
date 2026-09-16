@@ -37,6 +37,7 @@ const DEFAULT_AVATARS = [
 const GENDER_OPTIONS = ["Male", "Female", "Non-binary", "Prefer not to say"] as const;
 
 interface FormErrors {
+  avatar?: string;
   name?: string;
   age?: string;
   gender?: string;
@@ -52,7 +53,7 @@ export default function ProfileSetupScreen() {
   const [age, setAge] = useState("");
   const [gender, setGender] = useState("");
   const [city, setCity] = useState("");
-  const [avatarUrl, setAvatarUrl] = useState(DEFAULT_AVATARS[0]);
+  const [avatarUrl, setAvatarUrl] = useState("");
   const [selectedInterests, setSelectedInterests] = useState<string[]>([]);
   const [interestSearch, setInterestSearch] = useState("");
   const [dropdownOpen, setDropdownOpen] = useState(false);
@@ -84,6 +85,10 @@ export default function ProfileSetupScreen() {
   // ─── Validation ────────────────────────────────────────────────────────────
   function validate(): boolean {
     const errs: FormErrors = {};
+
+    if (!avatarUrl || !avatarUrl.trim()) {
+      errs.avatar = "A profile photo is required to continue.";
+    }
 
     if (!name.trim()) errs.name = "Name is required.";
     else if (name.trim().length < 2) errs.name = "Name must be at least 2 characters.";
@@ -120,6 +125,7 @@ export default function ProfileSetupScreen() {
       setUploadingAvatar(true);
       const url = await uploadAvatar(file);
       setAvatarUrl(url);
+      setErrors((err) => ({ ...err, avatar: undefined }));
       setShowAvatarPicker(false);
       toast.success("Photo optimized & uploaded!");
     } catch (err: any) {
@@ -170,8 +176,9 @@ export default function ProfileSetupScreen() {
   }
 
   const isValid =
+    Boolean(avatarUrl && avatarUrl.trim()) &&
     name.trim().length >= 2 &&
-    Number(age) >= 13 &&
+    Number(age) >= 18 &&
     Number(age) <= 100 &&
     Boolean(gender) &&
     city.trim().length >= 2 &&
@@ -205,18 +212,44 @@ export default function ProfileSetupScreen() {
           className="space-y-6"
         >
           {/* ── Avatar ── */}
-          <div className="flex flex-col items-center gap-3">
+          <div className="flex flex-col items-center gap-2.5">
             <div className="relative">
-              <img
-                src={avatarUrl}
-                alt="Your avatar"
-                className="h-28 w-28 rounded-full object-cover border-2 border-white/15 shadow-lg bg-surface"
-              />
+              {avatarUrl ? (
+                <img
+                  src={avatarUrl}
+                  alt="Your avatar"
+                  className={`h-28 w-28 rounded-full object-cover border-2 shadow-lg bg-surface transition-all ${
+                    errors.avatar ? "border-red-400 ring-2 ring-red-400/30" : "border-white/15"
+                  }`}
+                />
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => fileInputRef.current?.click()}
+                  className={`group relative grid h-28 w-28 place-items-center rounded-full border-2 border-dashed bg-white/5 transition-all hover:bg-white/10 active:scale-95 ${
+                    errors.avatar
+                      ? "border-red-400/80 text-red-400 bg-red-400/5"
+                      : "border-primary/50 text-muted-foreground hover:border-primary hover:text-foreground"
+                  }`}
+                  aria-label="Upload profile photo"
+                >
+                  <div className="flex flex-col items-center gap-1.5 p-2">
+                    <Camera className="h-7 w-7 text-primary transition-transform group-hover:scale-110" />
+                    <span className="text-[11px] font-semibold leading-tight">
+                      Add Photo <span className="text-primary">*</span>
+                    </span>
+                  </div>
+                </button>
+              )}
+
+              {/* Edit/Camera button badge */}
               <button
                 type="button"
-                onClick={() => setShowAvatarPicker((p) => !p)}
-                className="absolute bottom-0 right-0 grid h-9 w-9 place-items-center rounded-full bg-primary text-white shadow-glow hover:opacity-90 transition"
-                aria-label="Change avatar"
+                onClick={() =>
+                  avatarUrl ? setShowAvatarPicker((p) => !p) : fileInputRef.current?.click()
+                }
+                className="absolute bottom-0 right-0 grid h-9 w-9 place-items-center rounded-full bg-primary text-white shadow-glow hover:opacity-90 transition active:scale-95 cursor-pointer"
+                aria-label={avatarUrl ? "Change avatar" : "Upload photo"}
               >
                 {uploadingAvatar ? (
                   <Loader2 className="h-4 w-4 animate-spin" />
@@ -225,7 +258,21 @@ export default function ProfileSetupScreen() {
                 )}
               </button>
             </div>
-            <p className="text-xs text-muted-foreground">Pick an avatar or upload a photo</p>
+
+            <div className="text-center space-y-0.5">
+              <p className="text-xs font-semibold text-foreground">
+                Profile Photo <span className="text-primary">*</span>
+              </p>
+              <p className="text-[11px] text-muted-foreground">
+                {avatarUrl ? "Tap camera to change photo" : "Upload a photo to complete your profile"}
+              </p>
+            </div>
+
+            {errors.avatar && (
+              <p className="text-xs font-medium text-red-400 animate-in fade-in">
+                {errors.avatar}
+              </p>
+            )}
 
             {/* Avatar picker panel */}
             <AnimatePresence>
@@ -237,7 +284,7 @@ export default function ProfileSetupScreen() {
                   className="w-full rounded-2xl border border-white/10 bg-surface/80 backdrop-blur-md p-4 shadow-card"
                 >
                   <p className="mb-3 text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                    Choose an avatar
+                    Choose an avatar or upload
                   </p>
                   <div className="grid grid-cols-6 gap-2 mb-4">
                     {DEFAULT_AVATARS.map((src, i) => (
@@ -246,6 +293,7 @@ export default function ProfileSetupScreen() {
                         type="button"
                         onClick={() => {
                           setAvatarUrl(src);
+                          setErrors((err) => ({ ...err, avatar: undefined }));
                           setShowAvatarPicker(false);
                         }}
                         className={`relative rounded-full overflow-hidden border-2 transition-all ${
@@ -261,20 +309,21 @@ export default function ProfileSetupScreen() {
                   <button
                     type="button"
                     onClick={() => fileInputRef.current?.click()}
-                    className="w-full rounded-xl border border-white/10 bg-white/5 py-2.5 text-sm font-medium hover:bg-white/10 transition flex items-center justify-center gap-2"
+                    className="w-full rounded-xl border border-white/10 bg-white/5 py-2.5 text-sm font-medium hover:bg-white/10 transition flex items-center justify-center gap-2 cursor-pointer"
                   >
-                    <Camera className="h-4 w-4" /> Upload a photo
+                    <Camera className="h-4 w-4" /> Upload a new photo
                   </button>
-                  <input
-                    ref={fileInputRef}
-                    type="file"
-                    accept="image/*"
-                    onChange={handleFileUpload}
-                    className="hidden"
-                  />
                 </motion.div>
               )}
             </AnimatePresence>
+
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              onChange={handleFileUpload}
+              className="hidden"
+            />
           </div>
 
           {/* ── Name ── */}
