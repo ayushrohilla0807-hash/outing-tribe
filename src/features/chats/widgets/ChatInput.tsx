@@ -131,6 +131,12 @@ export default function ChatInput({ onSend, onFocus }: Props) {
     }
   }
 
+  function handleBlur() {
+    if (typeof window !== "undefined") {
+      window.scrollTo({ top: 0, left: 0, behavior: "instant" as ScrollBehavior });
+    }
+  }
+
   return (
     <div className="w-full">
       {/* Pending Attachment Preview Card */}
@@ -229,6 +235,7 @@ export default function ChatInput({ onSend, onFocus }: Props) {
           value={text}
           onChange={(e) => setText(e.target.value)}
           onFocus={onFocus}
+          onBlur={handleBlur}
           onKeyDown={handleKeyDown}
           placeholder="Type a message..."
           disabled={uploading}

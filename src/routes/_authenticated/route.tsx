@@ -46,14 +46,14 @@ function AuthenticatedLayout() {
       <div
         className={
           isChatScreen
-            ? "h-[100dvh] max-h-[100dvh] flex flex-col overflow-hidden bg-background text-foreground"
+            ? "fixed inset-0 flex flex-col overflow-hidden bg-background text-foreground"
             : "min-h-[100dvh] flex flex-col bg-background text-foreground"
         }
       >
         <main
           className={
             isChatScreen
-              ? "flex-1 min-h-0 flex flex-col overflow-hidden"
+              ? "flex-1 min-h-0 flex flex-col overflow-hidden h-full w-full"
               : "flex-1 pb-[calc(5rem+env(safe-area-inset-bottom,0px))]"
           }
         >
