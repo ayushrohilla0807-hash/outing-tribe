@@ -22,6 +22,7 @@ import ChatHeader from "./widgets/ChatHeader";
 import ChatInput from "./widgets/ChatInput";
 import GroupMessageBubble from "./widgets/GroupMessageBubble";
 import ParticipantsDrawer from "./widgets/ParticipantsDrawer";
+import { useVisualViewport } from "@/hooks/use-visual-viewport";
 
 import type { Message } from "./models/message";
 
@@ -46,6 +47,8 @@ export default function GroupChatScreen() {
   const [loading, setLoading] = useState(true);
   const [authorized, setAuthorized] = useState<boolean | null>(null);
   const [participantsDrawerOpen, setParticipantsDrawerOpen] = useState(false);
+
+  const { viewportHeight, isKeyboardOpen } = useVisualViewport();
 
   const bottomRef = useRef<HTMLDivElement>(null);
   const markedSeenIdsRef = useRef<Set<string>>(new Set());
@@ -366,7 +369,14 @@ export default function GroupChatScreen() {
   }
 
   return (
-    <div className="relative flex h-full w-full flex-1 flex-col bg-background text-foreground overflow-hidden">
+    <div
+      style={
+        viewportHeight
+          ? { height: `${viewportHeight}px`, maxHeight: `${viewportHeight}px` }
+          : undefined
+      }
+      className="relative flex h-[100dvh] max-h-[100dvh] w-full flex-1 flex-col bg-background text-foreground overflow-hidden"
+    >
       {/* Ambient background glows */}
       <div className="pointer-events-none absolute inset-0 overflow-hidden opacity-30 select-none">
         <div className="absolute -top-24 -right-24 h-96 w-96 rounded-full bg-primary/15 blur-3xl" />
@@ -442,13 +452,17 @@ export default function GroupChatScreen() {
         <div ref={bottomRef} />
       </div>
 
-      <div className="relative z-10 shrink-0 border-t border-white/10 bg-background/80 p-2.5 sm:p-3 pb-[max(0.6rem,env(safe-area-inset-bottom,0px))] backdrop-blur-2xl">
+      <div
+        className={`relative z-10 shrink-0 border-t border-white/10 bg-background/90 backdrop-blur-2xl p-2 sm:p-2.5 ${
+          isKeyboardOpen ? "pb-2" : "pb-[max(0.5rem,env(safe-area-inset-bottom,0px))]"
+        }`}
+      >
         <ChatInput
           onSend={handleSend}
           onFocus={() => {
             setTimeout(() => {
               bottomRef.current?.scrollIntoView({ behavior: "smooth" });
-            }, 120);
+            }, 80);
           }}
         />
       </div>
